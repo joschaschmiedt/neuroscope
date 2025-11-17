@@ -2,6 +2,7 @@
 #                        CMakeLists.txt  -  description                    #
 #                             -------------------                          #
 #    copyright            : (C) 2015 by Florian Franzen                    #
+#                         : (C) 2025 by Joscha Schmiedt                    #
 # ************************************************************************ #
 
 # ************************************************************************ #
@@ -12,21 +13,17 @@
 #    (at your option) any later version.                                   #
 #                                                                          #
 # ************************************************************************ #
+cmake_minimum_required(VERSION 3.16)
 project(neuroscope CXX)
-cmake_minimum_required(VERSION 2.8.12)
 
-set(PROJECT_VERSION_MAJOR "2")
-set(PROJECT_VERSION_MINOR "1")
+set(PROJECT_VERSION_MAJOR "3")
+set(PROJECT_VERSION_MINOR "0")
 set(PROJECT_VERSION_PATCH "0")
 set(PROJECT_VERSION
     "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
 )
 
 # Supported config flags
-option(WITH_QT4
-       "Enable to build against Qt4 (default: Qt5)"
-       OFF)
-
 option(WITH_CEREBUS
       "Enable if you want online Cerebus supports"
       OFF)
@@ -70,16 +67,12 @@ set(CMAKE_AUTOMOC ON)
 add_definitions(-DQT_USE_QSTRINGBUILDER)
 
 # Find correct Qt library
-if(WITH_QT4)
-    find_package(Qt4 "4.8.0" REQUIRED QtGui QtXml)
-else()
-    find_package(Qt5 COMPONENTS Widgets PrintSupport Xml WebKitWidgets REQUIRED)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport WebEngineWidgets)
 
 ################################################################################
 # Neurosuite library config
 ################################################################################
-find_package(neurosuite 2.0.0 REQUIRED)
+find_package(neurosuite 3.0.0 REQUIRED)
 
 ################################################################################
 # Blackrock Cerebus SDK config
@@ -106,12 +99,12 @@ endif()
 # Documentation build config
 ################################################################################
 if(REGENERATE_DOC)
-   find_package(KDE4 REQUIRED)
-   find_program(DOCBOOK2HTML_EXECUTABLE NAMES docbook2html)
-   if(NOT DOCBOOK2HTML_EXECUTABLE)
-       message(FATAL_ERROR
+    find_package(KDE4 REQUIRED)
+    find_program(DOCBOOK2HTML_EXECUTABLE NAMES docbook2html)
+    if(NOT DOCBOOK2HTML_EXECUTABLE)
+        message(FATAL_ERROR
                "Could not find docbook2html for documentation generation.")
-   endif(DOCBOOK2HTML_EXECUTABLE)
+    endif(DOCBOOK2HTML_EXECUTABLE)
 endif()
 
 ################################################################################
@@ -156,32 +149,13 @@ if(APPBUNDLE)
 endif()
 
 # Use deb and rpm on linux
-set(COMMON_DEPENDECIES "libneurosuite (>= 2.0.0)")
+set(COMMON_DEPENDECIES "libneurosuite (>= 3.0.0)")
 if(WITH_CEREBUS)
     set(COMMON_DEPENDECIES "${COMMON_DEPENDECIES}, libcbsdk")
 endif()
-if(WITH_QT4)
-    neurosuite_cpack_ubuntu(
-        "${COMMON_DEPENDECIES}, libqtgui4, libqt4-xml, libqt4-webkit4"
-        "${CMAKE_CURRENT_SOURCE_DIR}/cpack"
-    )
-    neurosuite_cpack_suse(
-        "${COMMON_DEPENDECIES}, libqt4, libqt4-x11, libQtWebKit4"
-        "${CMAKE_CURRENT_SOURCE_DIR}/cpack"
-    )
-    neurosuite_cpack_fedora(
-        "${COMMON_DEPENDECIES}, qt, qt-mobility, qtwebkit, qt-x11"
-        "${CMAKE_CURRENT_SOURCE_DIR}/cpack"
-    )
-    neurosuite_cpack_scientific(
-        "${COMMON_DEPENDECIES}, libQtCore, libQtGui, libQtNetwork, libQtWebKit"
-        OFF
-    )
-else()
-    neurosuite_cpack_ubuntu(
-        "${COMMON_DEPENDECIES}, libqt5widgets5, libqt5printsupport5, libqt5concurrent5, libqt5xml5, libqt5webkit5, libqt5sensors5, libqt5location5"
-        "${CMAKE_CURRENT_SOURCE_DIR}/cpack"
-    )
-endif()
+neurosuite_cpack_ubuntu(
+    "${COMMON_DEPENDECIES}, libqt6widgets6, libqt6printsupport6, libqt6concurrent6, libqt6xml6, libqt6webenginewidgets6"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cpack"
+)
 
 include(CPack)

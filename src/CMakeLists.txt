@@ -57,11 +57,7 @@ if(WIN32)
 endif()
 
 # Qt resources
-if(WITH_QT4)
-    qt4_add_resources(SOURCE_FILES neuroscope-icons.qrc)
-else()
-    qt5_add_resources(SOURCE_FILES neuroscope-icons.qrc)
-endif()
+qt_add_resources(SOURCE_FILES neuroscope-icons.qrc)
 
 # Ui files
 set(UI_FILES
@@ -72,11 +68,7 @@ set(UI_FILES
     clusterpropertieslayout.ui
 )
 
-if(WITH_QT4)
-    qt4_wrap_ui(SOURCE_FILES ${UI_FILES})
-else()
-    qt5_wrap_ui(SOURCE_FILES ${UI_FILES})
-endif()
+qt_wrap_ui(SOURCE_FILES ${UI_FILES})
 
 # Optional C++ files
 if(WITH_CEREBUS)
@@ -98,12 +90,7 @@ endif()
 # Linker config
 ################################################################################
 target_link_libraries(neuroscope neurosuite)
-
-if(WITH_QT4)
-    target_link_libraries(neuroscope Qt4::QtGui Qt4::QtXml)
-else()
-    target_link_libraries(neuroscope Qt5::Widgets Qt5::Xml Qt5::PrintSupport)
-endif()
+target_link_libraries(neuroscope Qt6::Widgets Qt6::PrintSupport Qt6::WebEngineWidgets)
 
 if(WITH_CEREBUS)
     target_link_libraries(neuroscope cbsdk)
