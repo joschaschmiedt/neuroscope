@@ -31,30 +31,32 @@
   *@author Lynn Hazan
   */
 
-class ClusterProperties : public ClusterPropertiesLayout  {
+class ClusterProperties : public ClusterPropertiesLayout
+{
     Q_OBJECT
-public: 
-    explicit ClusterProperties(QWidget *parent=0);
+  public:
+    explicit ClusterProperties(QWidget* parent = 0);
     ~ClusterProperties();
 
 
     /**Sets the number of samples per spike waveform.*/
-    void setNbSamples(int nb){nbSamplesLineEdit->setText(QString::number(nb));}
+    void setNbSamples(int nb) { nbSamplesLineEdit->setText(QString::number(nb)); }
 
     /**Sets the index of the peak sample in the spike waveform.*/
-    void setPeakIndex(int index){peakIndexLineEdit->setText(QString::number(index));}
+    void setPeakIndex(int index) { peakIndexLineEdit->setText(QString::number(index)); }
 
     /**Returns the number of samples per spike waveform.*/
-    inline int getNbSamples()const{return nbSamplesLineEdit->text().toInt();}
+    inline int getNbSamples() const { return nbSamplesLineEdit->text().toInt(); }
 
     /**Returns the index of the peak sample in the spike waveform.*/
-    inline int getPeakIndex()const{return peakIndexLineEdit->text().toInt();}
+    inline int getPeakIndex() const { return peakIndexLineEdit->text().toInt(); }
 
-public Q_SLOTS:
+  public Q_SLOTS:
     /**Sets whether the widget is enabled
   * @param state true if the widget is enable, false otherwise.
   */
-    void setEnabled (bool state){
+    void setEnabled(bool state)
+    {
         groupBox->setEnabled(state);
         nbSamplesLineEdit->setEnabled(state);
         waveformLabel->setEnabled(state);
@@ -62,7 +64,7 @@ public Q_SLOTS:
         peakLabel->setEnabled(state);
     }
 
-private:
+  private:
     QIntValidator intValidator;
 };
 

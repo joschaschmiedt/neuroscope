@@ -46,10 +46,13 @@ class ItemColors;
 class ItemPalette : public QScrollArea
 {
     Q_OBJECT
-    
-public:
 
-    enum PaletteType {CLUSTER=0,EVENT=1};
+  public:
+    enum PaletteType
+    {
+        CLUSTER = 0,
+        EVENT = 1
+    };
 
     /**Constructor.
                      * @param type type of palette (clusters or events).
@@ -58,7 +61,7 @@ public:
                      * @param name internal name of the palette.
                      * @param fl widget flags.
                      */
-    ItemPalette(PaletteType type,const QColor& backgroundColor,QWidget* parent = 0, const char* name = 0 );
+    ItemPalette(PaletteType type, const QColor& backgroundColor, QWidget* parent = 0, const char* name = 0);
     /*
    *  Destroys the object and frees any allocated resources.
    */
@@ -70,29 +73,29 @@ public:
     * @param groupName name of the group of items.
     * @param descriptionLength value to use as the length for the event descriptions.
     */
-    void createItemList(ItemColors* itemColors,const QString& groupName,int descriptionLength);
+    void createItemList(ItemColors* itemColors, const QString& groupName, int descriptionLength);
 
     /** Selects the items specified in the map @p selection.
     * @param groupName name of the group containing the items to be selected.
     * @param itemsToSelect list of items to be selected.
     * @param itemsToSkip list of items to be marked as skiped while browsing.
     */
-    void selectItems(const QString &groupName, const QList<int> &itemsToSelect, const QList<int> &itemsToSkip);
+    void selectItems(const QString& groupName, const QList<int>& itemsToSelect, const QList<int>& itemsToSkip);
 
     /**Resets the internal variables.*/
     void reset();
-    
+
     /**Returns the list of selected items by group
     * @return map given the list of selected items for a given group.*/
-    const QMap<QString,QList<int> > selectedItems();
+    const QMap<QString, QList<int>> selectedItems();
 
     /**Updates the background color of the palette.*/
-    void changeBackgroundColor(const QColor &color);
+    void changeBackgroundColor(const QColor& color);
 
     /**Returns the currently selected group.
     * @return the name of the selected group.
     */
-    QString selectedGroup() const {return selected;}
+    QString selectedGroup() const { return selected; }
 
     /** Removes a group from the palette.
     * @param groupName name of the group to be removed.
@@ -102,8 +105,8 @@ public:
     /** Selects a group.
     * @param groupName name of the group to be selected.
     */
-    void selectGroup(const QString &groupName);
-    
+    void selectGroup(const QString& groupName);
+
     /**Selects all the items.*/
     void selectAllItems();
 
@@ -114,32 +117,31 @@ public:
     * @return true if at least one item can be use for browsing, false otherwise.
     */
     bool isBrowsingEnable();
-    
-public Q_SLOTS:
-    void slotMousePressWAltButton(const QString &sourceGroup, QListWidgetItem *item);
-    
-protected Q_SLOTS:
-    void slotMousePressed(const QString &sourceGroupName,QListWidgetItem* item);
-    void slotMousePressed(const QString &sourceGroupName, bool shiftKey = false, bool ctrlAlt = false);
+
+  public Q_SLOTS:
+    void slotMousePressWAltButton(const QString& sourceGroup, QListWidgetItem* item);
+
+  protected Q_SLOTS:
+    void slotMousePressed(const QString& sourceGroupName, QListWidgetItem* item);
+    void slotMousePressed(const QString& sourceGroupName, bool shiftKey = false, bool ctrlAlt = false);
     void slotClickRedraw();
     void languageChange();
     void resizeEvent(QResizeEvent* event);
-    void slotMouseReleased(const QString &sourceGroupName);
+    void slotMouseReleased(const QString& sourceGroupName);
     void slotRowInsered();
 
-Q_SIGNALS:
-    void colorChanged(int item, const QString &groupName, const QColor&);
-    void updateShownItems(const QMap<QString,QList<int> >& selectedItems);
-    void paletteResized(int parentWidth,int labelSize);
-    void selectedGroupChanged(const QString &eventGroupName);
-    void updateItemsToSkip(const QString &groupName,const QList<int>& itemsToSkip);
+  Q_SIGNALS:
+    void colorChanged(int item, const QString& groupName, const QColor&);
+    void updateShownItems(const QMap<QString, QList<int>>& selectedItems);
+    void paletteResized(int parentWidth, int labelSize);
+    void selectedGroupChanged(const QString& eventGroupName);
+    void updateItemsToSkip(const QString& groupName, const QList<int>& itemsToSkip);
     void noClustersToBrowse();
     void noEventsToBrowse();
     void clustersToBrowse();
     void eventsToBrowse();
-    
-private:    
 
+  private:
     /**Background color.*/
     QColor backgroundColor;
 
@@ -162,13 +164,13 @@ private:
 
     /**Type of the palette usage: cluster or event.*/
     PaletteType type;
-    
+
     /**Stores the group currently beeing selected.*/
     QString selected;
 
     /**List used to order the electrode groups.*/
     QList<int> clusterGroupList;
-    
+
     /**List used to order the event groups.*/
     QStringList itemGroupList;
 
@@ -176,21 +178,21 @@ private:
     int gridX;
 
     /**Stores the browsing status of each item. The browsing status is true if the item is used for browsing, false otherwise.*/
-    QMap<QString, QMap<int,bool> > browsingStatus;
+    QMap<QString, QMap<int, bool>> browsingStatus;
 
     /**Stores the items that have to be redrawn.*/
-    QMap<QString, QList<int> > needRedrawing;
+    QMap<QString, QList<int>> needRedrawing;
 
     /**Stores the selection status of each group. The selection status is true if all the group items have been selected by a click on the group label, false otherwise.*/
-    QMap<QString,bool> selectionStatus;
-    
+    QMap<QString, bool> selectionStatus;
+
     //Functions
 
     /** Changes the color of a given item.
     * @param item item for which the color has to be changed.
     * @param groupName name of the group containing the item.
     */
-    void changeColor(QListWidgetItem *item, const QString &groupName);
+    void changeColor(QListWidgetItem* item, const QString& groupName);
 
     /**Creates a new group for the name @p id
     * @param id name of the group to be created.
@@ -200,7 +202,7 @@ private:
     /** Redraws the list corresponding to the group @p groupName.
     * @param groupName name of the list to update.
     */
-    void updateItemList(const QString& groupName, ItemColors *itemColors);
+    void updateItemList(const QString& groupName, ItemColors* itemColors);
 
     /**Reorders the groups to display them in either alphabetic order or numerical order.*/
     void orderTheGroups();
@@ -211,8 +213,8 @@ private:
     * @param index index in itemColors or in the iconview (the are identical) of the item to recreate.
     * @param browsingMap map giving the browsing status of the items contained in the iconView.
     */
-    void redrawItem(ItemIconView* iconView, int index, const QMap<int, bool> &browsingMap);
-    
+    void redrawItem(ItemIconView* iconView, int index, const QMap<int, bool>& browsingMap);
+
     /**Selects the group identify by @p groupName.
     * @param groupName the group to be selected.
     */
@@ -227,32 +229,37 @@ private:
   *Utility class used to create the group labels on the left side of the group boxes in the cluster and event palettes.
   *@author Lynn Hazan
   */
-class GroupNameLabel : public QLabel{
+class GroupNameLabel : public QLabel
+{
     Q_OBJECT
-public:
-    inline GroupNameLabel(const QString& text,QWidget* parent):
-        QLabel(text,parent){}
+  public:
+    inline GroupNameLabel(const QString& text, QWidget* parent)
+        : QLabel(text, parent) {}
 
-Q_SIGNALS:
-    void leftClickOnLabel(const QString& sourceId,bool shiftKey,bool ctrlAlt);
+  Q_SIGNALS:
+    void leftClickOnLabel(const QString& sourceId, bool shiftKey, bool ctrlAlt);
     void middleClickOnLabel(const QString& sourceId);
 
-protected:
-    void mousePressEvent(QMouseEvent* e){
-        if(e->button() == Qt::LeftButton && !(e->modifiers() & Qt::ShiftModifier) && !(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier)){
-            emit leftClickOnLabel(parent()->objectName(),false,false);
+  protected:
+    void mousePressEvent(QMouseEvent* e)
+    {
+        if (e->button() == Qt::LeftButton && !(e->modifiers() & Qt::ShiftModifier) && !(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier))
+        {
+            emit leftClickOnLabel(parent()->objectName(), false, false);
         }
-        if(e->button() == Qt::LeftButton && (e->modifiers() & Qt::ShiftModifier) && !(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier)){
-            emit leftClickOnLabel(parent()->objectName(),true,false);
+        if (e->button() == Qt::LeftButton && (e->modifiers() & Qt::ShiftModifier) && !(e->modifiers() & Qt::ControlModifier) && !(e->modifiers() & Qt::AltModifier))
+        {
+            emit leftClickOnLabel(parent()->objectName(), true, false);
         }
-        if(e->button() == Qt::LeftButton && (e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::AltModifier)){
-            emit leftClickOnLabel(parent()->objectName(),false,true);
+        if (e->button() == Qt::LeftButton && (e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::AltModifier))
+        {
+            emit leftClickOnLabel(parent()->objectName(), false, true);
         }
-        if(e->button() == Qt::MidButton){
+        if (e->button() == Qt::MidButton)
+        {
             emit middleClickOnLabel(parent()->objectName());
         }
     }
-
 };
 
 #endif // CHANNELPALETTE_H

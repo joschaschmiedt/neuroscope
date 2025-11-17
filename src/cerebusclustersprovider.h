@@ -19,11 +19,11 @@
 #include "clustersprovider.h"
 #include "cerebustraceprovider.h"
 
-class CerebusClustersProvider : public ClustersProvider  {
+class CerebusClustersProvider : public ClustersProvider
+{
     Q_OBJECT
 
-public:
-
+  public:
     CerebusClustersProvider(CerebusTracesProvider* source, unsigned int channel, int samplingRate);
     ~CerebusClustersProvider();
 
@@ -36,16 +36,16 @@ public:
     virtual int loadData();
 
 
-	/**Triggers the retrieve of the cluster information included in the time interval given by @p startTime and @p endTime.
+    /**Triggers the retrieve of the cluster information included in the time interval given by @p startTime and @p endTime.
 	* @param startTime begining of the time interval from which to retrieve the data in miliseconds.
 	* @param endTime end of the time interval from which to retrieve  the data.
 	* @param initiator instance requesting the data.
 	* @param startTimeInRecordingUnits begining of the time interval from which to retrieve the data in recording units.
 	*/
-	virtual void requestData(long startTime, long endTime, QObject* initiator, long startTimeInRecordingUnits);
+    virtual void requestData(long startTime, long endTime, QObject* initiator, long startTimeInRecordingUnits);
 
 
-	/**Looks up for the first of the clusters included in the list @p selectedIds existing after the time @p startTime.
+    /**Looks up for the first of the clusters included in the list @p selectedIds existing after the time @p startTime.
 	* All the clusters included in the time interval given by @p timeFrame are retrieved. The time interval start time is
 	* computed in order to have the first cluster found located at @p clusterPosition percentage of the time interval.
 	* @param startTime starting time, in miliseconds, for the look up.
@@ -54,10 +54,10 @@ public:
 	* @param initiator instance requesting the data.
 	* @param startTimeInRecordingUnits starting time, in recording units, for the look up.
 	*/
-	virtual void requestNextClusterData(long startTime, long timeFrame, const QList<int> &selectedIds, QObject* initiator, long startTimeInRecordingUnits);
+    virtual void requestNextClusterData(long startTime, long timeFrame, const QList<int>& selectedIds, QObject* initiator, long startTimeInRecordingUnits);
 
 
-	/**Looks up for the first of the clusters included in the list @p selectedIds existing before the time @p endTime.
+    /**Looks up for the first of the clusters included in the list @p selectedIds existing before the time @p endTime.
 	* All the clusters included in the time interval given by @p timeFrame are retrieved. The time interval start time is
 	* computed in order to have the first cluster found located at @p clusterPosition percentage of the time interval.
 	* @param startTime starting time, in miliseconds, for the look up.
@@ -66,9 +66,9 @@ public:
 	* @param initiator instance requesting the data.
 	* @param startTimeInRecordingUnits starting time, in recording units, for the look up.
 	*/
-	virtual void requestPreviousClusterData(long startTime, long timeFrame, QList<int> selectedIds, QObject* initiator, long startTimeInRecordingUnits);
+    virtual void requestPreviousClusterData(long startTime, long timeFrame, QList<int> selectedIds, QObject* initiator, long startTimeInRecordingUnits);
 
-private:
+  private:
     // The actual data source of the cluster data.
     CerebusTracesProvider* mDataProvider;
 

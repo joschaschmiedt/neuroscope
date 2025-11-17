@@ -19,15 +19,13 @@
 #define PARAMETERXMLMODIFIER_H
 
 
-
-
 //Application specific includes
 #include "sessionInformation.h"
 
 //include files for QT
 #include <QList>
 #include <QMap>
-#include <qdom.h> 
+#include <qdom.h>
 
 // forward declaration
 class ChannelColors;
@@ -37,9 +35,9 @@ class ChannelColors;
   *@author Lynn Hazan
   */
 
-class ParameterXmlModifier {
-public:
-
+class ParameterXmlModifier
+{
+  public:
     /**Constructor.
   */
     ParameterXmlModifier();
@@ -71,7 +69,7 @@ public:
   * @param ancestor starting node from which to look up for the node.
   * @return the first node starting from @p ancestor having @p tagName as tag name.
   */
-    QDomNode findDirectChild(const QString& childName,const QDomNode& ancestor);
+    QDomNode findDirectChild(const QString& childName, const QDomNode& ancestor);
 
     /**
   * Finds the first child node with the tag name @p childName direct child of the @p ancestor node.
@@ -83,7 +81,7 @@ public:
   * @param ancestor starting node from which to look up for the child node.
   * @return the first child node corresponding to the criteria.
   */
-    QDomNode findDirectChild(const QString &childName, const QString &grandChildName, const QString &value, const QDomNode &ancestor);
+    QDomNode findDirectChild(const QString& childName, const QString& grandChildName, const QString& value, const QDomNode& ancestor);
 
     /**
   * Modifies the elements related to the acquisition system.
@@ -95,7 +93,7 @@ public:
   * @param offset initial offset for all the traces.
   * @return true if the modification succeded, false otherwise.
   */
-    bool setAcquisitionSystemInformation(int resolution,int nbChannels,double samplingRate,int voltageRange,int amplification,int offset);
+    bool setAcquisitionSystemInformation(int resolution, int nbChannels, double samplingRate, int voltageRange, int amplification, int offset);
 
     /**
   * Modifies the element related to the field potentials.
@@ -109,7 +107,7 @@ public:
   * @param screenGain screen gain in milivolts by centimeters used to display the field potentiels.
   * @param traceBackgroungImage image used as background for the trace view.
   */
-    void setMiscellaneousInformation(float screenGain,const QString& traceBackgroungImage);
+    void setMiscellaneousInformation(float screenGain, const QString& traceBackgroungImage);
 
 
     /**
@@ -120,7 +118,7 @@ public:
   * @param drawTrajectory all the positions contained in a position file can be used to create a background image for the PositionView.
   * This value tells if such background has to be created.
   */
-    void setNeuroscopeVideoInformation(int rotation,int flip,const QString& backgroundPath,int drawTrajectory);
+    void setNeuroscopeVideoInformation(int rotation, int flip, const QString& backgroundPath, int drawTrajectory);
 
     /**
   * Modifies the elements containing the video information.
@@ -128,7 +126,7 @@ public:
   * @param height video image height.
   * @return true if the modification succeded, false otherwise.
   */
-    bool setVideoInformation(int width,int height);
+    bool setVideoInformation(int width, int height);
 
     /**
   * Modifies the elements related to the channels display.
@@ -139,7 +137,7 @@ public:
   * @param channelDefaultOffsets map given the default channel offsets.
   * @return true if the modification succeded, false otherwise.
   */
-    bool setChannelDisplayInformation(ChannelColors* channelColors,QMap<int,int>& channelsGroups,QMap<int,int>& channelDefaultOffsets);
+    bool setChannelDisplayInformation(ChannelColors* channelColors, QMap<int, int>& channelsGroups, QMap<int, int>& channelDefaultOffsets);
 
     /**
   * Modifies the elements related to the anatomical description.
@@ -147,7 +145,7 @@ public:
   * @param skipStatus map given the skip status of the channels.
   * @return true if the modification succeded, false otherwise.
   */
-    bool setAnatomicalDescription(QMap<int, QList<int> >& anatomicalGroups,QMap<int,bool> skipStatus);
+    bool setAnatomicalDescription(QMap<int, QList<int>>& anatomicalGroups, QMap<int, bool> skipStatus);
 
     /**
   * Modifies the elements related to the spike detection.
@@ -156,14 +154,14 @@ public:
   * @param spikeGroups map given to which spike group each channel belongs.
   * @return true if the modification succeded, false otherwise.
   */
-    bool setSpikeDetectionInformation(int nbSamples,int peakSampleIndex,QMap<int, QList<int> >& spikeGroups);
+    bool setSpikeDetectionInformation(int nbSamples, int peakSampleIndex, QMap<int, QList<int>>& spikeGroups);
 
     /**
   * Modifies the elements related to the spike detection.
   * @param spikeGroups map given to which spike group each channel belongs.
   * @return true if the modification succeded, false otherwise.
   */
-    bool setSpikeDetectionInformation(QMap<int, QList<int> >& spikeGroups);
+    bool setSpikeDetectionInformation(QMap<int, QList<int>>& spikeGroups);
 
     /**A base file name can be used for different kind of files corresponding to the same data and having
   * different sampling rates. Each file is identified by its extension. this function modifies the elements related to the mapping
@@ -172,11 +170,10 @@ public:
   * @param extensionSamplingRates map between file extension and the sampling rate.
   * @return true if the modification succeded, false otherwise.
   */
-    bool setSampleRateByExtension(const QMap<QString, double> &extensionSamplingRates);
+    bool setSampleRateByExtension(const QMap<QString, double>& extensionSamplingRates);
 
 
-private:
-
+  private:
     /**The session document.*/
     QDomDocument doc;
 
@@ -216,7 +213,7 @@ private:
     QDomNode files;
 
     /**True if a video node has been created, false otherwise.*/
-    bool  newVideoNode;
+    bool newVideoNode;
 
     /**True if a files node has been created, false otherwise.*/
     bool newFilesNode;
@@ -225,7 +222,6 @@ private:
     QString initialXmlDocument;
 
     static const QString parameterVersion;
-
 };
 
 #endif

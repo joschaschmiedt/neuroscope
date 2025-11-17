@@ -16,7 +16,6 @@
  ***************************************************************************/
 
 
-
 // application specific includes
 #include "itempalette.h"
 #include "itemcolors.h"
@@ -31,7 +30,7 @@
 #include <QVector>
 #include <QPixmap>
 #include <QBitmap>
-#include <QLayout> 
+#include <QLayout>
 #include <QStyle>
 #include <QColorDialog>
 
@@ -40,7 +39,7 @@
 #include <QList>
 #include <QLabel>
 
-ItemPalette::ItemPalette(PaletteType type, const QColor &backgroundColor, QWidget* parent, const char* name)
+ItemPalette::ItemPalette(PaletteType type, const QColor& backgroundColor, QWidget* parent, const char* name)
     : QScrollArea(parent),
       backgroundColor(backgroundColor),
       isInSelectItems(false),
@@ -58,9 +57,9 @@ ItemPalette::ItemPalette(PaletteType type, const QColor &backgroundColor, QWidge
     int h;
     int s;
     int v;
-    backgroundColor.getHsv(&h,&s,&v);
+    backgroundColor.getHsv(&h, &s, &v);
     QColor legendColor;
-    if(s <= 80 && v >= 240 || (s <= 40 && v >= 220))
+    if (s <= 80 && v >= 240 || (s <= 40 && v >= 220))
         legendColor = Qt::black;
     else
         legendColor = Qt::white;
@@ -68,15 +67,15 @@ ItemPalette::ItemPalette(PaletteType type, const QColor &backgroundColor, QWidge
     setPalette(palette);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QWidget *w = new QWidget;
+    QWidget* w = new QWidget;
     verticalContainer = new QVBoxLayout;
     w->setLayout(verticalContainer);
     setWidget(w);
     verticalContainer->setSpacing(5);
 
-    QFont f("Helvetica",8);
+    QFont f("Helvetica", 8);
     QFontInfo fontInfo = QFontInfo(f);
-    if(type == CLUSTER)
+    if (type == CLUSTER)
         labelSize = fontInfo.pixelSize() * 2;
     else
         labelSize = fontInfo.pixelSize() * 3;
@@ -84,7 +83,7 @@ ItemPalette::ItemPalette(PaletteType type, const QColor &backgroundColor, QWidge
     //Set the legend in the good language
     languageChange();
     adjustSize();
-}    
+}
 
 
 ItemPalette::~ItemPalette()
@@ -100,28 +99,32 @@ void ItemPalette::updateIconPixmaps()
     if (needRedrawing.isEmpty())
         return;
 
-    const QMap<QString,QList<int> > selected = selectedItems();
+    const QMap<QString, QList<int>> selected = selectedItems();
     //update the icons if need it
-    QMap<QString,QList<int> >::const_iterator it;
-    const QMap<QString,QList<int> >::const_iterator end(needRedrawing.end());
-    for(it = needRedrawing.begin(); it != end; ++it){
+    QMap<QString, QList<int>>::const_iterator it;
+    const QMap<QString, QList<int>>::const_iterator end(needRedrawing.end());
+    for (it = needRedrawing.begin(); it != end; ++it)
+    {
         QList<int> items = it.value();
-        QString  groupName = it.key();
-        QMap<int,bool> browsingMap = browsingStatus[groupName];
+        QString groupName = it.key();
+        QMap<int, bool> browsingMap = browsingStatus[groupName];
         ItemIconView* iconView = iconviewDict[groupName];
 
         QList<int> selectedItems = selected[groupName];
 
         //redraw the items which have been modified
         QList<int>::iterator iterator;
-        for(iterator = items.begin(); iterator != items.end(); ++iterator){
-            redrawItem(iconView,*iterator,browsingMap);
+        for (iterator = items.begin(); iterator != items.end(); ++iterator)
+        {
+            redrawItem(iconView, *iterator, browsingMap);
         }
 
         //In order to avoid problems when double clicking, all the icons of the iconview are redrawn
-        if(items.isEmpty() && selectedItems.size() == 1){
-            for(int i = 0; i < iconView->count();++i){
-                redrawItem(iconView,i,browsingMap);
+        if (items.isEmpty() && selectedItems.size() == 1)
+        {
+            for (int i = 0; i < iconView->count(); ++i)
+            {
+                redrawItem(iconView, i, browsingMap);
             }
         }
     }
@@ -129,21 +132,23 @@ void ItemPalette::updateIconPixmaps()
     needRedrawing.clear();
 }
 
-void ItemPalette::resizeEvent(QResizeEvent* event){
+void ItemPalette::resizeEvent(QResizeEvent* event)
+{
     //Make the viewport to have the visible size (size of the scrollview)
     viewport()->resize(event->size());
     QScrollArea::resizeEvent(event);
-    emit paletteResized(viewport()->width(),labelSize);
+    emit paletteResized(viewport()->width(), labelSize);
 }
 
-void ItemPalette::createItemList(ItemColors* itemColors, const QString &groupName, int descriptionLength){
+void ItemPalette::createItemList(ItemColors* itemColors, const QString& groupName, int descriptionLength)
+{
     //Compute gridX used for the event palette where the text is next to the icon (14px)
     QFontInfo fontInfo = QFontInfo(QFont());
     gridX = descriptionLength * fontInfo.pixelSize() + 15;
 
     //In the case of cluster files, the groupName (<=> electrode id) correspond to a number and the groups are
     //order numerically
-    if(type == CLUSTER)
+    if (type == CLUSTER)
         clusterGroupList.append(groupName.toInt());
     else
         itemGroupList.append(groupName);
@@ -152,59 +157,66 @@ void ItemPalette::createItemList(ItemColors* itemColors, const QString &groupNam
     updateItemList(groupName, itemColors);
 
     //always select a group
-    if(selected.isEmpty())
+    if (selected.isEmpty())
         selectGroupLabel(groupName);
 
-    emit paletteResized(viewport()->width(),labelSize);
+    emit paletteResized(viewport()->width(), labelSize);
     update();
 }
 
 
-void ItemPalette::updateItemList(const QString& groupName, ItemColors* itemColors){
+void ItemPalette::updateItemList(const QString& groupName, ItemColors* itemColors)
+{
     ItemIconView* iconView = iconviewDict[groupName];
     iconView->clear();
 
-    QMap<int,bool> browsingMap = browsingStatus[groupName];
+    QMap<int, bool> browsingMap = browsingStatus[groupName];
     browsingMap.clear();
-    selectionStatus.insert(groupName,false);
+    selectionStatus.insert(groupName, false);
 
     //Construct one icon for each item
     QPainter painter;
 
     const int nbItems = itemColors->numberOfItems();
-    for(int i = 0; i<nbItems; ++i){
-        const QColor col =itemColors->color(i,ItemColors::BY_INDEX);
-        browsingMap.insert(i,false);
-        QPixmap pix(12,12);
+    for (int i = 0; i < nbItems; ++i)
+    {
+        const QColor col = itemColors->color(i, ItemColors::BY_INDEX);
+        browsingMap.insert(i, false);
+        QPixmap pix(12, 12);
         pix.fill(backgroundColor);
         painter.begin(&pix);
-        painter.fillRect(0,0,12,12, col);
+        painter.fillRect(0, 0, 12, 12, col);
         painter.end();
         QIcon icon;
         icon.addPixmap(pix);
-        ItemWidgetItem *item  = new ItemWidgetItem(icon, itemColors->itemLabel(i), iconView);
-        item->setData(ItemIconView::Color,col);
+        ItemWidgetItem* item = new ItemWidgetItem(icon, itemColors->itemLabel(i), iconView);
+        item->setData(ItemIconView::Color, col);
         item->setData(ItemIconView::INDEXICON, itemColors->itemId(i));
     }
 
-    browsingStatus.insert(groupName,browsingMap);
-    if(nbItems == 0)
-        iconView->resize(50,20);
+    browsingStatus.insert(groupName, browsingMap);
+    if (nbItems == 0)
+        iconView->resize(50, 20);
     else
         iconView->adjustSize();
 }
 
 
-void ItemPalette::slotMousePressed(const QString&sourceGroupName,QListWidgetItem*item){
-    if (item) {
-        changeColor(item,sourceGroupName);
+void ItemPalette::slotMousePressed(const QString& sourceGroupName, QListWidgetItem* item)
+{
+    if (item)
+    {
+        changeColor(item, sourceGroupName);
     }
 }
 
-void ItemPalette::selectGroupLabel(const QString &sourceGroupName){
-    if(!selected.isEmpty()){
+void ItemPalette::selectGroupLabel(const QString& sourceGroupName)
+{
+    if (!selected.isEmpty())
+    {
         ItemGroupView* previousSelectedGroup = itemGroupViewDict[selected];
-        if(previousSelectedGroup != 0){
+        if (previousSelectedGroup != 0)
+        {
             GroupNameLabel* previousLabel = static_cast<GroupNameLabel*>(previousSelectedGroup->label());
 
             QPalette palette;
@@ -212,7 +224,8 @@ void ItemPalette::selectGroupLabel(const QString &sourceGroupName){
             previousLabel->setPalette(palette);
         }
     }
-    if(!sourceGroupName.isEmpty()){
+    if (!sourceGroupName.isEmpty())
+    {
         ItemGroupView* group = itemGroupViewDict[sourceGroupName];
         QLabel* label = group->label();
         QPalette palette;
@@ -221,15 +234,18 @@ void ItemPalette::selectGroupLabel(const QString &sourceGroupName){
     }
 
     selected = sourceGroupName;
-    if(type == EVENT)
+    if (type == EVENT)
         emit selectedGroupChanged(selected);
 }
 
-void ItemPalette::slotMousePressed(const QString& sourceGroupName,bool shiftKey,bool ctrlAlt){
+void ItemPalette::slotMousePressed(const QString& sourceGroupName, bool shiftKey, bool ctrlAlt)
+{
 
-    if(!selected.isEmpty()){
+    if (!selected.isEmpty())
+    {
         ItemGroupView* previousSelectedGroup = itemGroupViewDict[selected];
-        if(previousSelectedGroup != 0){
+        if (previousSelectedGroup != 0)
+        {
             GroupNameLabel* previousLabel = static_cast<GroupNameLabel*>(previousSelectedGroup->label());
 
             QPalette palette;
@@ -238,130 +254,159 @@ void ItemPalette::slotMousePressed(const QString& sourceGroupName,bool shiftKey,
         }
     }
 
-    if (!sourceGroupName.isEmpty()){
+    if (!sourceGroupName.isEmpty())
+    {
         ItemGroupView* group = itemGroupViewDict[sourceGroupName];
         QLabel* label = static_cast<QLabel*>(group->label());
         QPalette palette;
-        palette.setColor(label->backgroundRole(), palette.highlight ().color());
+        palette.setColor(label->backgroundRole(), palette.highlight().color());
         label->setPalette(palette);
         ItemIconView* iconView = iconviewDict[sourceGroupName];
         bool unselect = selectionStatus[sourceGroupName];
         //Set isInSelectItems to true to prevent the emission of signals due to selectionChange
         isInSelectItems = true;
         //If ctrlAlt is true, either set all the select items of the group for browsing or unset them (it is a toggle between the 2 states)
-        if(ctrlAlt){
-            QMap<int,bool> browsingMap = browsingStatus[sourceGroupName];
+        if (ctrlAlt)
+        {
+            QMap<int, bool> browsingMap = browsingStatus[sourceGroupName];
             QList<int> itemsToSkip;
-            if(unselect){
+            if (unselect)
+            {
                 selectionStatus[sourceGroupName] = false;
-                for(int i = 0; i <iconView->count(); ++i) {
-                    QListWidgetItem * item = iconView->item(i);
-                    if (item->isSelected()) {
-                        if(browsingMap[i]) {
+                for (int i = 0; i < iconView->count(); ++i)
+                {
+                    QListWidgetItem* item = iconView->item(i);
+                    if (item->isSelected())
+                    {
+                        if (browsingMap[i])
+                        {
                             browsingMap[i] = false;
-                            redrawItem(iconView,i,browsingMap);
-                            isInSelectItems = true;//redrawItem sets it back to false
+                            redrawItem(iconView, i, browsingMap);
+                            isInSelectItems = true; //redrawItem sets it back to false
                         }
                     }
                     itemsToSkip.append(i);
                 }
-            }else{
+            }
+            else
+            {
                 selectionStatus[sourceGroupName] = true;
-                for(int i = 0; i <iconView->count(); ++i) {
-                    QListWidgetItem * item = iconView->item(i);
-                    if(item->isSelected()){
-                        if(!browsingMap[i]){
+                for (int i = 0; i < iconView->count(); ++i)
+                {
+                    QListWidgetItem* item = iconView->item(i);
+                    if (item->isSelected())
+                    {
+                        if (!browsingMap[i])
+                        {
                             browsingMap[i] = true;
-                            redrawItem(iconView,i,browsingMap);
-                            isInSelectItems = true;//redrawItem sets it back to false
-                        } else  {
+                            redrawItem(iconView, i, browsingMap);
+                            isInSelectItems = true; //redrawItem sets it back to false
+                        }
+                        else
+                        {
                             itemsToSkip.append(i);
                         }
                     }
                 }
             }
-            browsingStatus.insert(sourceGroupName,browsingMap);
-            emit updateItemsToSkip(sourceGroupName,itemsToSkip);
+            browsingStatus.insert(sourceGroupName, browsingMap);
+            emit updateItemsToSkip(sourceGroupName, itemsToSkip);
 
-            if(!isBrowsingEnable()){
-                if(type == CLUSTER)
+            if (!isBrowsingEnable())
+            {
+                if (type == CLUSTER)
                     emit noClustersToBrowse();
                 else
                     emit noEventsToBrowse();
             }
-            else{
-                if(type == CLUSTER)
+            else
+            {
+                if (type == CLUSTER)
                     emit clustersToBrowse();
                 else
                     emit eventsToBrowse();
             }
-        } else{
+        }
+        else
+        {
             //If shiftKey is false, either select all the items of the group or deselect them all (it is a toggle between the 2 states)
-            if(unselect){
+            if (unselect)
+            {
                 selectionStatus[sourceGroupName] = false;
                 iconView->clearSelection();
-                QMap<QString,QList<int> > selection = selectedItems();
+                QMap<QString, QList<int>> selection = selectedItems();
                 emit updateShownItems(selection);
 
-                QMap<int,bool> browsingMap = browsingStatus[sourceGroupName];
+                QMap<int, bool> browsingMap = browsingStatus[sourceGroupName];
                 QList<int> itemsToSkip;
-                for(int i = 0; i <iconView->count(); ++i) {
+                for (int i = 0; i < iconView->count(); ++i)
+                {
                     //QListWidgetItem * item = iconView->item(i);
-                    if(browsingMap[i]){
+                    if (browsingMap[i])
+                    {
                         browsingMap[i] = false;
-                        redrawItem(iconView,i,browsingMap);
-                        isInSelectItems = true;//redrawItem sets it back to false
+                        redrawItem(iconView, i, browsingMap);
+                        isInSelectItems = true; //redrawItem sets it back to false
                         itemsToSkip.append(i);
                     }
-                    else itemsToSkip.append(i);
-
+                    else
+                        itemsToSkip.append(i);
                 }
-                browsingStatus.insert(sourceGroupName,browsingMap);
-                emit updateItemsToSkip(sourceGroupName,itemsToSkip);
+                browsingStatus.insert(sourceGroupName, browsingMap);
+                emit updateItemsToSkip(sourceGroupName, itemsToSkip);
 
-                if(!isBrowsingEnable()){
-                    if(type == CLUSTER)
+                if (!isBrowsingEnable())
+                {
+                    if (type == CLUSTER)
                         emit noClustersToBrowse();
                     else
                         emit noEventsToBrowse();
                 }
-                else{
-                    if(type == CLUSTER)
+                else
+                {
+                    if (type == CLUSTER)
                         emit clustersToBrowse();
                     else
                         emit eventsToBrowse();
                 }
-            } else{
+            }
+            else
+            {
                 selectionStatus[sourceGroupName] = true;
                 iconView->selectAll();
                 //If it is a cluster palette and the shift key was press, select everything except 0 and 1
-                if(shiftKey && type == CLUSTER){
-                    QMap<int,bool> browsingMap = browsingStatus[sourceGroupName];
+                if (shiftKey && type == CLUSTER)
+                {
+                    QMap<int, bool> browsingMap = browsingStatus[sourceGroupName];
                     QList<int> itemsToSkip;
                     bool hasChanged = false;
-                    for (int i = 0; i < iconView->count(); ++i) {
-                        QListWidgetItem * item = iconView->item(i);
-                        if (item->text() == QLatin1String("0") || item->text() == QLatin1String("1")) {
+                    for (int i = 0; i < iconView->count(); ++i)
+                    {
+                        QListWidgetItem* item = iconView->item(i);
+                        if (item->text() == QLatin1String("0") || item->text() == QLatin1String("1"))
+                        {
                             item->setSelected(false);
-                            if(browsingMap[i]){
+                            if (browsingMap[i])
+                            {
                                 hasChanged = true;
                                 browsingMap[i] = false;
-                                redrawItem(iconView,i,browsingMap);
-                                isInSelectItems = true;//redrawItem sets it back to false
+                                redrawItem(iconView, i, browsingMap);
+                                isInSelectItems = true; //redrawItem sets it back to false
                             }
                             itemsToSkip.append(item->data(ItemIconView::INDEXICON).toInt());
                         }
                     }
-                    if(hasChanged){
-                        browsingStatus.insert(sourceGroupName,browsingMap);
-                        emit updateItemsToSkip(sourceGroupName,itemsToSkip);
-                        if(!isBrowsingEnable())
+                    if (hasChanged)
+                    {
+                        browsingStatus.insert(sourceGroupName, browsingMap);
+                        emit updateItemsToSkip(sourceGroupName, itemsToSkip);
+                        if (!isBrowsingEnable())
                             emit noClustersToBrowse();
                         else
                             emit clustersToBrowse();
                     }
                 }
-                QMap<QString,QList<int> > selection = selectedItems();
+                QMap<QString, QList<int>> selection = selectedItems();
                 emit updateShownItems(selection);
             }
         }
@@ -370,55 +415,65 @@ void ItemPalette::slotMousePressed(const QString& sourceGroupName,bool shiftKey,
     }
 
     selected = sourceGroupName;
-    if(type == EVENT)
+    if (type == EVENT)
         emit selectedGroupChanged(selected);
 }
 
 
-const QMap<QString,QList<int> > ItemPalette::selectedItems(){
-    QMap<QString,QList<int> > selection;
+const QMap<QString, QList<int>> ItemPalette::selectedItems()
+{
+    QMap<QString, QList<int>> selection;
     QHashIterator<QString, ItemIconView*> iterator(iconviewDict);
-    while (iterator.hasNext()) {
+    while (iterator.hasNext())
+    {
         iterator.next();
         QString groupName = iterator.key();
         QList<int> selectedItems;
-        for(int i = 0; i < iterator.value()->count(); ++i) {
-            QListWidgetItem *item = iterator.value()->item(i);
-            if(item->isSelected()){
+        for (int i = 0; i < iterator.value()->count(); ++i)
+        {
+            QListWidgetItem* item = iterator.value()->item(i);
+            if (item->isSelected())
+            {
                 selectedItems.append(item->data(ItemIconView::INDEXICON).toInt());
             }
         }
-        selection.insert(groupName,selectedItems);
+        selection.insert(groupName, selectedItems);
     }
     return selection;
 }
 
-void ItemPalette::slotClickRedraw(){
-    if(isInSelectItems)
+void ItemPalette::slotClickRedraw()
+{
+    if (isInSelectItems)
         return;
 
     bool browsingEnable = false;
     bool needToBeUpdated = false;
-    QMap<QString,QList<int> > selection;
+    QMap<QString, QList<int>> selection;
     QHashIterator<QString, ItemIconView*> iterator(iconviewDict);
-    while (iterator.hasNext()) {
+    while (iterator.hasNext())
+    {
         iterator.next();
         QString groupName = iterator.key();
-        QMap<int,bool> browsingMap = browsingStatus[groupName];
+        QMap<int, bool> browsingMap = browsingStatus[groupName];
         QList<int> selectedItems;
         QList<int> itemsToSkip;
         QList<int> itemsToRedraw;
-        for(int i = 0 ; i<iterator.value()->count(); ++i ){
-            QListWidgetItem *item = iterator.value()->item(i);
-            if(item->isSelected()){
+        for (int i = 0; i < iterator.value()->count(); ++i)
+        {
+            QListWidgetItem* item = iterator.value()->item(i);
+            if (item->isSelected())
+            {
                 selectedItems.append(item->data(ItemIconView::INDEXICON).toInt());
-                if(!browsingMap[i])
+                if (!browsingMap[i])
                     itemsToSkip.append(item->data(ItemIconView::INDEXICON).toInt());
                 else
                     browsingEnable = true;
             }
-            else{
-                if(browsingMap[i]){
+            else
+            {
+                if (browsingMap[i])
+                {
                     browsingMap[i] = false;
                     itemsToRedraw.append(i);
                     needToBeUpdated = true;
@@ -426,20 +481,23 @@ void ItemPalette::slotClickRedraw(){
                 itemsToSkip.append(item->data(ItemIconView::INDEXICON).toInt());
             }
         }
-        selection.insert(groupName,selectedItems);
-        browsingStatus.insert(groupName,browsingMap);
-        needRedrawing.insert(groupName,itemsToRedraw);
+        selection.insert(groupName, selectedItems);
+        browsingStatus.insert(groupName, browsingMap);
+        needRedrawing.insert(groupName, itemsToRedraw);
 
-        emit updateItemsToSkip(groupName,itemsToSkip);
+        emit updateItemsToSkip(groupName, itemsToSkip);
     }
 
-    if(!browsingEnable){
-        if(type == CLUSTER)
+    if (!browsingEnable)
+    {
+        if (type == CLUSTER)
             emit noClustersToBrowse();
         else
             emit noEventsToBrowse();
-    } else {
-        if(type == CLUSTER)
+    }
+    else
+    {
+        if (type == CLUSTER)
             emit clustersToBrowse();
         else
             emit eventsToBrowse();
@@ -531,27 +589,31 @@ void ItemPalette::slotMouseReleased(const QString& sourceGroupName)
 }
 
 
-void ItemPalette::redrawItem(ItemIconView* iconView,int index, const QMap<int,bool>& browsingMap){
+void ItemPalette::redrawItem(ItemIconView* iconView, int index, const QMap<int, bool>& browsingMap)
+{
     //Set isInSelectItems to true to prevent the emission of signals due to selectionChange
-    QListWidgetItem *item = iconView->item(index);
+    QListWidgetItem* item = iconView->item(index);
     if (!item)
         return;
 
     isInSelectItems = true;
     bool browsingStatus = browsingMap[index];
     //Recreate the item
-    QPixmap pixmap(12,12);
+    QPixmap pixmap(12, 12);
     pixmap.fill(Qt::transparent);
     QColor color = qvariant_cast<QColor>(item->data(ItemIconView::Color));
     QPainter painter;
     painter.begin(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing, true);
-    if(!browsingStatus){
-        painter.fillRect(0,0,12,12,color);
-    } else {
+    if (!browsingStatus)
+    {
+        painter.fillRect(0, 0, 12, 12, color);
+    }
+    else
+    {
 
         QPolygon polygon(4);
-        polygon.putPoints(0,3,0,0,12,0,6,12);
+        polygon.putPoints(0, 3, 0, 0, 12, 0, 6, 12);
         painter.setPen(color);
         painter.setBrush(color);
         painter.drawPolygon(polygon);
@@ -562,74 +624,90 @@ void ItemPalette::redrawItem(ItemIconView* iconView,int index, const QMap<int,bo
     isInSelectItems = false;
 }
 
-bool ItemPalette::isBrowsingEnable(){
+bool ItemPalette::isBrowsingEnable()
+{
     bool browsingEnable = false;
-    QMap<QString, QMap<int,bool> > ::Iterator it;
-    QMap<QString, QMap<int,bool> > ::Iterator end(browsingStatus.end());
-    for(it = browsingStatus.begin(); it != end; ++it){
-        QMap<int,bool>  currentMap = it.value();
-        QMap<int,bool> ::Iterator it2;
-        for(it2 = currentMap.begin(); it2 != currentMap.end(); ++it2){
-            if(it2.value()){
+    QMap<QString, QMap<int, bool>>::Iterator it;
+    QMap<QString, QMap<int, bool>>::Iterator end(browsingStatus.end());
+    for (it = browsingStatus.begin(); it != end; ++it)
+    {
+        QMap<int, bool> currentMap = it.value();
+        QMap<int, bool>::Iterator it2;
+        for (it2 = currentMap.begin(); it2 != currentMap.end(); ++it2)
+        {
+            if (it2.value())
+            {
                 browsingEnable = true;
                 break;
             }
         }
-        if(browsingEnable)
+        if (browsingEnable)
             break;
     }
     return browsingEnable;
 }
 
-void ItemPalette::slotMousePressWAltButton(const QString& sourceGroup,QListWidgetItem *item){
-    QMap<int,bool> browsingMap = browsingStatus[sourceGroup];
+void ItemPalette::slotMousePressWAltButton(const QString& sourceGroup, QListWidgetItem* item)
+{
+    QMap<int, bool> browsingMap = browsingStatus[sourceGroup];
 
     ItemIconView* iconView = iconviewDict[sourceGroup];
 
     QList<int> itemsToRedraw;
     bool browsingEnable = false;
 
-    if(!item->isSelected())
+    if (!item->isSelected())
         return;
 
     int index = -1;
-    for(int i = 0; i < iconView->count();++i) {
-        if (iconView->item(i) == item) {
+    for (int i = 0; i < iconView->count(); ++i)
+    {
+        if (iconView->item(i) == item)
+        {
             index = i;
             break;
         }
     }
-    if (index == -1) {
+    if (index == -1)
+    {
         return;
     }
     isInSelectItems = true;
-    if(browsingMap[index]){
+    if (browsingMap[index])
+    {
         browsingMap[index] = false;
-        browsingStatus.insert(sourceGroup,browsingMap);
+        browsingStatus.insert(sourceGroup, browsingMap);
         browsingEnable = isBrowsingEnable();
-    } else {
+    }
+    else
+    {
         browsingMap[index] = true;
-        browsingStatus.insert(sourceGroup,browsingMap);
+        browsingStatus.insert(sourceGroup, browsingMap);
         browsingEnable = true;
     }
 
     itemsToRedraw.append(index);
-    needRedrawing.insert(sourceGroup,itemsToRedraw);
+    needRedrawing.insert(sourceGroup, itemsToRedraw);
     QList<int> itemsToSkip;
-    for(int i = 0; i < iconView->count();++i) {
-        if(!browsingMap[i]) {
+    for (int i = 0; i < iconView->count(); ++i)
+    {
+        if (!browsingMap[i])
+        {
             itemsToSkip.append(iconView->item(i)->data(ItemIconView::INDEXICON).toInt());
         }
     }
-    emit updateItemsToSkip(sourceGroup,itemsToSkip);
+    emit updateItemsToSkip(sourceGroup, itemsToSkip);
 
-    if(!browsingEnable){
-        if(type == CLUSTER)
+    if (!browsingEnable)
+    {
+        if (type == CLUSTER)
             emit noClustersToBrowse();
         else
             emit noEventsToBrowse();
-    } else {
-        if(type == CLUSTER)
+    }
+    else
+    {
+        if (type == CLUSTER)
             emit clustersToBrowse();
         else
             emit eventsToBrowse();
@@ -637,21 +715,23 @@ void ItemPalette::slotMousePressWAltButton(const QString& sourceGroup,QListWidge
     isInSelectItems = false;
 }
 
-void ItemPalette::changeBackgroundColor(const QColor& color){
+void ItemPalette::changeBackgroundColor(const QColor& color)
+{
     backgroundColor = color;
 
     int h;
     int s;
     int v;
-    color.getHsv(&h,&s,&v);
+    color.getHsv(&h, &s, &v);
     QColor legendColor;
-    if(s <= 80 && v >= 240 || (s <= 40 && v >= 220))
+    if (s <= 80 && v >= 240 || (s <= 40 && v >= 220))
         legendColor = Qt::black;
     else
         legendColor = Qt::white;
 
     QHashIterator<QString, ItemIconView*> iterator(iconviewDict);
-    while (iterator.hasNext()) {
+    while (iterator.hasNext())
+    {
         iterator.next();
 
 
@@ -662,7 +742,8 @@ void ItemPalette::changeBackgroundColor(const QColor& color){
     }
 
     QHashIterator<QString, ItemGroupView*> iterator2(itemGroupViewDict);
-    while (iterator2.hasNext()) {
+    while (iterator2.hasNext())
+    {
         iterator2.next();
 
         QPalette palette;
@@ -680,25 +761,27 @@ void ItemPalette::changeBackgroundColor(const QColor& color){
     update();
 }
 
-void ItemPalette::changeColor(QListWidgetItem* item, const QString& groupName){
+void ItemPalette::changeColor(QListWidgetItem* item, const QString& groupName)
+{
     if (!item)
         return;
     QColor color = qvariant_cast<QColor>(item->data(ItemIconView::Color));
 
-    const QColor result = QColorDialog::getColor(color,0);
-    if(result.isValid()){
+    const QColor result = QColorDialog::getColor(color, 0);
+    if (result.isValid())
+    {
         //Update the icon
-        QPixmap pixmap(12,12);
+        QPixmap pixmap(12, 12);
         QPainter painter;
         painter.begin(&pixmap);
-        painter.fillRect(0,0,12,12,result);
+        painter.fillRect(0, 0, 12, 12, result);
         painter.end();
         item->setIcon(QIcon(pixmap));
         item->setData(ItemIconView::Color, result);
 
         ItemIconView* iconView = iconviewDict[groupName];
         //As soon a color changes a signal is emitted.
-        emit colorChanged(/*item->data(ItemIconView::INDEXICON).toInt()*/iconView->row(item),groupName, result);
+        emit colorChanged(/*item->data(ItemIconView::INDEXICON).toInt()*/ iconView->row(item), groupName, result);
     }
 }
 
@@ -709,10 +792,11 @@ void ItemPalette::changeColor(QListWidgetItem* item, const QString& groupName){
  */
 void ItemPalette::languageChange()
 {
-    setWindowTitle( tr( "Item palette" ) );
+    setWindowTitle(tr("Item palette"));
 }
 
-void ItemPalette::selectItems(const QString& groupName,const QList<int> &itemsToSelect,const QList<int> &itemsToSkip){
+void ItemPalette::selectItems(const QString& groupName, const QList<int>& itemsToSelect, const QList<int>& itemsToSkip)
+{
     //Set isInSelectItems to true to prevent the emission of signals due to selectionChange
     if (isInSelectItems)
         return;
@@ -722,38 +806,39 @@ void ItemPalette::selectItems(const QString& groupName,const QList<int> &itemsTo
 
     iconView->blockSignals(true);
     //update the browsing map and rebuild the icons
-    QMap<int,bool> browsingMap = browsingStatus[groupName];
+    QMap<int, bool> browsingMap = browsingStatus[groupName];
     browsingMap.clear();
-    QListWidgetItem *item = 0;
-    QListWidgetItem *lastSelectedItem = 0;
-    for(int i=0;i<iconView->count();++i) {
+    QListWidgetItem* item = 0;
+    QListWidgetItem* lastSelectedItem = 0;
+    for (int i = 0; i < iconView->count(); ++i)
+    {
         item = iconView->item(i);
         int realValue = item->data(ItemIconView::INDEXICON).toInt();
-        if(itemsToSkip.contains(realValue))
-            browsingMap.insert(i,false);
+        if (itemsToSkip.contains(realValue))
+            browsingMap.insert(i, false);
         else
-            browsingMap.insert(i,true);
-        redrawItem(iconView,i,browsingMap);
-        if (itemsToSelect.contains(realValue)) {
+            browsingMap.insert(i, true);
+        redrawItem(iconView, i, browsingMap);
+        if (itemsToSelect.contains(realValue))
+        {
             item->setSelected(true);
             lastSelectedItem = item;
         }
-
     }
-    browsingStatus.insert(groupName,browsingMap);
+    browsingStatus.insert(groupName, browsingMap);
 
     iconView->blockSignals(false);
 
     //Last item in selection gets focus if it exists
-    if(itemsToSelect.isEmpty())
+    if (itemsToSelect.isEmpty())
         iconView->setCurrentItem(lastSelectedItem);
     //reset isInSelectItems to false to enable again the the emission of signals due to selectionChange
     isInSelectItems = false;
 }
 
 
-
-void ItemPalette::reset(){
+void ItemPalette::reset()
+{
     iconviewDict.clear();
     itemGroupViewDict.clear();
     selected.clear();
@@ -766,35 +851,37 @@ void ItemPalette::reset(){
     isInSelectItems = false;
 }
 
-void ItemPalette::createGroup(const QString &id)
+void ItemPalette::createGroup(const QString& id)
 {
-    ItemGroupView* group = new ItemGroupView(backgroundColor,this);
+    ItemGroupView* group = new ItemGroupView(backgroundColor, this);
 
     group->setObjectName(id);
-    GroupNameLabel* label = new GroupNameLabel(id,group);
+    GroupNameLabel* label = new GroupNameLabel(id, group);
     group->setLabel(label);
 
     //Set the size to 2 digits, max 99 groups
     label->setFixedWidth(labelSize);
     label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    label->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-    QFont f("Helvetica",8);
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QFont f("Helvetica", 8);
     label->setFont(f);
     label->adjustSize();
 
     ItemIconView* iconView;
     QFontInfo fontInfo = QFontInfo(f);
-    if(type == CLUSTER)
-        iconView = new ItemIconView(backgroundColor,QListView::IconMode,fontInfo.pixelSize() * 2,15 *2,group,id);
+    if (type == CLUSTER)
+        iconView = new ItemIconView(backgroundColor, QListView::IconMode, fontInfo.pixelSize() * 2, 15 * 2, group, id);
     else
-        iconView = new ItemIconView(backgroundColor,QListView::ListMode,gridX,15*2,group,id);
-    iconView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+        iconView = new ItemIconView(backgroundColor, QListView::ListMode, gridX, 15 * 2, group, id);
+    iconView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    if(!iconviewDict.isEmpty()){
+    if (!iconviewDict.isEmpty())
+    {
         QHashIterator<QString, ItemIconView*> iterator(iconviewDict);
-        while (iterator.hasNext()) {
+        while (iterator.hasNext())
+        {
             iterator.next();
-            iconView->resize((iconviewDict[iterator.key()])->size().width(),2);
+            iconView->resize((iconviewDict[iterator.key()])->size().width(), 2);
         }
     }
     else
@@ -807,167 +894,194 @@ void ItemPalette::createGroup(const QString &id)
     spaceWidget = new QWidget;
     verticalContainer->addWidget(spaceWidget);
     spaceWidget->show();
-    verticalContainer->setStretchFactor(spaceWidget,2);
+    verticalContainer->setStretchFactor(spaceWidget, 2);
 
-    iconviewDict.insert(id,iconView);
+    iconviewDict.insert(id, iconView);
 
-    itemGroupViewDict.insert(id,group);
+    itemGroupViewDict.insert(id, group);
     group->adjustSize();
     iconView->show();
     group->show();
-    if (iconView->size().isNull()) {
-        iconView->resize(50,50);
+    if (iconView->size().isNull())
+    {
+        iconView->resize(50, 50);
     }
 
     //Signal and slot connection
-    connect(iconView,SIGNAL(itemSelectionChanged()),this, SLOT(slotClickRedraw()));
-    connect(iconView,SIGNAL(mousePressMiddleButton(QString,QListWidgetItem*)),this, SLOT(slotMousePressed(QString,QListWidgetItem*)));
-    connect(this,SIGNAL(paletteResized(int,int)),group,SLOT(reAdjustSize(int,int)));
-    connect(iconView,SIGNAL(mousePressWAltButton(QString,QListWidgetItem*)),this, SLOT(slotMousePressWAltButton(QString,QListWidgetItem*)));
-    connect(iconView,SIGNAL(mouseReleased(QString)),this, SLOT(slotMouseReleased(QString)));
+    connect(iconView, SIGNAL(itemSelectionChanged()), this, SLOT(slotClickRedraw()));
+    connect(iconView, SIGNAL(mousePressMiddleButton(QString, QListWidgetItem*)), this, SLOT(slotMousePressed(QString, QListWidgetItem*)));
+    connect(this, SIGNAL(paletteResized(int, int)), group, SLOT(reAdjustSize(int, int)));
+    connect(iconView, SIGNAL(mousePressWAltButton(QString, QListWidgetItem*)), this, SLOT(slotMousePressWAltButton(QString, QListWidgetItem*)));
+    connect(iconView, SIGNAL(mouseReleased(QString)), this, SLOT(slotMouseReleased(QString)));
 
-    connect(label,SIGNAL(leftClickOnLabel(QString,bool,bool)),this, SLOT(slotMousePressed(QString,bool,bool)));
+    connect(label, SIGNAL(leftClickOnLabel(QString, bool, bool)), this, SLOT(slotMousePressed(QString, bool, bool)));
     connect(iconView, SIGNAL(rowInsered()), SLOT(slotRowInsered()));
 
     orderTheGroups();
-    emit paletteResized(viewport()->width(),labelSize);
+    emit paletteResized(viewport()->width(), labelSize);
     update();
 }
 
 void ItemPalette::slotRowInsered()
 {
-    emit paletteResized(viewport()->width(),labelSize);
+    emit paletteResized(viewport()->width(), labelSize);
 }
 
-void ItemPalette::removeGroup(const QString &groupName){
+void ItemPalette::removeGroup(const QString& groupName)
+{
     delete itemGroupViewDict.take(groupName);
     iconviewDict.remove(groupName);
     browsingStatus.remove(groupName);
     selectionStatus.remove(groupName);
-    if(type == CLUSTER)
+    if (type == CLUSTER)
         clusterGroupList.removeAll(groupName.toInt());
     else
         itemGroupList.removeAll(groupName);
 
     //a group must always be selected.
-    if(selected == groupName){
-        if(type == CLUSTER && !clusterGroupList.isEmpty()){
+    if (selected == groupName)
+    {
+        if (type == CLUSTER && !clusterGroupList.isEmpty())
+        {
             qSort(clusterGroupList);
             selectGroupLabel(QString::number(clusterGroupList.at(0)));
         }
-        else if(type == EVENT && !itemGroupList.isEmpty()){
+        else if (type == EVENT && !itemGroupList.isEmpty())
+        {
             qSort(itemGroupList);
             selectGroupLabel(itemGroupList.at(0));
         }
-        else  selected.clear();//never reach
+        else
+            selected.clear(); //never reach
     }
-
 }
 
-void ItemPalette::selectGroup(const QString& groupName){
-    if(type == CLUSTER && !clusterGroupList.isEmpty()){
+void ItemPalette::selectGroup(const QString& groupName)
+{
+    if (type == CLUSTER && !clusterGroupList.isEmpty())
+    {
         qSort(clusterGroupList);
-        if(clusterGroupList.contains(groupName.toInt())) selectGroupLabel(groupName);
-        else selectGroupLabel(QString::number(clusterGroupList.at(0)));
+        if (clusterGroupList.contains(groupName.toInt()))
+            selectGroupLabel(groupName);
+        else
+            selectGroupLabel(QString::number(clusterGroupList.at(0)));
     }
-    else if(type == EVENT && !itemGroupList.isEmpty()){
+    else if (type == EVENT && !itemGroupList.isEmpty())
+    {
         qSort(itemGroupList);
-        if(itemGroupList.contains(groupName)) selectGroupLabel(groupName);
-        else selectGroupLabel(itemGroupList.at(0));
+        if (itemGroupList.contains(groupName))
+            selectGroupLabel(groupName);
+        else
+            selectGroupLabel(itemGroupList.at(0));
     }
-    else  selected.clear();//never reach
+    else
+        selected.clear(); //never reach
 }
 
-void ItemPalette::selectAllItems(){
+void ItemPalette::selectAllItems()
+{
     //Set isInSelectItems to true to prevent the emission of signals due to selectionChange
     isInSelectItems = true;
 
     QHashIterator<QString, ItemIconView*> iterator(iconviewDict);
-    while (iterator.hasNext()) {
+    while (iterator.hasNext())
+    {
         iterator.next();
         iterator.value()->selectAll();
     }
 
-    QMap<QString,QList<int> > selection = selectedItems();
+    QMap<QString, QList<int>> selection = selectedItems();
     emit updateShownItems(selection);
 
     //reset isInSelectItems to false to enable again the the emission of signals due to selectionChange
     isInSelectItems = false;
 }
 
-void ItemPalette::deselectAllItems(){
+void ItemPalette::deselectAllItems()
+{
     //Set isInSelectItems to true to prevent the emission of signals due to selectionChange
     isInSelectItems = true;
 
-    QMap<QString,QList<int> > selection;
+    QMap<QString, QList<int>> selection;
     QHashIterator<QString, ItemIconView*> iterator(iconviewDict);
-    while (iterator.hasNext()) {
+    while (iterator.hasNext())
+    {
         iterator.next();
         iterator.value()->clearSelection();
         QList<int> selectedItems;
-        selection.insert(iterator.key(),selectedItems);
+        selection.insert(iterator.key(), selectedItems);
     }
 
     emit updateShownItems(selection);
 
     //update the browsing status, it is set to false for all the elements
     QHashIterator<QString, ItemIconView*> iterator2(iconviewDict);
-    while (iterator2.hasNext()) {
+    while (iterator2.hasNext())
+    {
         iterator2.next();
         QString groupName = iterator2.key();
-        QMap<int,bool> browsingMap = browsingStatus[groupName];
+        QMap<int, bool> browsingMap = browsingStatus[groupName];
         QList<int> itemsToSkip;
-        for(int i = 0; i<iterator2.value()->count();++i) {
-            QListWidgetItem *item = iterator2.value()->item(i);
+        for (int i = 0; i < iterator2.value()->count(); ++i)
+        {
+            QListWidgetItem* item = iterator2.value()->item(i);
             int currentIndex = item->data(ItemIconView::INDEXICON).toInt();
-            if(browsingMap[currentIndex]){
+            if (browsingMap[currentIndex])
+            {
                 browsingMap[currentIndex] = false;
                 QString label = item->text();
-                redrawItem(iterator2.value(),currentIndex,browsingMap);
-                isInSelectItems = true;//redrawItem sets it back to false
-                QList<QListWidgetItem*>lstItem = iterator.value()->findItems(label,Qt::MatchExactly);
-                if(!lstItem.isEmpty()) {
+                redrawItem(iterator2.value(), currentIndex, browsingMap);
+                isInSelectItems = true; //redrawItem sets it back to false
+                QList<QListWidgetItem*> lstItem = iterator.value()->findItems(label, Qt::MatchExactly);
+                if (!lstItem.isEmpty())
+                {
                     i = iterator.value()->row(lstItem.first());
                 }
                 itemsToSkip.append(item->data(ItemIconView::INDEXICON).toInt());
-            } else {
+            }
+            else
+            {
                 itemsToSkip.append(item->data(ItemIconView::INDEXICON).toInt());
             }
         }
-        browsingStatus.insert(groupName,browsingMap);
-        emit updateItemsToSkip(groupName,itemsToSkip);
+        browsingStatus.insert(groupName, browsingMap);
+        emit updateItemsToSkip(groupName, itemsToSkip);
     }
-    
+
     //reset isInSelectItems to false to enable again the the emission of signals due to selectionChange
     isInSelectItems = false;
 }
 
 
-void ItemPalette::orderTheGroups(){
+void ItemPalette::orderTheGroups()
+{
     //Remove all the children of the verticalContainer (spaceWidget and groups)
     verticalContainer->removeWidget(spaceWidget);
 
     QHashIterator<QString, ItemGroupView*> iterator(itemGroupViewDict);
-    while (iterator.hasNext()) {
+    while (iterator.hasNext())
+    {
         iterator.next();
         verticalContainer->removeWidget(iterator.value());
     }
 
-    if(type == CLUSTER) {
+    if (type == CLUSTER)
+    {
         qSort(clusterGroupList);
         QList<int>::iterator iterator;
-        for(iterator = clusterGroupList.begin(); iterator != clusterGroupList.end(); ++iterator)
+        for (iterator = clusterGroupList.begin(); iterator != clusterGroupList.end(); ++iterator)
             verticalContainer->addWidget(itemGroupViewDict[QString::number(*iterator)]);
-    } else {
+    }
+    else
+    {
         qSort(itemGroupList);
         QStringList::iterator iterator;
-        for(iterator = itemGroupList.begin(); iterator != itemGroupList.end(); ++iterator)
+        for (iterator = itemGroupList.begin(); iterator != itemGroupList.end(); ++iterator)
             verticalContainer->addWidget(itemGroupViewDict[*iterator]);
     }
     delete spaceWidget;
     spaceWidget = new QWidget;
     verticalContainer->addWidget(spaceWidget);
     //spaceWidget->show();
-    verticalContainer->setStretchFactor(spaceWidget,2);
+    verticalContainer->setStretchFactor(spaceWidget, 2);
 }
-

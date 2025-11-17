@@ -30,19 +30,22 @@
 /**Utilitary class used to build the cluster and event palettes.
   *@author Lynn Hazan
   */
-class ItemWidgetItem : public QListWidgetItem {
-public:
-    explicit ItemWidgetItem(const QIcon &icon, const QString &text, QListWidget *view = 0, int type = Type);
-    virtual bool operator<(const QListWidgetItem &other) const;
+class ItemWidgetItem : public QListWidgetItem
+{
+  public:
+    explicit ItemWidgetItem(const QIcon& icon, const QString& text, QListWidget* view = 0, int type = Type);
+    virtual bool operator<(const QListWidgetItem& other) const;
 };
 
-class ItemIconView : public QListWidget {
+class ItemIconView : public QListWidget
+{
     Q_OBJECT
-public:
-    explicit ItemIconView(const QColor &backgroundColor, ViewMode mode, int gridX, int gridY, QWidget* parent = 0, const QString& name = QString());
-    ~ItemIconView(){}
+  public:
+    explicit ItemIconView(const QColor& backgroundColor, ViewMode mode, int gridX, int gridY, QWidget* parent = 0, const QString& name = QString());
+    ~ItemIconView() {}
 
-    enum IndexItem {
+    enum IndexItem
+    {
         INDEXICON = Qt::UserRole + 1,
         Color = Qt::UserRole + 2
     };
@@ -52,20 +55,19 @@ public:
     QSize sizeHint() const;
 
 
-protected:
-    void mousePressEvent ( QMouseEvent * event );
-    void mouseMoveEvent ( QMouseEvent * event );
-    void wheelEvent ( QWheelEvent * e );
-    void mouseReleaseEvent ( QMouseEvent * event );
-    void keyPressEvent(QKeyEvent *event);
+  protected:
+    void mousePressEvent(QMouseEvent* event);
+    void mouseMoveEvent(QMouseEvent* event);
+    void wheelEvent(QWheelEvent* e);
+    void mouseReleaseEvent(QMouseEvent* event);
+    void keyPressEvent(QKeyEvent* event);
 
-Q_SIGNALS:
-    void mousePressMiddleButton(const QString& sourceGroup,QListWidgetItem*);
-    void mousePressWAltButton(const QString &sourceGroup, QListWidgetItem*);
-    void mouseReleased(const QString &sourceGroup);
+  Q_SIGNALS:
+    void mousePressMiddleButton(const QString& sourceGroup, QListWidgetItem*);
+    void mousePressWAltButton(const QString& sourceGroup, QListWidgetItem*);
+    void mouseReleased(const QString& sourceGroup);
     void mousePressMiddleButton(QListWidgetItem*);
     void rowInsered();
-
 };
 
 #endif

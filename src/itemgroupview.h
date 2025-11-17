@@ -28,26 +28,26 @@ class QLabel;
   *@author Lynn Hazan
   */
 
-class ItemGroupView : public QWidget  {
+class ItemGroupView : public QWidget
+{
     Q_OBJECT
-public: 
-    explicit ItemGroupView(const QColor& backgroundColor,QWidget* parent=0);
+  public:
+    explicit ItemGroupView(const QColor& backgroundColor, QWidget* parent = 0);
     ~ItemGroupView();
 
-    void setIconView(ItemIconView *view);
+    void setIconView(ItemIconView* view);
 
-    void setLabel(QLabel *label);
-    QLabel *label() const;
+    void setLabel(QLabel* label);
+    QLabel* label() const;
 
-public Q_SLOTS:
-    void reAdjustSize(int parentWidth,int labelSize);
+  public Q_SLOTS:
+    void reAdjustSize(int parentWidth, int labelSize);
 
-private:
+  private:
     ItemIconView* iconView;
-    QHBoxLayout *mLayout;
-    QLabel *mLabel;
+    QHBoxLayout* mLayout;
+    QLabel* mLabel;
     bool init;
-
 };
 
 #endif

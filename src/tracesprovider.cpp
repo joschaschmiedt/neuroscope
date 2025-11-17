@@ -34,7 +34,7 @@
 //include files for c/c++ libraries
 #include <math.h>
 
-TracesProvider::TracesProvider(const QString &fileUrl, int nbChannels, int resolution, int voltageRange, int amplification, double samplingRate, int offset)
+TracesProvider::TracesProvider(const QString& fileUrl, int nbChannels, int resolution, int voltageRange, int amplification, double samplingRate, int offset)
     : DataProvider(fileUrl),
       nbChannels(nbChannels),
       resolution(resolution),
@@ -46,12 +46,13 @@ TracesProvider::TracesProvider(const QString &fileUrl, int nbChannels, int resol
     computeRecordingLength();
 }
 
-TracesProvider::~TracesProvider(){
+TracesProvider::~TracesProvider()
+{
 }
 
 
-
-dataType TracesProvider::getNbSamples(long startTime,long endTime,long startTimeInRecordingUnits){
+dataType TracesProvider::getNbSamples(long startTime, long endTime, long startTimeInRecordingUnits)
+{
     //Search what is the number of samples in the given time frame.
     //Convert the time in miliseconds to time in recording units.
 
@@ -59,19 +60,19 @@ dataType TracesProvider::getNbSamples(long startTime,long endTime,long startTime
     dataType startInRecordingUnits;
     //startTimeInRecordingUnits has been computed in a previous call to a clustersProvider browsing function. It has to be used insted of computing
     //the value from startTime because of the rounding which has been applied to it.
-    if(startTimeInRecordingUnits != 0)
+    if (startTimeInRecordingUnits != 0)
         startInRecordingUnits = startTimeInRecordingUnits;
     else
         startInRecordingUnits = static_cast<dataType>(startTime * static_cast<double>(static_cast<double>(samplingRate) / static_cast<double>(1000)));
 
-    dataType endInRecordingUnits =  static_cast<dataType>(endTime * static_cast<double>(static_cast<double>(samplingRate) / static_cast<double>(1000)));
+    dataType endInRecordingUnits = static_cast<dataType>(endTime * static_cast<double>(static_cast<double>(samplingRate) / static_cast<double>(1000)));
 
 
     //The caller should have check that we do not go over the end of the file.
     //The recording starts at time equals 0 and ends at length of the file minus one.
     //Therefore if the end time requested equals the length of the file, endInRecordingUnits
     // should be diminish by one sample.
-    if(endTime == length)
+    if (endTime == length)
         endInRecordingUnits--;
 
     dataType nbSamples = static_cast<dataType>(endInRecordingUnits - startInRecordingUnits) + 1;
@@ -79,12 +80,12 @@ dataType TracesProvider::getNbSamples(long startTime,long endTime,long startTime
     return nbSamples;
 }
 
-void TracesProvider::requestData(long startTime,long endTime,QObject* initiator,long startTimeInRecordingUnits)
+void TracesProvider::requestData(long startTime, long endTime, QObject* initiator, long startTimeInRecordingUnits)
 {
-    retrieveData(startTime,endTime,initiator,startTimeInRecordingUnits);
+    retrieveData(startTime, endTime, initiator, startTimeInRecordingUnits);
 }
 
-void TracesProvider::retrieveData(long startTime,long endTime,QObject* initiator,long startTimeInRecordingUnits)
+void TracesProvider::retrieveData(long startTime, long endTime, QObject* initiator, long startTimeInRecordingUnits)
 {
     Array<dataType> data;
     //When the bug in gcc will be corrected for the 64 bits, the c++ code will be use
@@ -113,89 +114,94 @@ void TracesProvider::retrieveData(long startTime,long endTime,QObject* initiator
     dataType startInRecordingUnits;
     //startTimeInRecordingUnits has been computed in a previous call to a clustersProvider browsing function. It has to be used insted of computing
     //the value from startTime because of the rounding which has been applied to it.
-    if(startTimeInRecordingUnits != 0) startInRecordingUnits = startTimeInRecordingUnits;
-    else startInRecordingUnits = static_cast<dataType>(startTime * static_cast<double>(static_cast<double>(samplingRate) / static_cast<double>(1000)));
-    dataType endInRecordingUnits =  static_cast<dataType>(endTime * static_cast<double>(static_cast<double>(samplingRate) / static_cast<double>(1000)));
+    if (startTimeInRecordingUnits != 0)
+        startInRecordingUnits = startTimeInRecordingUnits;
+    else
+        startInRecordingUnits = static_cast<dataType>(startTime * static_cast<double>(static_cast<double>(samplingRate) / static_cast<double>(1000)));
+    dataType endInRecordingUnits = static_cast<dataType>(endTime * static_cast<double>(static_cast<double>(samplingRate) / static_cast<double>(1000)));
 
     //The caller should have check that we do not go over the end of the file.
     //The recording starts at time equals 0 and ends at length of the file minus one.
     //Therefore if the end time requested equals the length of the file, endInRecordingUnits
     // should be diminish by one sample.
-    if(endTime == length) endInRecordingUnits--;
+    if (endTime == length)
+        endInRecordingUnits--;
 
     dataType nbSamples = static_cast<dataType>(endInRecordingUnits - startInRecordingUnits) + 1;
 
     //data will contain the final values.
-    data.setSize(nbSamples,nbChannels);
+    data.setSize(nbSamples, nbChannels);
 
     // Compute acquisition gain
     double acquisitionGain = (voltageRange * 1000000) / (pow(2.0, resolution) * amplification);
 
     //Depending on the acquisition system resolution, the data are store as short or long
-    if((resolution == 12) | (resolution == 14) | (resolution == 16)){
-        Array<int16_t> retrieveData(nbSamples,nbChannels);
+    if ((resolution == 12) | (resolution == 14) | (resolution == 16))
+    {
+        Array<int16_t> retrieveData(nbSamples, nbChannels);
         qint64 nbValues = nbSamples * nbChannels;
         // Is this a Neuralynx file?
         int p = fileName.lastIndexOf(".ncs");
-        if ( p != -1 )
+        if (p != -1)
         {
-            qDebug()<<"NCS";
+            qDebug() << "NCS";
             /// Modified by M.Zugaro to read Neuralynx ncs format
 
             // Neuralynx headers
-            char			fileHeader[16*1024];
-            char			recordHeader[20];
-            const int	nSamplesPerRecord = 512;
-            int16_t		buffer[nSamplesPerRecord];
-            int			recordSize = sizeof(recordHeader)+sizeof(buffer);
+            char fileHeader[16 * 1024];
+            char recordHeader[20];
+            const int nSamplesPerRecord = 512;
+            int16_t buffer[nSamplesPerRecord];
+            int recordSize = sizeof(recordHeader) + sizeof(buffer);
 
             // Determine offset in ncs file
-            int64_t	firstRecord = startInRecordingUnits/nSamplesPerRecord;
-            int		offsetInFirstRecord = startInRecordingUnits-firstRecord*nSamplesPerRecord;
-            qint64		position = (qint64)(sizeof(fileHeader)+firstRecord*recordSize+sizeof(recordHeader)+offsetInFirstRecord*sizeof(int16_t));
+            int64_t firstRecord = startInRecordingUnits / nSamplesPerRecord;
+            int offsetInFirstRecord = startInRecordingUnits - firstRecord * nSamplesPerRecord;
+            qint64 position = (qint64)(sizeof(fileHeader) + firstRecord * recordSize + sizeof(recordHeader) + offsetInFirstRecord * sizeof(int16_t));
 
             // Data will be read starting somewhere in the first record (not necessarily at the beginning), proceeding with
             // a number of complete records, and ending somwhere in the last record (not necessarily at the end)
-            int		inFirstRecord = nSamplesPerRecord-offsetInFirstRecord;
-            int64_t	nRecords = (nbSamples-inFirstRecord)/nSamplesPerRecord;
-            int		inLastRecord = nbSamples-nRecords*nSamplesPerRecord-inFirstRecord-1;
-            qint64		nRead;
+            int inFirstRecord = nSamplesPerRecord - offsetInFirstRecord;
+            int64_t nRecords = (nbSamples - inFirstRecord) / nSamplesPerRecord;
+            int inLastRecord = nbSamples - nRecords * nSamplesPerRecord - inFirstRecord - 1;
+            qint64 nRead;
 
             int p = fileName.lastIndexOf(".");
             QString baseName = fileName;
-            baseName.truncate(p-1);
+            baseName.truncate(p - 1);
             p = baseName.lastIndexOf(QRegExp("[^0-9]"));
-            baseName.truncate(p+1);
+            baseName.truncate(p + 1);
 
-            for ( int channel = 1 ; channel <= nbChannels ; ++channel )
+            for (int channel = 1; channel <= nbChannels; ++channel)
             {
                 // Open CSC file
                 QString cscFileName;
                 FILE* dataFile;
-                for ( int i = 0 ; i <= 3 ; ++i )
+                for (int i = 0; i <= 3; ++i)
                 {
                     // Files are numbered 1...N but we do not know if they are zero-padded,
                     // so we try different padding lengths (from 0 to 3 digits)
                     QString pad;
-                    for ( int j = 0 ; j < i ; ++j )
+                    for (int j = 0; j < i; ++j)
                         pad += "0";
                     cscFileName = baseName + pad + QString::fromLatin1("%1.ncs").arg(channel);
-                    dataFile = fopen(cscFileName.toLatin1(),"rb");
-                    if (dataFile != NULL) break;
+                    dataFile = fopen(cscFileName.toLatin1(), "rb");
+                    if (dataFile != NULL)
+                        break;
                 }
                 if (dataFile == NULL)
                 {
                     // Emit the signal with an empty array, let the receiver handle the error (user message).
-                    data.setSize(0,0);
-                    emit dataReady(data,initiator);
+                    data.setSize(0, 0);
+                    emit dataReady(data, initiator);
                     return;
                 }
 
                 // Start at appropriate offset
-                fseeko64(dataFile,position,SEEK_SET);
+                fseeko64(dataFile, position, SEEK_SET);
 
                 // 1) Read the rest of the first record
-                nRead = fread((char*)buffer,sizeof(int16_t),inFirstRecord,dataFile);
+                nRead = fread((char*)buffer, sizeof(int16_t), inFirstRecord, dataFile);
                 if (nRead != inFirstRecord)
                 {
                     // Do not report an error, because Neuralynx files do not necessarily all have the same number of
@@ -207,13 +213,14 @@ void TracesProvider::retrieveData(long startTime,long endTime,QObject* initiator
                     //emit dataReady(data,initiator);
                     //return;
                 }
-                for ( int i = 0 ; i < inFirstRecord ; ++i ) retrieveData[i*nbChannels+channel-1] = buffer[i];
+                for (int i = 0; i < inFirstRecord; ++i)
+                    retrieveData[i * nbChannels + channel - 1] = buffer[i];
 
                 // 2) Read N full records
-                for ( int r = 0 ; r < nRecords ; ++r )
+                for (int r = 0; r < nRecords; ++r)
                 {
-                    fread(recordHeader,sizeof(recordHeader),1,dataFile); // skip header
-                    nRead = fread((char*)buffer,sizeof(int16_t),nSamplesPerRecord,dataFile);
+                    fread(recordHeader, sizeof(recordHeader), 1, dataFile); // skip header
+                    nRead = fread((char*)buffer, sizeof(int16_t), nSamplesPerRecord, dataFile);
                     if (nRead != nSamplesPerRecord)
                     {
                         // Do not report an error, because Neuralynx files do not necessarily all have the same number of
@@ -225,14 +232,15 @@ void TracesProvider::retrieveData(long startTime,long endTime,QObject* initiator
                         //emit dataReady(data,initiator);
                         //return;
                     }
-                    for ( int i = 0 ; i < nSamplesPerRecord ; ++i ) retrieveData[(i+inFirstRecord+r*nSamplesPerRecord)*nbChannels+channel-1] = buffer[i];
+                    for (int i = 0; i < nSamplesPerRecord; ++i)
+                        retrieveData[(i + inFirstRecord + r * nSamplesPerRecord) * nbChannels + channel - 1] = buffer[i];
                 }
 
                 // 3) Read the beginning of the last record
-                if ( inLastRecord > 0 )
+                if (inLastRecord > 0)
                 {
-                    fread(recordHeader,sizeof(recordHeader),1,dataFile); // skip header
-                    nRead = fread((char*)buffer,sizeof(int16_t),inLastRecord,dataFile);
+                    fread(recordHeader, sizeof(recordHeader), 1, dataFile); // skip header
+                    nRead = fread((char*)buffer, sizeof(int16_t), inLastRecord, dataFile);
                     if (nRead != inLastRecord)
                     {
                         // Do not report an error, because Neuralynx files do not necessarily all have the same number of
@@ -244,8 +252,8 @@ void TracesProvider::retrieveData(long startTime,long endTime,QObject* initiator
                         //emit dataReady(data,initiator);
                         //return;
                     }
-                    for ( int i = 0 ; i < inLastRecord ; ++i )
-                        retrieveData[(i+inFirstRecord+nRecords*nSamplesPerRecord)*nbChannels+channel-1] = buffer[i];
+                    for (int i = 0; i < inLastRecord; ++i)
+                        retrieveData[(i + inFirstRecord + nRecords * nSamplesPerRecord) * nbChannels + channel - 1] = buffer[i];
                 }
                 fclose(dataFile);
             }
@@ -254,68 +262,82 @@ void TracesProvider::retrieveData(long startTime,long endTime,QObject* initiator
         else
         {
             QFile dataFile(fileName);
-            if (!dataFile.open(QIODevice::ReadOnly)) {
-                data.setSize(0,0);
-                emit dataReady(data,initiator);
+            if (!dataFile.open(QIODevice::ReadOnly))
+            {
+                data.setSize(0, 0);
+                emit dataReady(data, initiator);
                 return;
             }
 
-            qint64 position = static_cast<qint64>(static_cast<qint64>(startInRecordingUnits)* static_cast<qint64>(nbChannels));
+            qint64 position = static_cast<qint64>(static_cast<qint64>(startInRecordingUnits) * static_cast<qint64>(nbChannels));
 
             dataFile.seek(position * sizeof(int16_t));
             qint64 nbRead = dataFile.read(reinterpret_cast<char*>(&retrieveData[0]), sizeof(int16_t) * nbValues);
 
             // copy the data into retrieveData.
-            if(nbRead != qint64(nbValues*sizeof(int16_t))){
+            if (nbRead != qint64(nbValues * sizeof(int16_t)))
+            {
                 //emit the signal with an empty array, the reciever will take care of it, given a message to the user.
-                data.setSize(0,0);
+                data.setSize(0, 0);
                 dataFile.close();
-                emit dataReady(data,initiator);
+                emit dataReady(data, initiator);
                 return;
             }
             dataFile.close();
         }
         //Apply the offset if need it,convert to dataType and store the values in data.
-        if(offset != 0){
-            for(qint64 i = 0; i < nbValues; ++i){
+        if (offset != 0)
+        {
+            for (qint64 i = 0; i < nbValues; ++i)
+            {
                 data[i] = round(static_cast<dataType>(retrieveData[i]) - offset * acquisitionGain);
             }
-        } else {
+        }
+        else
+        {
 
-            for(qint64 i = 0; i < nbValues; ++i){
+            for (qint64 i = 0; i < nbValues; ++i)
+            {
                 data[i] = round(static_cast<dataType>(retrieveData[i]) * acquisitionGain);
             }
         }
-    } else if(resolution == 32) {
+    }
+    else if (resolution == 32)
+    {
 
         QFile dataFile(fileName);
-        if (!dataFile.open(QIODevice::ReadOnly)) {
-            data.setSize(0,0);
-            emit dataReady(data,initiator);
+        if (!dataFile.open(QIODevice::ReadOnly))
+        {
+            data.setSize(0, 0);
+            emit dataReady(data, initiator);
             return;
         }
-        Array<dataType> retrieveData(nbSamples,nbChannels);
+        Array<dataType> retrieveData(nbSamples, nbChannels);
         qint64 nbValues = nbSamples * nbChannels;
-        qint64 position = static_cast<qint64>(static_cast<qint64>(startInRecordingUnits)* static_cast<qint64>(nbChannels));
+        qint64 position = static_cast<qint64>(static_cast<qint64>(startInRecordingUnits) * static_cast<qint64>(nbChannels));
 
         dataFile.seek(position * sizeof(int32_t));
         qint64 nbRead = dataFile.read(reinterpret_cast<char*>(&retrieveData[0]), sizeof(int32_t) * nbValues);
 
         // copy the data into retrieveData.
-        if(nbRead != qint64(nbValues*sizeof(int32_t))){
+        if (nbRead != qint64(nbValues * sizeof(int32_t)))
+        {
             //emit the signal with an empty array, the reciever will take care of it, given a message to the user.
-            data.setSize(0,0);
+            data.setSize(0, 0);
             dataFile.close();
-            emit dataReady(data,initiator);
+            emit dataReady(data, initiator);
             return;
         }
         //Apply the offset if need it and store the values in data.
-        if(offset != 0){
-            for(qint64 i = 0; i < nbValues; ++i)
+        if (offset != 0)
+        {
+            for (qint64 i = 0; i < nbValues; ++i)
                 data[i] = round(retrieveData[i] - offset * acquisitionGain);
         }
-        else{
-            for(qint64 i = 0; i < nbValues; ++i){
+        else
+        {
+            for (qint64 i = 0; i < nbValues; ++i)
+            {
                 data[i] = round(retrieveData[i] * acquisitionGain);
             }
         }
@@ -324,10 +346,11 @@ void TracesProvider::retrieveData(long startTime,long endTime,QObject* initiator
     }
 
     //Send the information to the receiver.
-    emit dataReady(data,initiator);
+    emit dataReady(data, initiator);
 }
 
-void TracesProvider::computeRecordingLength(){
+void TracesProvider::computeRecordingLength()
+{
     //When the bug in gcc will be corrected for the 64 bits the c++ code will be use
     //[alex@slut]/home/alex/src/sizetest > ./sizetest-2.95.3
     //  sizeof(std::streamoff) = 8 bytes (64 bits)
@@ -349,7 +372,8 @@ void TracesProvider::computeRecordingLength(){
  dataFile.close();*/
 
     QFile f(fileName);
-    if (!f.open(QIODevice::ReadOnly)) {
+    if (!f.open(QIODevice::ReadOnly))
+    {
         length = 0;
         return;
     }
@@ -358,52 +382,57 @@ void TracesProvider::computeRecordingLength(){
     qint64 fileLength = fInfo.size();
 
     int dataSize = 0;
-    if((resolution == 12) | (resolution == 14) | (resolution == 16)) dataSize = 2;
-    else if(resolution == 32) dataSize = 4;
+    if ((resolution == 12) | (resolution == 14) | (resolution == 16))
+        dataSize = 2;
+    else if (resolution == 32)
+        dataSize = 4;
 
     // Is this a Neuralynx file?
     int p = fileName.lastIndexOf(".ncs");
-    if ( p != -1 )
+    if (p != -1)
     {
         /// Modified by M.Zugaro to read Neuralynx ncs format
 
         // Neuralynx headers
-        char			fileHeader[16*1024];
-        char			recordHeader[20];
-        const int	nSamplesPerRecord = 512;
-        int			recordSize = sizeof(recordHeader)+nSamplesPerRecord*dataSize;
+        char fileHeader[16 * 1024];
+        char recordHeader[20];
+        const int nSamplesPerRecord = 512;
+        int recordSize = sizeof(recordHeader) + nSamplesPerRecord * dataSize;
 
         // Determine number of complete records in file, + amount of extra data (last record may be incomplete)
-        int64_t		nRecords = (fileLength-sizeof(fileHeader))/recordSize;
-        int			extraData = (fileLength-sizeof(fileHeader)) - nRecords*recordSize - sizeof(recordHeader);
-        if ( extraData < 0 ) extraData = 0;
-        int64_t		dataLength = nRecords*nSamplesPerRecord*dataSize+extraData;
+        int64_t nRecords = (fileLength - sizeof(fileHeader)) / recordSize;
+        int extraData = (fileLength - sizeof(fileHeader)) - nRecords * recordSize - sizeof(recordHeader);
+        if (extraData < 0)
+            extraData = 0;
+        int64_t dataLength = nRecords * nSamplesPerRecord * dataSize + extraData;
 
         length = static_cast<qlonglong>(
-                    static_cast<float>(
-                        dataLength / static_cast<float>(samplingRate * dataSize)  // Only one channel per file!
-                        ) * 1000
-                    );
+            static_cast<float>(
+                dataLength / static_cast<float>(samplingRate * dataSize) // Only one channel per file!
+                ) *
+            1000);
         /// (end of code modified by M.Zugaro)
     }
     else
     {
         length = static_cast<qlonglong>(
-                    static_cast<float>(
-                        fileLength / static_cast<float>(nbChannels * samplingRate * dataSize)
-                        ) * 1000
-                    );
+            static_cast<float>(
+                fileLength / static_cast<float>(nbChannels * samplingRate * dataSize)) *
+            1000);
     }
 }
 
-long TracesProvider::getTotalNbSamples(){
+long TracesProvider::getTotalNbSamples()
+{
     return static_cast<long>((length * samplingRate) / 1000);
 }
 
-QStringList TracesProvider::getLabels() {
+QStringList TracesProvider::getLabels()
+{
     QStringList labels;
 
-    for(int i = 0; i < this->nbChannels; i++) {
+    for (int i = 0; i < this->nbChannels; i++)
+    {
         labels << QString::number(i);
     }
 

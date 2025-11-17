@@ -61,7 +61,7 @@ NeuroscopeDoc::NeuroscopeDoc(QWidget* parent, ChannelPalette& displayChannelPale
                              double datSamplingRateDefault, double eegSamplingRateDefault, int initialOffset, int voltageRangeDefault,
                              int amplificationDefault, float screenGainDefault, int resolutionDefault, int eventPosition, int clusterPosition,
                              int nbSamples, int peakSampleIndex, double videoSamplingRate, int width, int height, const QString& backgroundImage,
-                             const QString &traceBackgroundImage, int rotation, int flip, bool positionsBackground)
+                             const QString& traceBackgroundImage, int rotation, int flip, bool positionsBackground)
     : displayChannelPalette(displayChannelPalette),
       spikeChannelPalette(spikeChannelPalette),
       resolutionDefault(resolutionDefault),
@@ -121,9 +121,11 @@ NeuroscopeDoc::NeuroscopeDoc(QWidget* parent, ChannelPalette& displayChannelPale
     indexLength = indexLengthDefault = 0.8;
 }
 
-NeuroscopeDoc::~NeuroscopeDoc(){
+NeuroscopeDoc::~NeuroscopeDoc()
+{
     delete viewList;
-    if(channelColorList){
+    if (channelColorList)
+    {
         delete channelColorList;
         delete tracesProvider;
     }
@@ -131,31 +133,36 @@ NeuroscopeDoc::~NeuroscopeDoc(){
     providers.clear();
     qDeleteAll(providerItemColors);
     providerItemColors.clear();
-
 }
 
-bool NeuroscopeDoc::canCloseDocument(NeuroscopeApp* mainWindow, const QString &callingMethod){
+bool NeuroscopeDoc::canCloseDocument(NeuroscopeApp* mainWindow, const QString& callingMethod)
+{
     //Before closing, make sure that there is no thread running.
     //Loop on all the cluster and event Providers, moving to the next one when the current one has no more thread running.
     bool threadRunning = false;
 
-    if(!threadRunning){
+    if (!threadRunning)
+    {
         QHashIterator<QString, DataProvider*> i(providers);
-        while (i.hasNext()) {
+        while (i.hasNext())
+        {
             i.next();
             threadRunning = i.value()->isThreadsRunning();
-            if(threadRunning)
+            if (threadRunning)
                 break;
         }
     }
 
-    if(threadRunning){
+    if (threadRunning)
+    {
         //Send an event to the klusters (main window) to let it know that the document can not
         //be close because some thread are still running.
         CloseDocumentEvent* event = getCloseDocumentEvent(callingMethod);
-        QApplication::postEvent(mainWindow,event);
+        QApplication::postEvent(mainWindow, event);
         return false;
-    } else {
+    }
+    else
+    {
         return true;
     }
 }
@@ -209,7 +216,7 @@ void NeuroscopeDoc::closeDocument()
     videoWidth = videoWidthDefault;
     videoHeight = videoHeightDefault;
     backgroundImage = backgroundImageDefault;
-    transformedBackground  = QImage();
+    transformedBackground = QImage();
     drawPositionsOnBackground = drawPositionsOnBackgroundDefault;
     rotation = rotationDefault;
     flip = flipDefault;
@@ -231,7 +238,8 @@ void NeuroscopeDoc::closeDocument()
     providerUrls.clear();
     displayGroupsClusterFile.clear();
 
-    if(channelColorList){
+    if (channelColorList)
+    {
         delete channelColorList;
         channelColorList = 0L;
         delete tracesProvider;
@@ -241,40 +249,45 @@ void NeuroscopeDoc::closeDocument()
     channelDefaultOffsets.clear();
 }
 
-bool NeuroscopeDoc::isADocumentToClose(){
+bool NeuroscopeDoc::isADocumentToClose()
+{
     return (channelColorList != 0L);
 }
 
 
 int NeuroscopeDoc::openDocument(const QString& url)
 {
-    qDebug()<<" int NeuroscopeDoc::openDocument(const QString& url)"<<url;
+    qDebug() << " int NeuroscopeDoc::openDocument(const QString& url)" << url;
     channelColorList = new ChannelColors();
     docUrl = url;
     QFileInfo urlFileInfo(url);
     QString fileName = urlFileInfo.fileName();
 
     // First we check if this is a Blackrock NSX file
-     if(fileName.contains(QRegExp("\\.ns\\d"))) {
+    if (fileName.contains(QRegExp("\\.ns\\d")))
+    {
         NSXTracesProvider* nsxTracesProvider = new NSXTracesProvider(url);
 
-        if(!nsxTracesProvider->init()) {
+        if (!nsxTracesProvider->init())
+        {
             return OPEN_ERROR;
         }
 
         this->tracesProvider = nsxTracesProvider;
 
         // Warn user if command line properties were used
-        if(this->isCommandLineProperties){
+        if (this->isCommandLineProperties)
+        {
             QApplication::restoreOverrideCursor();
-            QMessageBox::information(0, tr("Warning!"),tr("You are opening a NSX file, the command line information will be discarded."));
+            QMessageBox::information(0, tr("Warning!"), tr("You are opening a NSX file, the command line information will be discarded."));
             QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         }
 
         // Extract important information from file
         this->channelNb = nsxTracesProvider->getNbChannels();
         this->samplingRate = nsxTracesProvider->getSamplingRate();
-        this->resolution = nsxTracesProvider->getResolution();;
+        this->resolution = nsxTracesProvider->getResolution();
+        ;
         this->channelLabels = nsxTracesProvider->getLabels();
 
         //extensionSamplingRates.insert(extension,samplingRate);
@@ -282,28 +295,30 @@ int NeuroscopeDoc::openDocument(const QString& url)
         // Set up display and spike groups
         QList<int> displayGroup;
         QColor color = QColor::fromHsv(210, 255, 255); // default blue
-        for (int i = 0; i < channelNb; ++i){
-          // All channels have the same color, no offset and no skip status.
-          this->channelColorList->append(i, color);
-          this->channelDefaultOffsets.insert(i, 0);
+        for (int i = 0; i < channelNb; ++i)
+        {
+            // All channels have the same color, no offset and no skip status.
+            this->channelColorList->append(i, color);
+            this->channelDefaultOffsets.insert(i, 0);
 
-          // Put all channels in the same display group.
-          this->displayChannelsGroups.insert(i, 1);
-          displayGroup.append(i);
+            // Put all channels in the same display group.
+            this->displayChannelsGroups.insert(i, 1);
+            displayGroup.append(i);
 
-          // Put each channel in its own spiking group.
-          this->channelsSpikeGroups.insert(i, i + 1);
-          QList<int> group;
-          group.append(i);
-          this->spikeGroupsChannels.insert(i + 1, group);
+            // Put each channel in its own spiking group.
+            this->channelsSpikeGroups.insert(i, i + 1);
+            QList<int> group;
+            group.append(i);
+            this->spikeGroupsChannels.insert(i + 1, group);
         }
         this->displayGroupsChannels.insert(1, displayGroup);
 
 
         // If skipStatus is empty, set the default status to 0
-        if(skipStatus.isEmpty()){
-            for(int i = 0; i < channelNb; ++i)
-                skipStatus.insert(i,false);
+        if (skipStatus.isEmpty())
+        {
+            for (int i = 0; i < channelNb; ++i)
+                skipStatus.insert(i, false);
         }
 
         //Use the channel default offsets
@@ -338,19 +353,23 @@ int NeuroscopeDoc::openDocument(const QString& url)
 
     bool sessionFileExist = false;
     QStringList fileParts = fileName.split(QLatin1Char('.'), QString::SkipEmptyParts);
-    if(fileParts.count() < 2)
+    if (fileParts.count() < 2)
         return INCORRECT_FILE;
-    qDebug()<<"NeuroscopeDoc::openDocument file correct";
+    qDebug() << "NeuroscopeDoc::openDocument file correct";
     //QString extension;
 
     //Treat the case when the selected file is a neuroscope session file or a par file.
-    if(fileName.contains(QLatin1String(".nrs")) || fileName.contains(QLatin1String(".xml"))){
-        if((fileName.contains(".nrs") && fileParts[fileParts.count() - 1] != "nrs") || (fileName.contains(".xml") && fileParts[fileParts.count() - 1] != "xml")) {
-            qDebug()<<" NeuroscopeDoc::openDocument INCORRECT FILE";
+    if (fileName.contains(QLatin1String(".nrs")) || fileName.contains(QLatin1String(".xml")))
+    {
+        if ((fileName.contains(".nrs") && fileParts[fileParts.count() - 1] != "nrs") || (fileName.contains(".xml") && fileParts[fileParts.count() - 1] != "xml"))
+        {
+            qDebug() << " NeuroscopeDoc::openDocument INCORRECT FILE";
             return INCORRECT_FILE;
-        } else {
+        }
+        else
+        {
             baseName = fileParts.first();
-            for(uint i = 1;i < fileParts.count() - 1; ++i)
+            for (uint i = 1; i < fileParts.count() - 1; ++i)
                 baseName += "." + fileParts.at(i);
 
             //As all the files with the same base name share the same session and par files, ask the user to selected the desire one.
@@ -359,16 +378,20 @@ int NeuroscopeDoc::openDocument(const QString& url)
             QString filter(tr("Data File (*.dat *.lfp *.eeg *.fil);;All files (*.*)"));
             //filter.append(baseName + ".*");
 
-            const QString openUrl = QFileDialog::getOpenFileName(parent, tr("Open Data File..."),startUrl,filter);
-            if(!openUrl.isEmpty()) {
+            const QString openUrl = QFileDialog::getOpenFileName(parent, tr("Open Data File..."), startUrl, filter);
+            if (!openUrl.isEmpty())
+            {
                 docUrl = openUrl;
-            } else{
+            }
+            else
+            {
                 QString docFile = baseName + ".dat";
                 docUrl = urlFileInfo.absolutePath() + QDir::separator() + docFile;
 
-                qDebug()<<" NeuroscopeDoc::openDocument dat file";
-                if(!QFile::exists(docUrl)) {
-                    qDebug()<<" NeuroscopeDoc::openDocument DOWNLOADERROR";
+                qDebug() << " NeuroscopeDoc::openDocument dat file";
+                if (!QFile::exists(docUrl))
+                {
+                    qDebug() << " NeuroscopeDoc::openDocument DOWNLOADERROR";
                     return DOWNLOAD_ERROR;
                 }
             }
@@ -378,7 +401,7 @@ int NeuroscopeDoc::openDocument(const QString& url)
     fileName = QFileInfo(docUrl).fileName();
     fileParts = fileName.split(".", QString::SkipEmptyParts);
     baseName = fileParts[0];
-    for(uint i = 1;i < fileParts.count() - 1; ++i)
+    for (uint i = 1; i < fileParts.count() - 1; ++i)
         baseName += QLatin1Char('.') + fileParts.at(i);
     QString sessionFile = baseName + QLatin1String(".nrs");
     sessionUrl = QFileInfo(docUrl).absolutePath() + QDir::separator() + sessionFile;
@@ -386,72 +409,86 @@ int NeuroscopeDoc::openDocument(const QString& url)
     extension = fileParts.at(fileParts.count() - 1);
 
     //Look up in the parameter file
-    const QString parFileUrl = QFileInfo(docUrl).absolutePath() + QDir::separator() +baseName +QLatin1String(".xml");
+    const QString parFileUrl = QFileInfo(docUrl).absolutePath() + QDir::separator() + baseName + QLatin1String(".xml");
     parameterUrl = parFileUrl;
 
     QFileInfo parFileInfo = QFileInfo(parFileUrl);
     QFileInfo sessionFileInfo = QFileInfo(sessionUrl);
 
-    if(parFileInfo.exists()){
-        if(isCommandLineProperties){
+    if (parFileInfo.exists())
+    {
+        if (isCommandLineProperties)
+        {
             QApplication::restoreOverrideCursor();
-            QMessageBox::information(0, tr("Warning!"),tr("A parameter file has be found, the command line\n"
-                                                          "information will be discarded and the parameter file information will be used instead."));
+            QMessageBox::information(0, tr("Warning!"), tr("A parameter file has be found, the command line\n"
+                                                           "information will be discarded and the parameter file information will be used instead."));
             QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         }
 
         NeuroscopeXmlReader reader = NeuroscopeXmlReader();
-        if(reader.parseFile(parFileUrl,NeuroscopeXmlReader::PARAMETER)){
+        if (reader.parseFile(parFileUrl, NeuroscopeXmlReader::PARAMETER))
+        {
             //Load the general info
             loadDocumentInformation(reader);
 
             //try to get the extension information from the parameter file (prior to the 1.2.3 version, the information was
             //store in the session file)
             extensionSamplingRates = reader.getSampleRateByExtension();
-            qDebug()<<" NeuroscopeDoc::openDocument NeuroscopeXmlReader::PARAMETER";
+            qDebug() << " NeuroscopeDoc::openDocument NeuroscopeXmlReader::PARAMETER";
             reader.closeFile();
         }
-        else{
-            qDebug()<<" NeuroscopeDoc::openDocument PARSE_ERROR";
+        else
+        {
+            qDebug() << " NeuroscopeDoc::openDocument PARSE_ERROR";
             return PARSE_ERROR;
         }
 
         //Is there a session file?
-        if(sessionFileInfo.exists()){
+        if (sessionFileInfo.exists())
+        {
 
             sessionFileExist = true;
-            qDebug()<<" sessionUrl"<<sessionUrl;
-            if(reader.parseFile(sessionUrl,NeuroscopeXmlReader::SESSION)) {
+            qDebug() << " sessionUrl" << sessionUrl;
+            if (reader.parseFile(sessionUrl, NeuroscopeXmlReader::SESSION))
+            {
                 //if the session file has been created by a version of NeuroScope prior to the 1.2.3, it contains the extension information
-                qDebug()<<" reader.getVersion()"<<reader.getVersion();
-                if(reader.getVersion().isEmpty() || reader.getVersion() == QLatin1String("1.2.2"))
+                qDebug() << " reader.getVersion()" << reader.getVersion();
+                if (reader.getVersion().isEmpty() || reader.getVersion() == QLatin1String("1.2.2"))
                     extensionSamplingRates = reader.getSampleRateByExtension();
-                qDebug()<<"extensionSamplingRates"<<extensionSamplingRates;
-            } else {
-                qDebug()<<" NeuroscopeDoc::openDocument PARSE_ERROR 2";
+                qDebug() << "extensionSamplingRates" << extensionSamplingRates;
+            }
+            else
+            {
+                qDebug() << " NeuroscopeDoc::openDocument PARSE_ERROR 2";
                 return PARSE_ERROR;
             }
         }
 
         //If the file extension is not a .dat or .eeg look up the sampling rate for
         //the extension. If no sampling rate is available, prompt the user for the information.
-        if(extension != "eeg" && extension != "dat" && extension != "xml"){
-            if(extensionSamplingRates.contains(extension)) {
+        if (extension != "eeg" && extension != "dat" && extension != "xml")
+        {
+            if (extensionSamplingRates.contains(extension))
+            {
                 samplingRate = extensionSamplingRates[extension];
                 //Prompt the user
-            } else {
+            }
+            else
+            {
                 QApplication::restoreOverrideCursor();
 
-                QString currentSamplingRate = QInputDialog::getText(0,tr("Sampling Rate"),tr("Type in the sampling rate for the current document"),QLineEdit::Normal,QString::number(datSamplingRate));
+                QString currentSamplingRate = QInputDialog::getText(0, tr("Sampling Rate"), tr("Type in the sampling rate for the current document"), QLineEdit::Normal, QString::number(datSamplingRate));
                 QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-                if(!currentSamplingRate.isEmpty())
+                if (!currentSamplingRate.isEmpty())
                     samplingRate = currentSamplingRate.toDouble();
                 else
-                    samplingRate = datSamplingRate;//default
-                extensionSamplingRates.insert(extension,samplingRate);
+                    samplingRate = datSamplingRate; //default
+                extensionSamplingRates.insert(extension, samplingRate);
             }
-        } else {
-            if(extension == "eeg")
+        }
+        else
+        {
+            if (extension == "eeg")
                 samplingRate = eegSamplingRate;
             //Assign the default, dat sampling rate
             else
@@ -462,35 +499,43 @@ int NeuroscopeDoc::openDocument(const QString& url)
         tracesProvider = new TracesProvider(docUrl, channelNb, resolution, voltageRange, amplification, samplingRate, initialOffset);
 
         //Is there a session file?
-        if(sessionFileExist) {
-            qDebug()<<" NeuroscopeDoc::openDocument sessionfile exit";
+        if (sessionFileExist)
+        {
+            qDebug() << " NeuroscopeDoc::openDocument sessionfile exit";
             loadSession(reader);
             reader.closeFile();
         }
     }
     //there is no parameter file
-    else{
+    else
+    {
         //look up in the session file
-        if(sessionFileInfo.exists()){
+        if (sessionFileInfo.exists())
+        {
             sessionFileExist = true;
             NeuroscopeXmlReader reader = NeuroscopeXmlReader();
 
-            if(reader.parseFile(sessionUrl,NeuroscopeXmlReader::SESSION)){
+            if (reader.parseFile(sessionUrl, NeuroscopeXmlReader::SESSION))
+            {
                 //get the file version. If it is "" or "1.2.2, the documentation information can be stored in the session file,
                 //read it from there, otherwise it is an error. After version 1.2.2 a parameter file should always exit at the same time that the session
                 //file => return an error.
-                if(reader.getVersion().isEmpty() || reader.getVersion() == "1.2.2"){
-                    if(isCommandLineProperties){
+                if (reader.getVersion().isEmpty() || reader.getVersion() == "1.2.2")
+                {
+                    if (isCommandLineProperties)
+                    {
                         QApplication::restoreOverrideCursor();
-                        QMessageBox::information(0, tr("Warning!"),tr("A session file has been found, the command line "
-                                                                      "information will be discarded and the session file information will be used instead."));
+                        QMessageBox::information(0, tr("Warning!"), tr("A session file has been found, the command line "
+                                                                       "information will be discarded and the session file information will be used instead."));
                         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
                     }
 
                     //Load the general info
                     loadDocumentInformation(reader);
-                }else {
-                    qDebug()<<" NeuroscopeDoc::openDocument MISSING FILE";
+                }
+                else
+                {
+                    qDebug() << " NeuroscopeDoc::openDocument MISSING FILE";
                     return MISSING_FILE;
                 }
 
@@ -499,24 +544,27 @@ int NeuroscopeDoc::openDocument(const QString& url)
 
                 //If the file extension is not a .nrs, .dat or .eeg look up the sampling rate for
                 //the extension. If no sampling rate is available, prompt the user for the information.
-                if(extension != "eeg" && extension != "dat" && extension != "xml"){
-                    if(extensionSamplingRates.contains(extension))
+                if (extension != "eeg" && extension != "dat" && extension != "xml")
+                {
+                    if (extensionSamplingRates.contains(extension))
                         samplingRate = extensionSamplingRates[extension];
                     //Prompt the user
-                    else{
+                    else
+                    {
                         QApplication::restoreOverrideCursor();
-                        QString currentSamplingRate = QInputDialog::getText(0,tr("Sampling Rate"),tr("Type in the sampling rate for the current document"),QLineEdit::Normal,QString::number(datSamplingRate));
+                        QString currentSamplingRate = QInputDialog::getText(0, tr("Sampling Rate"), tr("Type in the sampling rate for the current document"), QLineEdit::Normal, QString::number(datSamplingRate));
 
                         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-                        if(!currentSamplingRate.isEmpty())
+                        if (!currentSamplingRate.isEmpty())
                             samplingRate = currentSamplingRate.toDouble();
                         else
-                            samplingRate = datSamplingRate;//default
-                        extensionSamplingRates.insert(extension,samplingRate);
+                            samplingRate = datSamplingRate; //default
+                        extensionSamplingRates.insert(extension, samplingRate);
                     }
                 }
-                else{
-                    if(extension == "eeg")
+                else
+                {
+                    if (extension == "eeg")
                         samplingRate = eegSamplingRate;
                     //Assign the default, dat sampling rate
                     else
@@ -529,28 +577,30 @@ int NeuroscopeDoc::openDocument(const QString& url)
                 //Load the session information
                 loadSession(reader);
 
-                qDebug()<<" NeuroscopeDoc::openDocument CLOSE FILE";
+                qDebug() << " NeuroscopeDoc::openDocument CLOSE FILE";
                 reader.closeFile();
             }
-            else return PARSE_ERROR;
+            else
+                return PARSE_ERROR;
         }
         //No parameter or session file. Use defaults and or command line information (any of the command line arguments have overwritten the default values).
-        else{
+        else
+        {
             bool isaDatFile = true;
-            if(extension != "dat")
+            if (extension != "dat")
                 isaDatFile = false;
             //Show a dialog to inform the user what are the parameters which will be used.
-            static_cast<NeuroscopeApp*>(parent)->displayFileProperties(channelNb,samplingRate,resolution,initialOffset,voltageRange,
-                                                                       amplification,screenGain,nbSamples,peakSampleIndex,videoSamplingRate,videoWidth,videoHeight,backgroundImage,
-                                                                       rotation,flip,datSamplingRate,isaDatFile,drawPositionsOnBackground,traceBackgroundImage);
+            static_cast<NeuroscopeApp*>(parent)->displayFileProperties(channelNb, samplingRate, resolution, initialOffset, voltageRange,
+                                                                       amplification, screenGain, nbSamples, peakSampleIndex, videoSamplingRate, videoWidth, videoHeight, backgroundImage,
+                                                                       rotation, flip, datSamplingRate, isaDatFile, drawPositionsOnBackground, traceBackgroundImage);
 
-            if(extension == "eeg")
+            if (extension == "eeg")
                 eegSamplingRate = samplingRate;
             //if the extension is not dat, the sampling rate for the dat file while be the default one.
-            else if(extension == "dat")
+            else if (extension == "dat")
                 datSamplingRate = samplingRate;
             else
-                extensionSamplingRates.insert(extension,samplingRate);
+                extensionSamplingRates.insert(extension, samplingRate);
 
             //Create the tracesProvider with the information gather before.
             tracesProvider = new TracesProvider(docUrl, channelNb, resolution, voltageRange, amplification, samplingRate, initialOffset);
@@ -560,41 +610,45 @@ int NeuroscopeDoc::openDocument(const QString& url)
             //Build the channelColorList and channelDefaultOffsets (default is 0)
             QColor color;
             QList<int> groupOne;
-            color.setHsv(210,255,255);
-            for(int i = 0; i < channelNb; ++i){
-                channelColorList->append(i,color);
-                displayChannelsGroups.insert(i,1);
-                channelsSpikeGroups.insert(i,-1);
+            color.setHsv(210, 255, 255);
+            for (int i = 0; i < channelNb; ++i)
+            {
+                channelColorList->append(i, color);
+                displayChannelsGroups.insert(i, 1);
+                channelsSpikeGroups.insert(i, -1);
                 groupOne.append(i);
-                channelDefaultOffsets.insert(i,0);
+                channelDefaultOffsets.insert(i, 0);
             }
-            displayGroupsChannels.insert(1,groupOne);
-            spikeGroupsChannels.insert(-1,groupOne);
+            displayGroupsChannels.insert(1, groupOne);
+            spikeGroupsChannels.insert(-1, groupOne);
 
             channelLabels = tracesProvider->getLabels();
         }
     }
 
-    qDebug()<<" NeuroscopeDoc::openDocument END ?";
+    qDebug() << " NeuroscopeDoc::openDocument END ?";
     //if skipStatus is empty, set the default status to 0
-    if(skipStatus.isEmpty()){
-        for(int i = 0; i < channelNb; ++i)
-            skipStatus.insert(i,false);
+    if (skipStatus.isEmpty())
+    {
+        for (int i = 0; i < channelNb; ++i)
+            skipStatus.insert(i, false);
     }
 
     //Use the channel default offsets
-    if(!sessionFileExist)
-        emit noSession(channelDefaultOffsets,skipStatus);
-    qDebug()<<" NeuroscopeDoc::openDocument END FINISH";
+    if (!sessionFileExist)
+        emit noSession(channelDefaultOffsets, skipStatus);
+    qDebug() << " NeuroscopeDoc::openDocument END FINISH";
     return OK;
 }
 
 #ifdef WITH_CEREBUS
-bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
+bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group)
+{
     // Open network stream
-	CerebusTracesProvider* cerebusTracesProvider = new CerebusTracesProvider(group);
+    CerebusTracesProvider* cerebusTracesProvider = new CerebusTracesProvider(group);
 
-    if(!cerebusTracesProvider->init()) {
+    if (!cerebusTracesProvider->init())
+    {
         QMessageBox::critical(0, tr("Error!"), tr("Could not open network stream: %1").arg(QString::fromStdString(cerebusTracesProvider->getLastErrorMessage())));
         return false;
     }
@@ -602,9 +656,10 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
     this->tracesProvider = cerebusTracesProvider;
 
     // Warn user if command line properties were used
-    if(this->isCommandLineProperties){
+    if (this->isCommandLineProperties)
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::information(0, tr("Warning!"),tr("You are opening a network stream, all supplied command line options will be discarded."));
+        QMessageBox::information(0, tr("Warning!"), tr("You are opening a network stream, all supplied command line options will be discarded."));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     }
 
@@ -614,31 +669,33 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
     this->resolution = cerebusTracesProvider->getResolution();
     this->channelLabels = cerebusTracesProvider->getLabels();
 
-	// Set up display and spike groups
-	QList<int> displayGroup;
-	QColor color = QColor::fromRgb(55, 126, 184); // light blue
+    // Set up display and spike groups
+    QList<int> displayGroup;
+    QColor color = QColor::fromRgb(55, 126, 184); // light blue
     this->channelColorList = new ChannelColors();
-	for (int i = 0; i < channelNb; ++i){
-		// All channels have the same color, no offset and no skip status.
-		this->channelColorList->append(i, color);
-		this->channelDefaultOffsets.insert(i, 0);
+    for (int i = 0; i < channelNb; ++i)
+    {
+        // All channels have the same color, no offset and no skip status.
+        this->channelColorList->append(i, color);
+        this->channelDefaultOffsets.insert(i, 0);
         this->skipStatus.insert(i, false);
 
-		// Put all channels in the same display group.
-		this->displayChannelsGroups.insert(i, 1);
-		displayGroup.append(i);
+        // Put all channels in the same display group.
+        this->displayChannelsGroups.insert(i, 1);
+        displayGroup.append(i);
 
-		// Put each channel in its own spiking group.
-		this->channelsSpikeGroups.insert(i, i + 1);
-		QList<int> group;
-		group.append(i);
-		this->spikeGroupsChannels.insert(i + 1, group);
-	}
-	this->displayGroupsChannels.insert(1, displayGroup);
+        // Put each channel in its own spiking group.
+        this->channelsSpikeGroups.insert(i, i + 1);
+        QList<int> group;
+        group.append(i);
+        this->spikeGroupsChannels.insert(i + 1, group);
+    }
+    this->displayGroupsChannels.insert(1, displayGroup);
 
     // Create the view with some sensible defaults
     QList<int>* channelsToDisplay = new QList<int>(); // Yeah, I know! Why?
-    for(int i = 0 ; i < this->channelNb; ++i){
+    for (int i = 0; i < this->channelNb; ++i)
+    {
         channelsToDisplay->append(i);
     }
     QList<int> channelOffsets = this->channelDefaultOffsets.values();
@@ -648,7 +705,7 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
         channelsToDisplay,
         false, // cluster vertical lines
         false, // cluster raster
-        true, // cluster waveforms
+        true,  // cluster waveforms
         false, // show label
         false, // multiple columns
         false, // gray mode
@@ -657,15 +714,15 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
         channelGains,
         selectedChannels,
         this->skipStatus,
-        0, // initial start time of trace view
-        1000, // initial window size of trace view
+        0,         // initial start time of trace view
+        1000,      // initial window size of trace view
         QString(), // tab label
-        false, // position view
-        -1, // raster height
-        false // show events in position view
+        false,     // position view
+        -1,        // raster height
+        false      // show events in position view
     );
 
-	// Integrate spike event data
+    // Integrate spike event data
     QList<ClustersProvider*> list = cerebusTracesProvider->getClusterProviders();
 
     // This a kind of ugly solution, but unless data providers are reworked, there is no proper place for this:
@@ -675,12 +732,13 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
     groupToSampelCount << 0 << 4 << 4 << 4 << 16 << 48;
 
     // Set spike event sample count and peak postition
-	this->peakSampleIndex = groupToPeakIndex[group];
-	this->nbSamples = groupToSampelCount[group];
+    this->peakSampleIndex = groupToPeakIndex[group];
+    this->nbSamples = groupToSampelCount[group];
 
-    for(QList<ClustersProvider*>::iterator providerIterator = list.begin();
-        providerIterator != list.end();
-        providerIterator++) {
+    for (QList<ClustersProvider*>::iterator providerIterator = list.begin();
+         providerIterator != list.end();
+         providerIterator++)
+    {
         // Get all needed properties from cluster provider
         ClustersProvider* clustersProvider = *providerIterator;
         QString name = clustersProvider->getName();
@@ -697,10 +755,10 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
         clusterColors->append(0, QColor::fromRgb(153, 153, 153)); // gray
         // Classified
         clusterColors->append(1, QColor::fromRgb(247, 129, 191)); // pink
-        clusterColors->append(2, QColor::fromRgb(166, 86, 40)); // brown
-        clusterColors->append(3, QColor::fromRgb(255, 255, 51)); // yellow
-        clusterColors->append(4, QColor::fromRgb(152, 78, 163)); // purple
-        clusterColors->append(5, QColor::fromRgb(77, 175, 74)); // green
+        clusterColors->append(2, QColor::fromRgb(166, 86, 40));   // brown
+        clusterColors->append(3, QColor::fromRgb(255, 255, 51));  // yellow
+        clusterColors->append(4, QColor::fromRgb(152, 78, 163));  // purple
+        clusterColors->append(5, QColor::fromRgb(77, 175, 74));   // green
         // Artifacts
         clusterColors->append(254, QColor::fromRgb(255, 127, 0)); // orange
         // Noise
@@ -708,14 +766,15 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
 
         providerItemColors.insert(name, clusterColors);
 
-		// Compute which cluster files give data for a given anatomical group
-		computeClusterFilesMapping();
+        // Compute which cluster files give data for a given anatomical group
+        computeClusterFilesMapping();
 
         // Informs the views than there is a new cluster provider.
         // There should be only one view, since we only created one display.
         QList<int> skipList;
-        for(int i = 0; i < this->viewList->count(); ++i) {
-			this->viewList->at(i)->setClusterProvider(
+        for (int i = 0; i < this->viewList->count(); ++i)
+        {
+            this->viewList->at(i)->setClusterProvider(
                 clustersProvider,
                 name,
                 clusterColors,
@@ -725,12 +784,11 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
                 &(this->channelsSpikeGroups),
                 this->peakSampleIndex - 1,
                 this->nbSamples - peakSampleIndex,
-                skipList
-            );
+                skipList);
         }
 
         emit clusterFileLoaded(name);
-	}
+    }
 
     // Integrate digital and serial event data
     EventsProvider* eventsProvider = cerebusTracesProvider->getEventProvider();
@@ -746,11 +804,12 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
     //An id is assign to each event, this id will be used internally in NeuroScope and in the session file.
     ItemColors* eventColors = new ItemColors();
     QList<int> eventsList;
-    QMap<EventDescription,int> eventMap = eventsProvider->eventDescriptionIdMap();
-    QMap<EventDescription,int>::Iterator it;
-    for(it = eventMap.begin(); it != eventMap.end(); ++it){
-		int hue = fmod(it.value() * 7.0, 36) * 10;
-		QColor color = QColor::fromHsv(hue, 255, 255);
+    QMap<EventDescription, int> eventMap = eventsProvider->eventDescriptionIdMap();
+    QMap<EventDescription, int>::Iterator it;
+    for (it = eventMap.begin(); it != eventMap.end(); ++it)
+    {
+        int hue = fmod(it.value() * 7.0, 36) * 10;
+        QColor color = QColor::fromHsv(hue, 255, 255);
         eventColors->append(it.value(), it.key(), color);
         eventsList.append(it.value());
     }
@@ -759,7 +818,8 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
     // Informs the views than there is a new event provider.
     // There should be only one view, since we only created one display.
     QList<int> eventsToSkip;
-    for(int i = 0; i < viewList->count(); i++) {
+    for (int i = 0; i < viewList->count(); i++)
+    {
         viewList->at(i)->setEventProvider(eventsProvider,
                                           name,
                                           eventColors,
@@ -769,24 +829,28 @@ bool NeuroscopeDoc::openStream(CerebusTracesProvider::SamplingGroup group) {
     }
     emit eventFileLoaded(name);
 
-	return true;
+    return true;
 }
 #endif
 
-bool NeuroscopeDoc::saveEventFiles(){
-    QMap<QString,QString>::ConstIterator iterator;
-    for(iterator = providerUrls.constBegin(); iterator != providerUrls.constEnd(); ++iterator){
+bool NeuroscopeDoc::saveEventFiles()
+{
+    QMap<QString, QString>::ConstIterator iterator;
+    for (iterator = providerUrls.constBegin(); iterator != providerUrls.constEnd(); ++iterator)
+    {
         DataProvider* provider = providers[iterator.key()];
-        if(qobject_cast<EventsProvider*>(provider)){
+        if (qobject_cast<EventsProvider*>(provider))
+        {
             EventsProvider* eventProvider = static_cast<EventsProvider*>(provider);
-            if(eventProvider->isModified()){
+            if (eventProvider->isModified())
+            {
                 QFile eventFile(iterator.value());
                 const bool status = eventFile.open(QIODevice::WriteOnly);
-                if(!status)
+                if (!status)
                     return false;
                 bool saveStatus = eventProvider->save(&eventFile);
                 eventFile.close();
-                if(!saveStatus)
+                if (!saveStatus)
                     return false;
             }
         }
@@ -794,65 +858,75 @@ bool NeuroscopeDoc::saveEventFiles(){
     return true;
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::saveSession(){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::saveSession()
+{
     //Save the document information
     QFileInfo parFileInfo = QFileInfo(parameterUrl);
     //If the parameter file exists, modify it
-    if(parFileInfo.exists()){
+    if (parFileInfo.exists())
+    {
         //Check that the file is writable
-        if(!parFileInfo.isWritable()) return NOT_WRITABLE;
+        if (!parFileInfo.isWritable())
+            return NOT_WRITABLE;
         bool status;
         ParameterXmlModifier parameterModifier = ParameterXmlModifier();
         status = parameterModifier.parseFile(parameterUrl);
-        if(!status)
+        if (!status)
             return PARSE_ERROR;
-        status = parameterModifier.setAcquisitionSystemInformation(resolution,channelNb,datSamplingRate,voltageRange,amplification,initialOffset);
-        if(!status)
+        status = parameterModifier.setAcquisitionSystemInformation(resolution, channelNb, datSamplingRate, voltageRange, amplification, initialOffset);
+        if (!status)
             return PARSE_ERROR;
-        if(positionFileOpenOnce){
-            status = parameterModifier.setVideoInformation(videoWidth,videoHeight);
-            if(!status)
+        if (positionFileOpenOnce)
+        {
+            status = parameterModifier.setVideoInformation(videoWidth, videoHeight);
+            if (!status)
                 return PARSE_ERROR;
         }
         status = parameterModifier.setLfpInformation(eegSamplingRate);
-        if(!status)
+        if (!status)
             return PARSE_ERROR;
-        if(!extensionSamplingRates.empty()){
+        if (!extensionSamplingRates.empty())
+        {
             status = parameterModifier.setSampleRateByExtension(extensionSamplingRates);
-            if(!status)
+            if (!status)
                 return PARSE_ERROR;
         }
-        status = parameterModifier.setSpikeDetectionInformation(nbSamples,peakSampleIndex,spikeGroupsChannels);
-        if(!status)
+        status = parameterModifier.setSpikeDetectionInformation(nbSamples, peakSampleIndex, spikeGroupsChannels);
+        if (!status)
             return PARSE_ERROR;
-        status = parameterModifier.setAnatomicalDescription(displayGroupsChannels,displayChannelPalette.getSkipStatus());
-        if(!status)
+        status = parameterModifier.setAnatomicalDescription(displayGroupsChannels, displayChannelPalette.getSkipStatus());
+        if (!status)
             return PARSE_ERROR;
 
-        parameterModifier.setNeuroscopeVideoInformation(rotation,flip,backgroundImage,drawPositionsOnBackground);
-        parameterModifier.setMiscellaneousInformation(screenGain,traceBackgroundImage);
-        status = parameterModifier.setChannelDisplayInformation(channelColorList,displayChannelsGroups,channelDefaultOffsets);
-        if(!status)
+        parameterModifier.setNeuroscopeVideoInformation(rotation, flip, backgroundImage, drawPositionsOnBackground);
+        parameterModifier.setMiscellaneousInformation(screenGain, traceBackgroundImage);
+        status = parameterModifier.setChannelDisplayInformation(channelColorList, displayChannelsGroups, channelDefaultOffsets);
+        if (!status)
             return PARSE_ERROR;
 
         status = parameterModifier.writeTofile(parameterUrl);
-        if(!status) return CREATION_ERROR;
+        if (!status)
+            return CREATION_ERROR;
     }
     //If the parameter file does not exist, create it
-    else{
+    else
+    {
         ParameterXmlCreator parameterCreator = ParameterXmlCreator();
-        parameterCreator.setAcquisitionSystemInformation(resolution,channelNb,datSamplingRate,voltageRange,amplification,initialOffset);
-        if(positionFileOpenOnce) parameterCreator.setVideoInformation(videoWidth,videoHeight);
+        parameterCreator.setAcquisitionSystemInformation(resolution, channelNb, datSamplingRate, voltageRange, amplification, initialOffset);
+        if (positionFileOpenOnce)
+            parameterCreator.setVideoInformation(videoWidth, videoHeight);
         parameterCreator.setLfpInformation(eegSamplingRate);
-        if(!extensionSamplingRates.empty()) parameterCreator.setSampleRateByExtension(extensionSamplingRates);
-        parameterCreator.setSpikeDetectionInformation(nbSamples,peakSampleIndex,spikeGroupsChannels);
-        parameterCreator.setAnatomicalDescription(displayGroupsChannels,displayChannelPalette.getSkipStatus());
-        parameterCreator.setMiscellaneousInformation(screenGain,traceBackgroundImage);
-        parameterCreator.setNeuroscopeVideoInformation(rotation,flip,backgroundImage,drawPositionsOnBackground);
-        parameterCreator.setChannelDisplayInformation(channelColorList,displayChannelsGroups,channelDefaultOffsets);
+        if (!extensionSamplingRates.empty())
+            parameterCreator.setSampleRateByExtension(extensionSamplingRates);
+        parameterCreator.setSpikeDetectionInformation(nbSamples, peakSampleIndex, spikeGroupsChannels);
+        parameterCreator.setAnatomicalDescription(displayGroupsChannels, displayChannelPalette.getSkipStatus());
+        parameterCreator.setMiscellaneousInformation(screenGain, traceBackgroundImage);
+        parameterCreator.setNeuroscopeVideoInformation(rotation, flip, backgroundImage, drawPositionsOnBackground);
+        parameterCreator.setChannelDisplayInformation(channelColorList, displayChannelsGroups, channelDefaultOffsets);
 
         bool status = parameterCreator.writeTofile(parameterUrl);
-        if(!status) return CREATION_ERROR;
+        if (!status)
+            return CREATION_ERROR;
     }
 
     //Save the session
@@ -860,35 +934,41 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::saveSession(){
 
     //Create the list of loaded files
     QList<SessionFile> fileList;
-    QMap<QString,QString>::Iterator iterator;
-    for(iterator = providerUrls.begin(); iterator != providerUrls.end(); ++iterator){
+    QMap<QString, QString>::Iterator iterator;
+    for (iterator = providerUrls.begin(); iterator != providerUrls.end(); ++iterator)
+    {
         SessionFile sessionFile;
         sessionFile.setUrl(iterator.value());
         QFileInfo fileInfo = QFileInfo(iterator.value());
         sessionFile.setModification(fileInfo.lastModified());
         DataProvider* provider = providers[iterator.key()];
 
-        if(qobject_cast<ClustersProvider*>(provider)){
+        if (qobject_cast<ClustersProvider*>(provider))
+        {
             //Type of the file, CLUSTER is the default
             ItemColors* clusterColors = providerItemColors[iterator.key()];
             QList<int> clusterList = static_cast<ClustersProvider*>(provider)->clusterIdList();
             QList<int>::iterator it;
-            for(it = clusterList.begin(); it != clusterList.end(); ++it){
+            for (it = clusterList.begin(); it != clusterList.end(); ++it)
+            {
                 QColor color = clusterColors->color(*it);
-                sessionFile.setItemColor(EventDescription(QString::number(*it)),color.name());
+                sessionFile.setItemColor(EventDescription(QString::number(*it)), color.name());
             }
         }
-        else if(qobject_cast<EventsProvider*>(provider)){
+        else if (qobject_cast<EventsProvider*>(provider))
+        {
             sessionFile.setType(SessionFile::EVENT);
             ItemColors* eventColors = providerItemColors[iterator.key()];
-            QMap<EventDescription,int> eventMap = static_cast<EventsProvider*>(provider)->eventDescriptionIdMap();
-            QMap<EventDescription,int>::Iterator it;
-            for(it = eventMap.begin(); it != eventMap.end(); ++it){
+            QMap<EventDescription, int> eventMap = static_cast<EventsProvider*>(provider)->eventDescriptionIdMap();
+            QMap<EventDescription, int>::Iterator it;
+            for (it = eventMap.begin(); it != eventMap.end(); ++it)
+            {
                 QColor color = eventColors->color(it.value());
-                sessionFile.setItemColor(it.key(),color.name());
+                sessionFile.setItemColor(it.key(), color.name());
             }
         }
-        else if(qobject_cast<PositionsProvider*>(provider)){
+        else if (qobject_cast<PositionsProvider*>(provider))
+        {
             sessionFile.setType(SessionFile::POSITION);
         }
         fileList.append(sessionFile);
@@ -899,11 +979,13 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::saveSession(){
     //Create the list of display information
     QList<DisplayInformation> displayList;
 
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
         DisplayInformation displayInformation;
         //the default value is SINGLE
-        if(view->getMultiColumns()) displayInformation.setMode(DisplayInformation::MULTIPLE);
+        if (view->getMultiColumns())
+            displayInformation.setMode(DisplayInformation::MULTIPLE);
         displayInformation.setGreyScale(view->getGreyScale());
         displayInformation.setPositionView(view->isPositionView());
         displayInformation.setEventsInPositionView(view->isEventsInPositionView());
@@ -912,28 +994,34 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::saveSession(){
         displayInformation.setStartTime(view->getStartTime());
         displayInformation.setTimeWindow(view->getTimeWindow());
 
-        if(view->getClusterRaster()) displayInformation.addSpikeDisplayType(DisplayInformation::RASTER);
-        if(view->getClusterWaveforms()) displayInformation.addSpikeDisplayType(DisplayInformation::WAVEFORMS);
-        if(view->getClusterVerticalLines()) displayInformation.addSpikeDisplayType(DisplayInformation::LINES);
+        if (view->getClusterRaster())
+            displayInformation.addSpikeDisplayType(DisplayInformation::RASTER);
+        if (view->getClusterWaveforms())
+            displayInformation.addSpikeDisplayType(DisplayInformation::WAVEFORMS);
+        if (view->getClusterVerticalLines())
+            displayInformation.addSpikeDisplayType(DisplayInformation::LINES);
         displayInformation.setRasterHeight(view->getRasterHeight());
 
         //loop on all the loaded files and set the clusters,event ids show in the current display
         QHashIterator<QString, DataProvider*> it(providers);
-        while (it.hasNext()) {
+        while (it.hasNext())
+        {
             it.next();
             const QString name = it.key();
-            if(qobject_cast<ClustersProvider*>(it.value())){
+            if (qobject_cast<ClustersProvider*>(it.value()))
+            {
                 QList<int> clusterIds = *(view->getSelectedClusters(name));
-                displayInformation.setSelectedClusters(providerUrls[name],clusterIds);
+                displayInformation.setSelectedClusters(providerUrls[name], clusterIds);
                 QList<int> skippedClusterIds = *(view->getClustersNotUsedForBrowsing(name));
-                displayInformation.setSkippedClusters(providerUrls[name],skippedClusterIds);
+                displayInformation.setSkippedClusters(providerUrls[name], skippedClusterIds);
             }
-            else if(qobject_cast<EventsProvider*>(it.value())){
+            else if (qobject_cast<EventsProvider*>(it.value()))
+            {
                 //An id has been assigned to each event, this id is used internally in NeuroScope and in the session file.
                 QList<int> eventIds = *(view->getSelectedEvents(name));
-                displayInformation.setSelectedEvents(providerUrls[name],eventIds);
+                displayInformation.setSelectedEvents(providerUrls[name], eventIds);
                 QList<int> skippedEventIds = *(view->getEventsNotUsedForBrowsing(name));
-                displayInformation.setSkippedEvents(providerUrls[name],skippedEventIds);
+                displayInformation.setSkippedEvents(providerUrls[name], skippedEventIds);
             }
         }
         /***********TO DO**************************/
@@ -943,12 +1031,13 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::saveSession(){
 
         displayInformation.setAutocenterChannels(view->getAutocenterChannels());
 
-		  //loop on all the channels to store their gain and offsets
+        //loop on all the channels to store their gain and offsets
         QList<TracePosition> tracePositions;
 
         const QList<int>& offsets = view->getChannelOffset();
         const QList<int>& gains = view->getGains();
-        for(int i = 0; i < channelNb; ++i){
+        for (int i = 0; i < channelNb; ++i)
+        {
             TracePosition tracePosition;
             tracePosition.setId(i);
             tracePosition.setGain(gains.at(i));
@@ -971,33 +1060,39 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::saveSession(){
     sessionWriter.setDisplayInformation(displayList);
 
     bool status = sessionWriter.writeTofile(sessionUrl);
-    if(!status) return CREATION_ERROR;
-    else return OK;
+    if (!status)
+        return CREATION_ERROR;
+    else
+        return OK;
 }
 
 
-void NeuroscopeDoc::singleChannelColorUpdate(int channelId,NeuroscopeView* activeView){
+void NeuroscopeDoc::singleChannelColorUpdate(int channelId, NeuroscopeView* activeView)
+{
     //Notify all the views of the modification
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView)
-            view->singleChannelColorUpdate(channelId,false);
+        if (view != activeView)
+            view->singleChannelColorUpdate(channelId, false);
         else
-            view->singleChannelColorUpdate(channelId,true);
+            view->singleChannelColorUpdate(channelId, true);
     }
 
     //Ask the active view to take the modification into account immediately
     activeView->showAllWidgets();
 }
 
-void NeuroscopeDoc::channelGroupColorUpdate(int groupId,NeuroscopeView* activeView){
+void NeuroscopeDoc::channelGroupColorUpdate(int groupId, NeuroscopeView* activeView)
+{
     //Notify all the views of the modification
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView)
-            view->channelGroupColorUpdate(groupId,false);
+        if (view != activeView)
+            view->channelGroupColorUpdate(groupId, false);
         else
-            view->channelGroupColorUpdate(groupId,true);
+            view->channelGroupColorUpdate(groupId, true);
     }
 
     //Ask the active view to take the modification into account immediately
@@ -1008,69 +1103,82 @@ void NeuroscopeDoc::channelGroupColorUpdate(int groupId,NeuroscopeView* activeVi
 qDebug()<<"in NeuroscopeDoc::channelsColorUpdate"<<endl;
 }*/
 
-void NeuroscopeDoc::showCalibration(bool show,NeuroscopeView* activeView){
+void NeuroscopeDoc::showCalibration(bool show, NeuroscopeView* activeView)
+{
     //Notify all the views of the modification
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView)
-            view->showCalibration(show,false);
+        if (view != activeView)
+            view->showCalibration(show, false);
         else
-            view->showCalibration(show,true);
+            view->showCalibration(show, true);
     }
 
     //Ask the active view to take the modification into account immediately
     activeView->showAllWidgets();
 }
 
-void NeuroscopeDoc::groupsModified(NeuroscopeView* activeView){
-    if(!providerUrls.isEmpty())
+void NeuroscopeDoc::groupsModified(NeuroscopeView* activeView)
+{
+    if (!providerUrls.isEmpty())
         //compute which cluster files give data for a given anatomical group
         computeClusterFilesMapping();
 
     //Notify all the views of the modification
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView) view->groupsModified(false);
-        else view->groupsModified(true);
+        if (view != activeView)
+            view->groupsModified(false);
+        else
+            view->groupsModified(true);
     }
 
     //Ask the active view to take the modification into account immediately
     activeView->showAllWidgets();
 }
 
-void NeuroscopeDoc::setBackgroundColor(const QColor& backgroundColor){
+void NeuroscopeDoc::setBackgroundColor(const QColor& backgroundColor)
+{
 
     //If a position file is loaded and all the positions are drawn on the background (without using an image as the background)
     //update the background image
     bool isPositionFileLoaded = dynamic_cast<NeuroscopeApp*>(parent)->isApositionFileLoaded();
-    if(isPositionFileLoaded && backgroundImage.isEmpty() && drawPositionsOnBackground){
+    if (isPositionFileLoaded && backgroundImage.isEmpty() && drawPositionsOnBackground)
+    {
         transformedBackground = transformBackgroundImage();
         NeuroscopeView* view;
         //Get the active view.
         NeuroscopeView* activeView = dynamic_cast<NeuroscopeApp*>(parent)->activeView();
-        if(rotation != 90 && rotation != 270){
-            for(int i = 0; i<viewList->count(); ++i) {
+        if (rotation != 90 && rotation != 270)
+        {
+            for (int i = 0; i < viewList->count(); ++i)
+            {
                 view = viewList->at(i);
-                if(view != activeView)
-                    view->updatePositionInformation(videoWidth,videoHeight,transformedBackground,false,false);
+                if (view != activeView)
+                    view->updatePositionInformation(videoWidth, videoHeight, transformedBackground, false, false);
                 else
-                    view->updatePositionInformation(videoWidth,videoHeight,transformedBackground,false,true);
+                    view->updatePositionInformation(videoWidth, videoHeight, transformedBackground, false, true);
             }
         }
         //If there is a rotation of 90 or 270 degree, the with and height have to be inverted.
-        else{
-            for(int i = 0; i<viewList->count(); ++i) {
+        else
+        {
+            for (int i = 0; i < viewList->count(); ++i)
+            {
                 view = viewList->at(i);
-                if(view != activeView)
-                    view->updatePositionInformation(videoHeight,videoWidth,transformedBackground,false,false);
+                if (view != activeView)
+                    view->updatePositionInformation(videoHeight, videoWidth, transformedBackground, false, false);
                 else
-                    view->updatePositionInformation(videoHeight,videoWidth,transformedBackground,false,true);
+                    view->updatePositionInformation(videoHeight, videoWidth, transformedBackground, false, true);
             }
         }
     }
 
     //Notify all the views of the modification
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
         view->updateBackgroundColor(backgroundColor);
     }
@@ -1083,9 +1191,11 @@ void NeuroscopeDoc::setBackgroundColor(const QColor& backgroundColor){
 }
 
 
-void NeuroscopeDoc::setTraceBackgroundImage(const QString& traceBackgroundImagePath){
+void NeuroscopeDoc::setTraceBackgroundImage(const QString& traceBackgroundImagePath)
+{
     traceBackgroundImage = traceBackgroundImagePath;
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         QImage traceBackgroundImage(traceBackgroundImagePath);
 
         //The views are updated. If the image is null, the background will be a plain color (no image)
@@ -1093,22 +1203,25 @@ void NeuroscopeDoc::setTraceBackgroundImage(const QString& traceBackgroundImageP
         NeuroscopeView* activeView = dynamic_cast<NeuroscopeApp*>(parent)->activeView();
 
         //Notify all the views of the modification
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
 
-            if(view != activeView)
-                view->updateTraceBackgroundImage(traceBackgroundImage,false);
+            if (view != activeView)
+                view->updateTraceBackgroundImage(traceBackgroundImage, false);
             else
-                view->updateTraceBackgroundImage(traceBackgroundImage,true);
+                view->updateTraceBackgroundImage(traceBackgroundImage, true);
         }
     }
 }
 
 
-void NeuroscopeDoc::setInitialOffset(int offset){
+void NeuroscopeDoc::setInitialOffset(int offset)
+{
     initialOffset = offset;
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Inform the tracesProvider
         tracesProvider->setOffset(offset);
 
@@ -1117,9 +1230,11 @@ void NeuroscopeDoc::setInitialOffset(int offset){
         activeView->documentFeaturesModified();
 
         //Notify all the views of the modification
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView) view->documentFeaturesModified();
+            if (view != activeView)
+                view->documentFeaturesModified();
         }
 
         //Ask the active view to take the modification into account immediately
@@ -1127,10 +1242,12 @@ void NeuroscopeDoc::setInitialOffset(int offset){
     }
 }
 
-void NeuroscopeDoc::setVoltageRange(int range) {
+void NeuroscopeDoc::setVoltageRange(int range)
+{
     this->voltageRange = range;
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Inform the tracesProvider
         tracesProvider->setVoltageRange(range);
 
@@ -1140,9 +1257,11 @@ void NeuroscopeDoc::setVoltageRange(int range) {
 
         //Notify all the views of the modification
 
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView) view->documentFeaturesModified();
+            if (view != activeView)
+                view->documentFeaturesModified();
         }
 
         //Ask the active view to take the modification into account immediately
@@ -1150,10 +1269,12 @@ void NeuroscopeDoc::setVoltageRange(int range) {
     }
 }
 
-void NeuroscopeDoc::setAmplification(int amplification){
+void NeuroscopeDoc::setAmplification(int amplification)
+{
     this->amplification = amplification;
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Inform the tracesProvider
         tracesProvider->setAmplification(amplification);
 
@@ -1163,9 +1284,11 @@ void NeuroscopeDoc::setAmplification(int amplification){
 
         //Notify all the views of the modification
 
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView) view->documentFeaturesModified();
+            if (view != activeView)
+                view->documentFeaturesModified();
         }
 
         //Ask the active view to take the modification into account immediately
@@ -1174,33 +1297,38 @@ void NeuroscopeDoc::setAmplification(int amplification){
 }
 
 
-void NeuroscopeDoc::setScreenGain(float screenGain){
+void NeuroscopeDoc::setScreenGain(float screenGain)
+{
     this->screenGain = screenGain;
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Get the active view and make it the first to take the modification into account.
         NeuroscopeView* activeView = dynamic_cast<NeuroscopeApp*>(parent)->activeView();
         activeView->setGains(screenGain);
 
         //Notify all the views of the modification
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
 
-            if(view != activeView) view->setGains(screenGain);
+            if (view != activeView)
+                view->setGains(screenGain);
         }
 
         //Ask the active view to take the modification into account immediately
         activeView->updateViewContents();
     }
-
 }
 
-void NeuroscopeDoc::setGains(int voltageRange, int amplification, float screenGain){
+void NeuroscopeDoc::setGains(int voltageRange, int amplification, float screenGain)
+{
     this->voltageRange = voltageRange;
     this->amplification = amplification;
     this->screenGain = screenGain;
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Inform the tracesProvider
         tracesProvider->setAmplification(amplification);
         tracesProvider->setVoltageRange(voltageRange);
@@ -1211,10 +1339,12 @@ void NeuroscopeDoc::setGains(int voltageRange, int amplification, float screenGa
         activeView->documentFeaturesModified();
 
         //Notify all the views of the modification
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
 
-            if(view != activeView) {
+            if (view != activeView)
+            {
                 view->setGains(screenGain);
                 view->documentFeaturesModified();
             }
@@ -1225,9 +1355,11 @@ void NeuroscopeDoc::setGains(int voltageRange, int amplification, float screenGa
     }
 }
 
-void NeuroscopeDoc::setResolution(int resolution){
+void NeuroscopeDoc::setResolution(int resolution)
+{
     this->resolution = resolution;
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Inform the tracesProvider
         tracesProvider->setResolution(resolution);
 
@@ -1237,9 +1369,11 @@ void NeuroscopeDoc::setResolution(int resolution){
 
         //Notify all the views of the modification
 
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView) view->documentFeaturesModified();
+            if (view != activeView)
+                view->documentFeaturesModified();
         }
 
         //Ask the active view to take the modification into account immediately
@@ -1247,25 +1381,33 @@ void NeuroscopeDoc::setResolution(int resolution){
     }
 }
 
-void NeuroscopeDoc::setSamplingRate(double rate){
+void NeuroscopeDoc::setSamplingRate(double rate)
+{
     samplingRate = rate;
-    if(extension == "eeg") eegSamplingRate = rate;
-    else if(extension == "dat") datSamplingRate = rate;
-    else extensionSamplingRates.insert(extension,samplingRate);
+    if (extension == "eeg")
+        eegSamplingRate = rate;
+    else if (extension == "dat")
+        datSamplingRate = rate;
+    else
+        extensionSamplingRates.insert(extension, samplingRate);
 
     //update the cluster and event providers
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
-        if(qobject_cast<ClustersProvider*>(i.value())){
+        if (qobject_cast<ClustersProvider*>(i.value()))
+        {
             static_cast<ClustersProvider*>(i.value())->updateSamplingRate(samplingRate);
         }
-        if(qobject_cast<EventsProvider*>(i.value())){
+        if (qobject_cast<EventsProvider*>(i.value()))
+        {
             static_cast<EventsProvider*>(i.value())->updateSamplingRate(samplingRate);
         }
     }
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Inform the tracesProvider
         tracesProvider->setSamplingRate(rate);
         qlonglong length = tracesProvider->recordingLength();
@@ -1275,9 +1417,10 @@ void NeuroscopeDoc::setSamplingRate(double rate){
         activeView->samplingRateModified(length);
 
         //Notify all the views of the modification
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView)
+            if (view != activeView)
                 view->samplingRateModified(length);
         }
 
@@ -1286,26 +1429,31 @@ void NeuroscopeDoc::setSamplingRate(double rate){
     }
 }
 
-void NeuroscopeDoc::setAcquisitionSystemSamplingRate(double rate){
+void NeuroscopeDoc::setAcquisitionSystemSamplingRate(double rate)
+{
     datSamplingRate = rate;
     //update the cluster providers
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
 
-        if(qobject_cast<ClustersProvider*>(i.value())){
-            static_cast<ClustersProvider*>(i.value())->updateAcquisitionSystemSamplingRate(datSamplingRate,samplingRate);
+        if (qobject_cast<ClustersProvider*>(i.value()))
+        {
+            static_cast<ClustersProvider*>(i.value())->updateAcquisitionSystemSamplingRate(datSamplingRate, samplingRate);
         }
     }
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //Get the active view and make it the first to take the modification into account.
         NeuroscopeView* activeView = dynamic_cast<NeuroscopeApp*>(parent)->activeView();
 
         //Notify all the views of the modification
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView)
+            if (view != activeView)
                 view->updateClusterData(false);
             else
                 view->updateClusterData(true);
@@ -1314,10 +1462,12 @@ void NeuroscopeDoc::setAcquisitionSystemSamplingRate(double rate){
 }
 
 
-void NeuroscopeDoc::setChannelNb(int nb){
+void NeuroscopeDoc::setChannelNb(int nb)
+{
     channelNb = nb;
 
-    if(tracesProvider){
+    if (tracesProvider)
+    {
         //All existing electrode-group information will be deleted and
         //all the channels will be put in the same group (1 for the display palette and
         //-1 (the trash group) for the spike palette) and assign them the same blue color.
@@ -1334,23 +1484,24 @@ void NeuroscopeDoc::setChannelNb(int nb){
         //Refill the channelColorList
         QColor color;
         QList<int> groupOne;
-        color.setHsv(210,255,255);
-        for(int i = 0; i < channelNb; ++i){
-            channelColorList->append(i,color);
-            displayChannelsGroups.insert(i,1);
-            channelsSpikeGroups.insert(i,-1);
+        color.setHsv(210, 255, 255);
+        for (int i = 0; i < channelNb; ++i)
+        {
+            channelColorList->append(i, color);
+            displayChannelsGroups.insert(i, 1);
+            channelsSpikeGroups.insert(i, -1);
             groupOne.append(i);
         }
-        displayGroupsChannels.insert(1,groupOne);
-        spikeGroupsChannels.insert(-1,groupOne);
+        displayGroupsChannels.insert(1, groupOne);
+        spikeGroupsChannels.insert(-1, groupOne);
 
         channelLabels = tracesProvider->getLabels();
 
         //Update and show the channel Palettes.
-        displayChannelPalette.createChannelLists(channelColorList,&displayGroupsChannels,&displayChannelsGroups,&channelLabels);
-        displayChannelPalette.updateShowHideStatus(groupOne,false);
-        spikeChannelPalette.createChannelLists(channelColorList,&spikeGroupsChannels,&channelsSpikeGroups,&channelLabels);
-        spikeChannelPalette.updateShowHideStatus(groupOne,false);
+        displayChannelPalette.createChannelLists(channelColorList, &displayGroupsChannels, &displayChannelsGroups, &channelLabels);
+        displayChannelPalette.updateShowHideStatus(groupOne, false);
+        spikeChannelPalette.createChannelLists(channelColorList, &spikeGroupsChannels, &channelsSpikeGroups, &channelLabels);
+        spikeChannelPalette.updateShowHideStatus(groupOne, false);
 
         //Resize the panel
         dynamic_cast<NeuroscopeApp*>(parent)->resizePalettePanel();
@@ -1363,10 +1514,11 @@ void NeuroscopeDoc::setChannelNb(int nb){
         activeView->setChannelNb(nb);
 
         //Notify all the views of the modification
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
 
-            if(view != activeView)
+            if (view != activeView)
                 view->setChannelNb(nb);
         }
 
@@ -1375,39 +1527,49 @@ void NeuroscopeDoc::setChannelNb(int nb){
     }
 }
 
-void NeuroscopeDoc::loadDocumentInformation(NeuroscopeXmlReader reader){
+void NeuroscopeDoc::loadDocumentInformation(NeuroscopeXmlReader reader)
+{
     int resolutionRead = reader.getResolution();
-    if(resolutionRead != 0) resolution = resolutionRead;
+    if (resolutionRead != 0)
+        resolution = resolutionRead;
 
     int channelNbRead = reader.getNbChannels();
-    if(channelNbRead != 0) channelNb = channelNbRead;
+    if (channelNbRead != 0)
+        channelNb = channelNbRead;
 
     double datSamplingRateRead = reader.getSamplingRate();
-    if(datSamplingRateRead != 0) datSamplingRate =  datSamplingRateRead;
+    if (datSamplingRateRead != 0)
+        datSamplingRate = datSamplingRateRead;
 
     double eegSamplingRateRead = reader.getLfpInformation();
-    if(eegSamplingRateRead != 0) eegSamplingRate = eegSamplingRateRead;
+    if (eegSamplingRateRead != 0)
+        eegSamplingRate = eegSamplingRateRead;
 
 
     upsamplingRate = reader.getUpsamplingRate();
 
     //the sampling rate for the video is store in the section file extension/sampling rate
     int videoWidthRead = reader.getVideoWidth();
-    if(videoWidthRead != 0) videoWidth = videoWidthRead;
+    if (videoWidthRead != 0)
+        videoWidth = videoWidthRead;
 
     int videoHeightRead = reader.getVideoHeight();
-    if(videoHeightRead != 0) videoHeight = videoHeightRead;
+    if (videoHeightRead != 0)
+        videoHeight = videoHeightRead;
 
     drawPositionsOnBackground = reader.getTrajectory();
 
     //The background image information is stored in the parameter file starting with the version 1.2.3
-    if(reader.getType() == NeuroscopeXmlReader::PARAMETER){
-        if(reader.getBackgroundImage() != "-")
+    if (reader.getType() == NeuroscopeXmlReader::PARAMETER)
+    {
+        if (reader.getBackgroundImage() != "-")
             backgroundImage = reader.getBackgroundImage();
 
-        if(!backgroundImage.isEmpty()){
+        if (!backgroundImage.isEmpty())
+        {
             QFileInfo fileInfo = QFileInfo(backgroundImage);
-            if(!fileInfo.exists()){
+            if (!fileInfo.exists())
+            {
                 QString imageUrl(backgroundImage);
                 QString fileName = QFileInfo(imageUrl).fileName();
                 imageUrl = docUrl + QDir::separator() + fileName;
@@ -1417,14 +1579,17 @@ void NeuroscopeDoc::loadDocumentInformation(NeuroscopeXmlReader reader){
     }
 
     //The background image information for the trace view is stored in the parameter file starting with the version 1.3.4
-    if(reader.getType() == NeuroscopeXmlReader::PARAMETER){
+    if (reader.getType() == NeuroscopeXmlReader::PARAMETER)
+    {
 
-        if(reader.getTraceBackgroundImage() != "-")
+        if (reader.getTraceBackgroundImage() != "-")
             traceBackgroundImage = reader.getTraceBackgroundImage();
 
-        if(!traceBackgroundImage.isEmpty()){
+        if (!traceBackgroundImage.isEmpty())
+        {
             QFileInfo fileInfo = QFileInfo(traceBackgroundImage);
-            if(!fileInfo.exists()){
+            if (!fileInfo.exists())
+            {
                 QString imageUrl = traceBackgroundImage;
                 QString fileName = QFileInfo(imageUrl).fileName();
                 imageUrl = docUrl + QDir::separator() + fileName;
@@ -1434,16 +1599,19 @@ void NeuroscopeDoc::loadDocumentInformation(NeuroscopeXmlReader reader){
     }
 
 
-    if(reader.getVoltageRange() != 0) voltageRange = reader.getVoltageRange();
+    if (reader.getVoltageRange() != 0)
+        voltageRange = reader.getVoltageRange();
     //Neuroscope for the moment uses a unique amplification for all the channels
-    if(reader.getAmplification() != 0) amplification = reader.getAmplification();
-    if(reader.getOffset() != 0) initialOffset = reader.getOffset();
+    if (reader.getAmplification() != 0)
+        amplification = reader.getAmplification();
+    if (reader.getOffset() != 0)
+        initialOffset = reader.getOffset();
 
-    reader.getAnatomicalDescription(channelNb,displayChannelsGroups,displayGroupsChannels,skipStatus);
+    reader.getAnatomicalDescription(channelNb, displayChannelsGroups, displayGroupsChannels, skipStatus);
 
-    if(displayGroupsChannels.contains(0))
-        spikeGroupsChannels.insert(0,displayGroupsChannels[0]);
-    reader.getSpikeDescription(channelNb,channelsSpikeGroups,spikeGroupsChannels);
+    if (displayGroupsChannels.contains(0))
+        spikeGroupsChannels.insert(0, displayGroupsChannels[0]);
+    reader.getSpikeDescription(channelNb, channelsSpikeGroups, spikeGroupsChannels);
 
     //compute which cluster files give data for a given anatomical group
     computeClusterFilesMapping();
@@ -1451,63 +1619,74 @@ void NeuroscopeDoc::loadDocumentInformation(NeuroscopeXmlReader reader){
     //Build the channelColorList
     //the checkColors will be used that their is a color information for each channel.
     QList<int> checkColors;
-    for(int i = 0; i < channelNb; ++i) checkColors.append(i);
+    for (int i = 0; i < channelNb; ++i)
+        checkColors.append(i);
     QList<ChannelDescription> colorsList = reader.getChannelDescription();
-    if(!colorsList.isEmpty()){
+    if (!colorsList.isEmpty())
+    {
         QList<ChannelDescription>::iterator colorIterator;
-        for(colorIterator = colorsList.begin(); colorIterator != colorsList.end(); ++colorIterator){
+        for (colorIterator = colorsList.begin(); colorIterator != colorsList.end(); ++colorIterator)
+        {
             int channelId = static_cast<ChannelDescription>(*colorIterator).getId();
             int removed = checkColors.removeAll(channelId);
             //it is a duplicate
-            if(removed ==0)
+            if (removed == 0)
                 continue;
             QColor color = static_cast<ChannelDescription>(*colorIterator).getColor();
             QColor groupColor = static_cast<ChannelDescription>(*colorIterator).getGroupColor();
             QColor spikeGroupColor = static_cast<ChannelDescription>(*colorIterator).getSpikeGroupColor();
-            channelColorList->append(channelId,color,groupColor,spikeGroupColor);
+            channelColorList->append(channelId, color, groupColor, spikeGroupColor);
         }
         //if a channel does not have color information, set the default (everything to blue)
-        if(!checkColors.isEmpty()){
+        if (!checkColors.isEmpty())
+        {
             QColor color;
-            color.setHsv(210,255,255);
-            for(int i = 0; i < channelNb; ++i){
-                if(!channelColorList->contains(i)){
-                    channelColorList->insert(i,i,color,color,color);
+            color.setHsv(210, 255, 255);
+            for (int i = 0; i < channelNb; ++i)
+            {
+                if (!channelColorList->contains(i))
+                {
+                    channelColorList->insert(i, i, color, color, color);
                 }
             }
         }
     }
     //if no color are available in the file, set the default (everything to blue)
-    else{
+    else
+    {
         QColor color;
-        color.setHsv(210,255,255);
-        for(int i = 0; i < channelNb; ++i){
-            channelColorList->append(i,color);
+        color.setHsv(210, 255, 255);
+        for (int i = 0; i < channelNb; ++i)
+        {
+            channelColorList->append(i, color);
         }
     }
 
     // TODO: Save and load this to/from file or trace provider
     // Build channel label list
     channelLabels.clear();
-    for(int i = 0; i < channelNb; ++i)
+    for (int i = 0; i < channelNb; ++i)
         channelLabels << QString::number(i);
 
     //Build the list of channel default offsets
     reader.getChannelDefaultOffset(channelDefaultOffsets);
     //if no default offset are available in the file, set the default offset to 0
-    if(channelDefaultOffsets.isEmpty()){
-        for(int i = 0; i < channelNb; ++i)
-            channelDefaultOffsets.insert(i,0);
+    if (channelDefaultOffsets.isEmpty())
+    {
+        for (int i = 0; i < channelNb; ++i)
+            channelDefaultOffsets.insert(i, 0);
     }
     //if a channel does not have a default offset, assign it the value 0
-    if(channelDefaultOffsets.size() != channelNb){
-        for(int i = 0; i < channelNb; ++i){
-            if(!channelDefaultOffsets.contains(i))
-                channelDefaultOffsets.insert(i,0);
+    if (channelDefaultOffsets.size() != channelNb)
+    {
+        for (int i = 0; i < channelNb; ++i)
+        {
+            if (!channelDefaultOffsets.contains(i))
+                channelDefaultOffsets.insert(i, 0);
         }
     }
 
-    if(reader.getScreenGain() != 0)
+    if (reader.getScreenGain() != 0)
         screenGain = reader.getScreenGain();
 
     //For the moment Neuroscope stores it own values for the nbSamples and the peakSampleIndex inside the specific neuroscope tag.
@@ -1518,18 +1697,25 @@ void NeuroscopeDoc::loadDocumentInformation(NeuroscopeXmlReader reader){
     //New way: the nbSamples and peakSampleIndex are given in time. The sampling rate is used to compute the information.
 
     //If no upsampling exists <=> Old way
-    if(upsamplingRate == 0){
+    if (upsamplingRate == 0)
+    {
         //the upsampling is set to the sampling rate.
         upsamplingRate = datSamplingRate;
         int nbSamplesRead = reader.getNbSamples();
         int peakSampleIndexRead = reader.getPeakSampleIndex();
-        if(nbSamplesRead != 0) nbSamples = nbSamplesRead;
-        if(peakSampleIndexRead != 0) peakSampleIndex = peakSampleIndexRead;
-    } else {
+        if (nbSamplesRead != 0)
+            nbSamples = nbSamplesRead;
+        if (peakSampleIndexRead != 0)
+            peakSampleIndex = peakSampleIndexRead;
+    }
+    else
+    {
         float waveformLengthRead = reader.getWaveformLength();
         float indexLengthRead = reader.getPeakSampleLength();
-        if(waveformLengthRead != 0) waveformLength = waveformLengthRead;
-        if(indexLengthRead != 0) indexLength = indexLengthRead;
+        if (waveformLengthRead != 0)
+            waveformLength = waveformLengthRead;
+        if (indexLengthRead != 0)
+            indexLength = indexLengthRead;
 
         //Compute the number of samples using the datSamplingRate.
         nbSamples = static_cast<int>(static_cast<float>(datSamplingRate / 1000) * waveformLength);
@@ -1539,36 +1725,46 @@ void NeuroscopeDoc::loadDocumentInformation(NeuroscopeXmlReader reader){
     }
 }
 
-void NeuroscopeDoc::computeClusterFilesMapping(){
+void NeuroscopeDoc::computeClusterFilesMapping()
+{
     displayGroupsClusterFile.clear();
     //compute which cluster files give data for a given anatomical group
-    QMap<int, QList<int> >::Iterator iterator;
-    for(iterator = displayGroupsChannels.begin(); iterator != displayGroupsChannels.end(); ++iterator){
+    QMap<int, QList<int>>::Iterator iterator;
+    for (iterator = displayGroupsChannels.begin(); iterator != displayGroupsChannels.end(); ++iterator)
+    {
         QList<int> clusterFileList;
         QList<int> anatomicalList = iterator.value();
-        QMap<int, QList<int> >::Iterator spikeGroupIterator;
-        for(spikeGroupIterator = spikeGroupsChannels.begin(); spikeGroupIterator != spikeGroupsChannels.end(); ++spikeGroupIterator){
+        QMap<int, QList<int>>::Iterator spikeGroupIterator;
+        for (spikeGroupIterator = spikeGroupsChannels.begin(); spikeGroupIterator != spikeGroupsChannels.end(); ++spikeGroupIterator)
+        {
             QList<int> channels = spikeGroupIterator.value();
             QList<int>::iterator channelIterator;
-            for(channelIterator = channels.begin(); channelIterator != channels.end(); ++channelIterator){
-                if(anatomicalList.contains(*channelIterator)){
+            for (channelIterator = channels.begin(); channelIterator != channels.end(); ++channelIterator)
+            {
+                if (anatomicalList.contains(*channelIterator))
+                {
                     clusterFileList.append(spikeGroupIterator.key());
                     break;
                 }
             }
         }
         //The trash group (index 0) is always at the bottom in the display, so reindex it with the highest index.
-        if(iterator.key() == 0) displayGroupsClusterFile.insert(displayGroupsChannels.count(),clusterFileList);
-        else displayGroupsClusterFile.insert(iterator.key(),clusterFileList);
+        if (iterator.key() == 0)
+            displayGroupsClusterFile.insert(displayGroupsChannels.count(), clusterFileList);
+        else
+            displayGroupsClusterFile.insert(iterator.key(), clusterFileList);
     }
 }
 
-void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
+void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader)
+{
     //Get the file video information
-    if(reader.getRotation() != 0) {
+    if (reader.getRotation() != 0)
+    {
         rotation = reader.getRotation();
     }
-    if(reader.getFlip() != 0) {
+    if (reader.getFlip() != 0)
+    {
         flip = reader.getFlip();
     }
 
@@ -1576,7 +1772,7 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
     QStringList loadedClusterFiles;
     QStringList loadedEventFiles;
     QString loadedPositionFile;
-    QMap< QString, QMap<EventDescription,int> > loadedEventItems;
+    QMap<QString, QMap<EventDescription, int>> loadedEventItems;
 
     //Get the displays information
     QList<DisplayInformation> displayList = reader.getDisplayInformation();
@@ -1584,8 +1780,9 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
     bool first = true;
     QList<DisplayInformation>::ConstIterator iterator;
     QList<DisplayInformation>::ConstIterator end(displayList.constEnd());
-   for(iterator = displayList.constBegin(); iterator != end; ++iterator) {
-		  QList<int> offsets;
+    for (iterator = displayList.constBegin(); iterator != end; ++iterator)
+    {
+        QList<int> offsets;
         QList<int> channelGains;
         QList<int>* channelsToDisplay = new QList<int>();
         QList<int> selectedChannels;
@@ -1602,12 +1799,12 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
         bool greyMode = static_cast<DisplayInformation>(*iterator).getGreyScale();
         QList<DisplayInformation::spikeDisplayType> spikeDisplayTypes = static_cast<DisplayInformation>(*iterator).getSpikeDisplayTypes();
         int rasterHeight = static_cast<DisplayInformation>(*iterator).getRasterHeight();
-        QMap<QString, QList<int> > selectedClusters = static_cast<DisplayInformation>(*iterator).getSelectedClusters();
+        QMap<QString, QList<int>> selectedClusters = static_cast<DisplayInformation>(*iterator).getSelectedClusters();
         //An id has been assigned to each event, this id will be used internally in NeuroScope and in the session file.
-        QMap<QString, QList<int> > selectedEvents = static_cast<DisplayInformation>(*iterator).getSelectedEvents();
+        QMap<QString, QList<int>> selectedEvents = static_cast<DisplayInformation>(*iterator).getSelectedEvents();
         //QStringList shownSpikeFiles = static_cast<DisplayInformation>(*iterator).getSelectedSpikeFiles();
-        QMap<QString, QList<int> > skippedClusters = static_cast<DisplayInformation>(*iterator).getSkippedClusters();
-        QMap<QString, QList<int> > skippedEvents = static_cast<DisplayInformation>(*iterator).getSkippedEvents();
+        QMap<QString, QList<int>> skippedClusters = static_cast<DisplayInformation>(*iterator).getSkippedClusters();
+        QMap<QString, QList<int>> skippedEvents = static_cast<DisplayInformation>(*iterator).getSkippedEvents();
         QList<TracePosition> positions = static_cast<DisplayInformation>(*iterator).getPositions();
         QList<int> channelIds = static_cast<DisplayInformation>(*iterator).getChannelIds();
         QList<int> selectedChannelIds = static_cast<DisplayInformation>(*iterator).getSelectedChannelIds();
@@ -1616,18 +1813,19 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
         bool showEventsInPositionView = static_cast<DisplayInformation>(*iterator).isEventsDisplayedInPositionView();
 
         //info on the trace presentation
-        if(presentationMode == DisplayInformation::MULTIPLE)
+        if (presentationMode == DisplayInformation::MULTIPLE)
             multipleColumns = true;
 
         //info on the spike presentation
         QList<DisplayInformation::spikeDisplayType>::ConstIterator typeIterator;
         QList<DisplayInformation::spikeDisplayType>::ConstIterator typeIteratorEnd(spikeDisplayTypes.end());
-        for(typeIterator = spikeDisplayTypes.constBegin(); typeIterator != typeIteratorEnd; ++typeIterator){
-            if(*typeIterator == DisplayInformation::LINES)
+        for (typeIterator = spikeDisplayTypes.constBegin(); typeIterator != typeIteratorEnd; ++typeIterator)
+        {
+            if (*typeIterator == DisplayInformation::LINES)
                 verticalLines = true;
-            if(*typeIterator == DisplayInformation::RASTER)
+            if (*typeIterator == DisplayInformation::RASTER)
                 raster = true;
-            if(*typeIterator == DisplayInformation::WAVEFORMS)
+            if (*typeIterator == DisplayInformation::WAVEFORMS)
                 waveforms = true;
         }
 
@@ -1639,7 +1837,8 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
         //Get the information concerning the channel positions (gain and offset)
         QList<TracePosition>::ConstIterator positionIterator;
         QList<TracePosition>::ConstIterator positionIteratorEnd(positions.constEnd());
-        for (positionIterator = positions.constBegin(); positionIterator != positionIteratorEnd; ++positionIterator) {
+        for (positionIterator = positions.constBegin(); positionIterator != positionIteratorEnd; ++positionIterator)
+        {
             int gain = static_cast<TracePosition>(*positionIterator).getGain();
             int offset = static_cast<TracePosition>(*positionIterator).getOffset();
             offsets.append(offset);
@@ -1649,101 +1848,117 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
         //Get the information concerning the channels shown in the display
         QList<int>::ConstIterator channelIterator;
         QList<int>::ConstIterator channelIteratorEnd(channelIds.constEnd());
-        for (channelIterator = channelIds.constBegin(); channelIterator != channelIteratorEnd; ++channelIterator) {
+        for (channelIterator = channelIds.constBegin(); channelIterator != channelIteratorEnd; ++channelIterator)
+        {
             channelsToDisplay->append(*channelIterator);
         }
 
         //Get the information concerning the channels selected in the display
         QList<int>::ConstIterator channelSelectedIterator;
         QList<int>::ConstIterator channelSelectedIteratorEnd(selectedChannelIds.constEnd());
-        for (channelSelectedIterator = selectedChannelIds.constBegin(); channelSelectedIterator != channelSelectedIteratorEnd; ++channelSelectedIterator) {
+        for (channelSelectedIterator = selectedChannelIds.constBegin(); channelSelectedIterator != channelSelectedIteratorEnd; ++channelSelectedIterator)
+        {
             selectedChannels.append(*channelSelectedIterator);
         }
 
         //Create the displays
-        if(first){
+        if (first)
+        {
             first = false;
 
-            emit loadFirstDisplay(channelsToDisplay,verticalLines,raster,waveforms,showLabels,multipleColumns,greyMode,autocenterChannels,offsets,
-                                  channelGains,selectedChannels,skipStatus,startTime,duration,tabLabel,isAPositionView,rasterHeight,showEventsInPositionView);
+            emit loadFirstDisplay(channelsToDisplay, verticalLines, raster, waveforms, showLabels, multipleColumns, greyMode, autocenterChannels, offsets,
+                                  channelGains, selectedChannels, skipStatus, startTime, duration, tabLabel, isAPositionView, rasterHeight, showEventsInPositionView);
 
             //Now that the channel palettes are created, load the files and create the palettes
             bool fistClusterFile = true;
             bool fistEventFile = true;
             QList<SessionFile>::iterator sessionIterator;
-            for(sessionIterator = filesToLoad.begin(); sessionIterator != filesToLoad.end(); ++sessionIterator){
+            for (sessionIterator = filesToLoad.begin(); sessionIterator != filesToLoad.end(); ++sessionIterator)
+            {
                 SessionFile sessionFile = static_cast<SessionFile>(*sessionIterator);
                 QString fileUrl = sessionFile.getUrl().path();
                 SessionFile::type fileType = sessionFile.getType();
                 QDateTime lastModified = sessionFile.getModification();
-                QMap<EventDescription,QColor> itemColors = sessionFile.getItemColors();
-                if(fileType == SessionFile::CLUSTER){
+                QMap<EventDescription, QColor> itemColors = sessionFile.getItemColors();
+                if (fileType == SessionFile::CLUSTER)
+                {
                     //If the file does not exist in the location specified in the session file (absolute path), look up in the directory
                     //where the session file is. This is useful if you moved your file or you backup them (<=> the absolute path is not good anymore)
                     QFileInfo fileInfo = QFileInfo(fileUrl).absolutePath();
-                    if(!fileInfo.exists()){
+                    if (!fileInfo.exists())
+                    {
                         QList<int> ids = selectedClusters[fileUrl];
                         QList<int> skippedIds = skippedClusters[fileUrl];
                         selectedClusters.remove(fileUrl);
                         skippedClusters.remove(fileUrl);
                         QString fileName = QFileInfo(fileUrl).fileName();
                         fileUrl = QFileInfo(sessionUrl).absolutePath() + QDir::separator() + fileName;
-                        selectedClusters.insert(fileUrl,ids);
-                        skippedClusters.insert(fileUrl,skippedIds);
+                        selectedClusters.insert(fileUrl, ids);
+                        skippedClusters.insert(fileUrl, skippedIds);
                     }
-                    OpenSaveCreateReturnMessage status = loadClusterFileForSession(fileUrl,itemColors,lastModified,fistClusterFile);
-                    if(status == OK){
+                    OpenSaveCreateReturnMessage status = loadClusterFileForSession(fileUrl, itemColors, lastModified, fistClusterFile);
+                    if (status == OK)
+                    {
                         loadedClusterFiles.append(lastLoadedProvider);
                         fistClusterFile = false;
                     }
                 }
-                if(fileType == SessionFile::EVENT){
+                if (fileType == SessionFile::EVENT)
+                {
                     //If the file does not exist in the location specified in the session file (absolute path), look up in the directory
                     //where the session file is. This is useful if you moved your file or ypu backup them (<=> the absolute path is not good anymore)
                     QFileInfo fileInfo = QFileInfo(fileUrl).absolutePath();
-                    if(!fileInfo.exists()){
+                    if (!fileInfo.exists())
+                    {
                         QList<int> ids = selectedEvents[fileUrl];
                         QList<int> skippedIds = skippedEvents[fileUrl];
                         selectedEvents.remove(fileUrl);
                         skippedEvents.remove(fileUrl);
                         QString fileName = QFileInfo(fileUrl).fileName();
                         fileUrl = QFileInfo(sessionUrl).absolutePath() + QDir::separator() + fileName;
-                        selectedEvents.insert(fileUrl,ids);
-                        skippedEvents.insert(fileUrl,skippedIds);
+                        selectedEvents.insert(fileUrl, ids);
+                        skippedEvents.insert(fileUrl, skippedIds);
                     }
-                    OpenSaveCreateReturnMessage status = loadEventFileForSession(fileUrl,itemColors,lastModified,fistEventFile);
-                    if(status == OK){
+                    OpenSaveCreateReturnMessage status = loadEventFileForSession(fileUrl, itemColors, lastModified, fistEventFile);
+                    if (status == OK)
+                    {
                         loadedEventFiles.append(lastLoadedProvider);
                         fistEventFile = false;
-                        QMap<EventDescription,int> loadedItems;
-                        QMap<EventDescription,QColor>::ConstIterator it;
-                        QMap<EventDescription,QColor>::ConstIterator endColor(itemColors.constEnd());
+                        QMap<EventDescription, int> loadedItems;
+                        QMap<EventDescription, QColor>::ConstIterator it;
+                        QMap<EventDescription, QColor>::ConstIterator endColor(itemColors.constEnd());
                         int index = 1;
-                        for(it = itemColors.constBegin(); it != endColor; ++it){
-                            loadedItems.insert(it.key(),index);
+                        for (it = itemColors.constBegin(); it != endColor; ++it)
+                        {
+                            loadedItems.insert(it.key(), index);
                             index++;
                         }
-                        loadedEventItems.insert(lastLoadedProvider,loadedItems);
+                        loadedEventItems.insert(lastLoadedProvider, loadedItems);
                     }
                 }
-                if(fileType == SessionFile::POSITION){
+                if (fileType == SessionFile::POSITION)
+                {
                     //If the file does not exist in the location specified in the session file (absolute path), look up in the directory
                     //where the session file is. This is useful if you moved your file or you backup them (<=> the absolute path is not good anymore)
                     QFileInfo fileInfo = QFileInfo(fileUrl).absolutePath();
-                    if(!fileInfo.exists()){
+                    if (!fileInfo.exists())
+                    {
                         QString fileName = QFileInfo(fileUrl).fileName();
-                        fileUrl = QFileInfo(sessionUrl).absolutePath()+QDir::separator() + fileName;
+                        fileUrl = QFileInfo(sessionUrl).absolutePath() + QDir::separator() + fileName;
                     }
 
                     //Create the transformedBackground
                     //The background image information is stored in the parameter file starting with the version 1.2.3
-                    if(reader.getVersion().isEmpty() || reader.getVersion() == "1.2.2"){
-                        if(reader.getBackgroundImage() != "-")
+                    if (reader.getVersion().isEmpty() || reader.getVersion() == "1.2.2")
+                    {
+                        if (reader.getBackgroundImage() != "-")
                             backgroundImage = sessionFile.getBackgroundPath();
-                        if(!backgroundImage.isEmpty()){
+                        if (!backgroundImage.isEmpty())
+                        {
                             fileInfo = QFileInfo(backgroundImage);
-                            if(!fileInfo.exists()){
-                                QString imageUrl= backgroundImage;
+                            if (!fileInfo.exists())
+                            {
+                                QString imageUrl = backgroundImage;
                                 QString fileName = QFileInfo(imageUrl).fileName();
                                 imageUrl = sessionUrl + QDir::separator() + fileName;
                                 backgroundImage = QFileInfo(imageUrl).absolutePath();
@@ -1752,17 +1967,20 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
                     }
 
                     OpenSaveCreateReturnMessage status = loadPositionFile(fileUrl);
-                    if(status == OK){
+                    if (status == OK)
+                    {
                         loadedPositionFile = lastLoadedProvider;
-                        if(!backgroundImage.isEmpty() || (backgroundImage.isEmpty() && drawPositionsOnBackground))
+                        if (!backgroundImage.isEmpty() || (backgroundImage.isEmpty() && drawPositionsOnBackground))
                             transformedBackground = transformBackgroundImage();
                         static_cast<NeuroscopeApp*>(parent)->positionFileLoaded();
                     }
                 }
             }
-        } else {
-            static_cast<NeuroscopeApp*>(parent)->createDisplay(channelsToDisplay,verticalLines,raster,waveforms,showLabels,multipleColumns,
-                                                                greyMode,autocenterChannels,offsets,channelGains,selectedChannels,startTime,duration,rasterHeight,tabLabel);
+        }
+        else
+        {
+            static_cast<NeuroscopeApp*>(parent)->createDisplay(channelsToDisplay, verticalLines, raster, waveforms, showLabels, multipleColumns,
+                                                               greyMode, autocenterChannels, offsets, channelGains, selectedChannels, startTime, duration, rasterHeight, tabLabel);
         }
 
 
@@ -1770,13 +1988,14 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
         NeuroscopeView* view = viewList->last();
 
         //If the data file is not a dat file, do not display the waveforms but keep the information
-        if(extension != "dat")
+        if (extension != "dat")
             view->ignoreWaveformInformation();
 
         //Inform the view of the available providers
         QStringList::iterator providerIterator;
         //Cluster files
-        for(providerIterator = loadedClusterFiles.begin(); providerIterator != loadedClusterFiles.end(); ++providerIterator){
+        for (providerIterator = loadedClusterFiles.begin(); providerIterator != loadedClusterFiles.end(); ++providerIterator)
+        {
             QString name = *providerIterator;
             QString fileURL = providerUrls[name];
             QList<int> clustersIds;
@@ -1786,124 +2005,142 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader){
             QList<int> clusterList = static_cast<ClustersProvider*>(providers[name])->clusterIdList();
             //only keep the cluster ids which are still present
             QList<int>::iterator shownClustersIterator;
-            for(shownClustersIterator = ids.begin(); shownClustersIterator != ids.end(); ++shownClustersIterator)
-                if(clusterList.contains(*shownClustersIterator)) clustersIds.append(*shownClustersIterator);
+            for (shownClustersIterator = ids.begin(); shownClustersIterator != ids.end(); ++shownClustersIterator)
+                if (clusterList.contains(*shownClustersIterator))
+                    clustersIds.append(*shownClustersIterator);
             QList<int>::iterator skippedClustersIterator;
-            for(skippedClustersIterator = skippedIds.begin(); skippedClustersIterator != skippedIds.end(); ++skippedClustersIterator)
-                if(clusterList.contains(*skippedClustersIterator)) clustersIdsToSkip.append(*skippedClustersIterator);
+            for (skippedClustersIterator = skippedIds.begin(); skippedClustersIterator != skippedIds.end(); ++skippedClustersIterator)
+                if (clusterList.contains(*skippedClustersIterator))
+                    clustersIdsToSkip.append(*skippedClustersIterator);
 
             //an unselected cluster has to be skipped, check and correct if need it
             QList<int>::iterator iterator;
-            for(iterator = clusterList.begin(); iterator != clusterList.end(); ++iterator)
-                if(!clustersIds.contains(*iterator) && !clustersIdsToSkip.contains(*iterator)) clustersIdsToSkip.append(*iterator);
+            for (iterator = clusterList.begin(); iterator != clusterList.end(); ++iterator)
+                if (!clustersIds.contains(*iterator) && !clustersIdsToSkip.contains(*iterator))
+                    clustersIdsToSkip.append(*iterator);
             qSort(clustersIdsToSkip);
-            view->setClusterProvider(static_cast<ClustersProvider*>(providers[name]),name,providerItemColors[name],true,clustersIds,
-                                     &displayGroupsClusterFile,&channelsSpikeGroups,peakSampleIndex - 1,nbSamples - peakSampleIndex,clustersIdsToSkip);
+            view->setClusterProvider(static_cast<ClustersProvider*>(providers[name]), name, providerItemColors[name], true, clustersIds,
+                                     &displayGroupsClusterFile, &channelsSpikeGroups, peakSampleIndex - 1, nbSamples - peakSampleIndex, clustersIdsToSkip);
         }
         //Event files
-        for(providerIterator = loadedEventFiles.begin(); providerIterator != loadedEventFiles.end(); ++providerIterator){
+        for (providerIterator = loadedEventFiles.begin(); providerIterator != loadedEventFiles.end(); ++providerIterator)
+        {
             QString name = *providerIterator;
             QString fileURL = providerUrls[name];
             QList<int> eventsIds;
             QList<int> eventsIdsToSkip;
             QList<int> ids = selectedEvents[fileURL];
             QList<int> skippedIds = skippedEvents[fileURL];
-            QMap<int,EventDescription> eventMap = static_cast<EventsProvider*>(providers[name])->eventIdDescriptionMap();
+            QMap<int, EventDescription> eventMap = static_cast<EventsProvider*>(providers[name])->eventIdDescriptionMap();
             //only keep the event ids which are still present
-            QMap<EventDescription,int> loadedItems = loadedEventItems[name];
+            QMap<EventDescription, int> loadedItems = loadedEventItems[name];
             ItemColors* eventColors = providerItemColors[name];
             QList<int>::iterator shownEventsIterator;
-            for(shownEventsIterator = ids.begin(); shownEventsIterator != ids.end(); ++shownEventsIterator){
+            for (shownEventsIterator = ids.begin(); shownEventsIterator != ids.end(); ++shownEventsIterator)
+            {
                 EventDescription description = EventDescription(eventColors->itemLabelById(*shownEventsIterator));
-                if(eventMap.contains(*shownEventsIterator) && loadedItems.contains(description) && loadedItems[description] == *shownEventsIterator)
+                if (eventMap.contains(*shownEventsIterator) && loadedItems.contains(description) && loadedItems[description] == *shownEventsIterator)
                     eventsIds.append(*shownEventsIterator);
             }
             QList<int>::iterator skippedEventsIterator;
-            for(skippedEventsIterator = skippedIds.begin(); skippedEventsIterator != skippedIds.end(); ++skippedEventsIterator){
+            for (skippedEventsIterator = skippedIds.begin(); skippedEventsIterator != skippedIds.end(); ++skippedEventsIterator)
+            {
                 EventDescription description = EventDescription(eventColors->itemLabelById(*skippedEventsIterator));
-                if(eventMap.contains(*skippedEventsIterator) && loadedItems.contains(description) && loadedItems[description] == *skippedEventsIterator)
+                if (eventMap.contains(*skippedEventsIterator) && loadedItems.contains(description) && loadedItems[description] == *skippedEventsIterator)
                     eventsIdsToSkip.append(*skippedEventsIterator);
             }
 
             //an unselected event has to be skipped, check and correct if need it
-            QMap<int,EventDescription>::iterator iterator;
-            for(iterator = eventMap.begin(); iterator != eventMap.end(); ++iterator)
-                if(!eventsIds.contains(iterator.key()) && !eventsIdsToSkip.contains(iterator.key())) eventsIdsToSkip.append(iterator.key());
+            QMap<int, EventDescription>::iterator iterator;
+            for (iterator = eventMap.begin(); iterator != eventMap.end(); ++iterator)
+                if (!eventsIds.contains(iterator.key()) && !eventsIdsToSkip.contains(iterator.key()))
+                    eventsIdsToSkip.append(iterator.key());
             qSort(eventsIdsToSkip);
 
-            view->setEventProvider(static_cast<EventsProvider*>(providers[name]),name,providerItemColors[name],true,eventsIds,eventsIdsToSkip);
+            view->setEventProvider(static_cast<EventsProvider*>(providers[name]), name, providerItemColors[name], true, eventsIds, eventsIdsToSkip);
         }
         //Position file
-        if(!loadedPositionFile.isEmpty()){
-            if(isAPositionView){
-                if(rotation != 90 && rotation != 270)
-                    view->addPositionView(static_cast<PositionsProvider*>(providers[loadedPositionFile]),transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
-                                          startTime,duration,videoWidth,videoHeight,showEventsInPositionView);
+        if (!loadedPositionFile.isEmpty())
+        {
+            if (isAPositionView)
+            {
+                if (rotation != 90 && rotation != 270)
+                    view->addPositionView(static_cast<PositionsProvider*>(providers[loadedPositionFile]), transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
+                                          startTime, duration, videoWidth, videoHeight, showEventsInPositionView);
 
                 //If there is a rotation of 90 or 270 degree, the with and height have to be inverted.
                 else
-                    view->addPositionView(static_cast<PositionsProvider*>(providers[loadedPositionFile]),transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
-                                          startTime,duration,videoHeight,videoWidth,showEventsInPositionView);
-
+                    view->addPositionView(static_cast<PositionsProvider*>(providers[loadedPositionFile]), transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
+                                          startTime, duration, videoHeight, videoWidth, showEventsInPositionView);
             }
         }
     }
 }
 
-void NeuroscopeDoc::setProviders(NeuroscopeView* activeView){
+void NeuroscopeDoc::setProviders(NeuroscopeView* activeView)
+{
     //the new view is the last one in the list of view (viewList)
     NeuroscopeView* newView = viewList->last();
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         const QString name = i.key();
-        if(qobject_cast<ClustersProvider*>(i.value())){
+        if (qobject_cast<ClustersProvider*>(i.value()))
+        {
             QList<int> clusterIds = *(activeView->getSelectedClusters(name));
             QList<int> clusterIdsToSkip = *(activeView->getClustersNotUsedForBrowsing(name));
-            newView->setClusterProvider(static_cast<ClustersProvider*>(i.value()),name,providerItemColors[name],true
-                                        ,clusterIds,&displayGroupsClusterFile,&channelsSpikeGroups,peakSampleIndex - 1,nbSamples - peakSampleIndex,clusterIdsToSkip);
+            newView->setClusterProvider(static_cast<ClustersProvider*>(i.value()), name, providerItemColors[name], true, clusterIds, &displayGroupsClusterFile, &channelsSpikeGroups, peakSampleIndex - 1, nbSamples - peakSampleIndex, clusterIdsToSkip);
         }
-        if(qobject_cast<EventsProvider*>(i.value())){
+        if (qobject_cast<EventsProvider*>(i.value()))
+        {
             QList<int> eventIds = *(activeView->getSelectedEvents(name));
             QList<int> eventIdsToSkip = *(activeView->getEventsNotUsedForBrowsing(name));
-            newView->setEventProvider(static_cast<EventsProvider*>(i.value()),name,providerItemColors[name],true,eventIds,eventIdsToSkip);
+            newView->setEventProvider(static_cast<EventsProvider*>(i.value()), name, providerItemColors[name], true, eventIds, eventIdsToSkip);
         }
-        if(qobject_cast<PositionsProvider*>(i.value())){
-            if(activeView->isPositionView()){
-                if(rotation != 90 && rotation != 270)
-                    newView->addPositionView(static_cast<PositionsProvider*>(i.value()),transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
-                                             videoWidth,videoHeight);
+        if (qobject_cast<PositionsProvider*>(i.value()))
+        {
+            if (activeView->isPositionView())
+            {
+                if (rotation != 90 && rotation != 270)
+                    newView->addPositionView(static_cast<PositionsProvider*>(i.value()), transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
+                                             videoWidth, videoHeight);
 
                 //If there is a rotation of 90 or 270 degree, the with and height have to be inverted.
-                else newView->addPositionView(static_cast<PositionsProvider*>(i.value()),transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
-                                              videoHeight,videoWidth);
+                else
+                    newView->addPositionView(static_cast<PositionsProvider*>(i.value()), transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),
+                                             videoHeight, videoWidth);
             }
         }
     }
 }
 
-void NeuroscopeDoc::setWaveformInformation(int nb,int index,NeuroscopeView* activeView){
+void NeuroscopeDoc::setWaveformInformation(int nb, int index, NeuroscopeView* activeView)
+{
     nbSamples = nb;
     peakSampleIndex = index;
 
     const int nbView = viewList->count();
-    for(int i = 0; i<nbView; ++i) {
+    for (int i = 0; i < nbView; ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
 
-        if(view != activeView)
-            view->updateWaveformInformation(peakSampleIndex - 1,nbSamples - peakSampleIndex,false);
+        if (view != activeView)
+            view->updateWaveformInformation(peakSampleIndex - 1, nbSamples - peakSampleIndex, false);
         else
-            view->updateWaveformInformation(peakSampleIndex - 1,nbSamples - peakSampleIndex,true);
+            view->updateWaveformInformation(peakSampleIndex - 1, nbSamples - peakSampleIndex, true);
     }
 }
 
 
-void NeuroscopeDoc::setPositionInformation(double newVideoSamplingRate, int newWidth, int newHeight, const QString &newBackgroundImage,
-                                           int newRotation,int newFlip,bool positionsBackground,NeuroscopeView* activeView){
+void NeuroscopeDoc::setPositionInformation(double newVideoSamplingRate, int newWidth, int newHeight, const QString& newBackgroundImage,
+                                           int newRotation, int newFlip, bool positionsBackground, NeuroscopeView* activeView)
+{
 
     videoSamplingRate = newVideoSamplingRate;
     bool newOrientation = false;
-    if(rotation != newRotation || flip != newFlip) newOrientation = true;
+    if (rotation != newRotation || flip != newFlip)
+        newOrientation = true;
     rotation = newRotation;
     flip = newFlip;
     backgroundImage = newBackgroundImage;
@@ -1913,96 +2150,117 @@ void NeuroscopeDoc::setPositionInformation(double newVideoSamplingRate, int newW
 
     //Update the position provider
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
-        if(qobject_cast<PositionsProvider*>(i.value())){
-            static_cast<PositionsProvider*>(i.value())->updateVideoInformation(videoSamplingRate,rotation,flip,videoWidth,videoHeight);
+        if (qobject_cast<PositionsProvider*>(i.value()))
+        {
+            static_cast<PositionsProvider*>(i.value())->updateVideoInformation(videoSamplingRate, rotation, flip, videoWidth, videoHeight);
             break;
         }
     }
 
     //if a position file is open, update the sampling rate for the corresponding extension
-    if(extensionSamplingRates.contains(positionFileExtension))
-        extensionSamplingRates.insert(positionFileExtension,videoSamplingRate);
+    if (extensionSamplingRates.contains(positionFileExtension))
+        extensionSamplingRates.insert(positionFileExtension, videoSamplingRate);
 
-    if(!backgroundImage.isEmpty() || (backgroundImage.isEmpty() && drawPositionsOnBackground))
+    if (!backgroundImage.isEmpty() || (backgroundImage.isEmpty() && drawPositionsOnBackground))
         transformedBackground = transformBackgroundImage();
     else
         transformedBackground = QImage();
 
     //Update the views
-    if(rotation != 90 && rotation != 270){
-        for(int i = 0; i<viewList->count(); ++i) {
+    if (rotation != 90 && rotation != 270)
+    {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView) view->updatePositionInformation(videoWidth,videoHeight,transformedBackground,newOrientation,false);
-            else view->updatePositionInformation(videoWidth,videoHeight,transformedBackground,newOrientation,true);
+            if (view != activeView)
+                view->updatePositionInformation(videoWidth, videoHeight, transformedBackground, newOrientation, false);
+            else
+                view->updatePositionInformation(videoWidth, videoHeight, transformedBackground, newOrientation, true);
         }
     }
     //If there is a rotation of 90 or 270 degree, the with and height have to be inverted.
-    else{
-        for(int i = 0; i<viewList->count(); ++i) {
+    else
+    {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
 
-            if(view != activeView) view->updatePositionInformation(videoHeight,videoWidth,transformedBackground,newOrientation,false);
-            else view->updatePositionInformation(videoHeight,videoWidth,transformedBackground,newOrientation,true);
+            if (view != activeView)
+                view->updatePositionInformation(videoHeight, videoWidth, transformedBackground, newOrientation, false);
+            else
+                view->updatePositionInformation(videoHeight, videoWidth, transformedBackground, newOrientation, true);
         }
     }
 }
 
-QImage NeuroscopeDoc::transformBackgroundImage(bool useWhiteBackground){
+QImage NeuroscopeDoc::transformBackgroundImage(bool useWhiteBackground)
+{
     QImage image;
 
     //Draw the positions on the background if need it
-    if(drawPositionsOnBackground){
+    if (drawPositionsOnBackground)
+    {
         //Get the PositionProvider
         PositionsProvider* positionsProvider;
         QHashIterator<QString, DataProvider*> i(providers);
-        while (i.hasNext()) {
+        while (i.hasNext())
+        {
             i.next();
-            if(qobject_cast<PositionsProvider*>(i.value())){
+            if (qobject_cast<PositionsProvider*>(i.value()))
+            {
                 positionsProvider = static_cast<PositionsProvider*>(i.value());
                 break;
             }
         }
         //Create the image with the positions
-        if(useWhiteBackground){
-            ImageCreator creator(*positionsProvider,videoWidth,videoHeight,"",Qt::white);
+        if (useWhiteBackground)
+        {
+            ImageCreator creator(*positionsProvider, videoWidth, videoHeight, "", Qt::white);
             image = creator.createImage();
         }
-        else{
-            ImageCreator creator(*positionsProvider,videoWidth,videoHeight,backgroundImage,dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor());
+        else
+        {
+            ImageCreator creator(*positionsProvider, videoWidth, videoHeight, backgroundImage, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor());
             image = creator.createImage();
         }
     }
-    else image = QImage(backgroundImage);
+    else
+        image = QImage(backgroundImage);
 
-    if(!image.isNull()){
+    if (!image.isNull())
+    {
         //apply first the rotation and then the flip
         QImage rotatedImage = image;
         QTransform rot;
         //KDE counts clockwise, to have a counterclock-wise rotation 90 and 270 are inverted
-        if(rotation == 90)
+        if (rotation == 90)
             rot.rotate(90);
-        else if(rotation == 180)
+        else if (rotation == 180)
             rot.rotate(180);
-        else if(rotation == 270)
+        else if (rotation == 270)
             rot.rotate(270);
         rotatedImage = image.transformed(rot);
         QImage flippedImage = rotatedImage;
         // 0 stands for none, 1 for vertical flip and 2 for horizontal flip.
         int flip = getFlip();
-        if(flip != 0){
+        if (flip != 0)
+        {
             bool horizontal;
             bool vertical;
-            if(flip == 1){
+            if (flip == 1)
+            {
                 horizontal = false;
                 vertical = true;
             }
-            else{
+            else
+            {
                 horizontal = true;
                 vertical = false;
             }
-            flippedImage = rotatedImage.mirrored(horizontal,vertical);
+            flippedImage = rotatedImage.mirrored(horizontal, vertical);
         }
         return flippedImage;
     }
@@ -2011,165 +2269,199 @@ QImage NeuroscopeDoc::transformBackgroundImage(bool useWhiteBackground){
 }
 
 
-void NeuroscopeDoc::selectAllChannels(NeuroscopeView& activeView,bool editMode){
+void NeuroscopeDoc::selectAllChannels(NeuroscopeView& activeView, bool editMode)
+{
     const QList<int> channelsSelected = displayChannelsGroups.keys();
 
     //The new selection of channels only means for the active view
-    if(editMode) {
+    if (editMode)
+    {
         activeView.setSelectedChannels(channelsSelected);
-    } else {
+    }
+    else
+    {
         activeView.shownChannelsUpdate(channelsSelected);
     }
 }
 
-void NeuroscopeDoc::showAllClustersExcept(ItemPalette* clusterPalette,NeuroscopeView* activeView, const QList<int> &clustersToHide){
+void NeuroscopeDoc::showAllClustersExcept(ItemPalette* clusterPalette, NeuroscopeView* activeView, const QList<int>& clustersToHide)
+{
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         const QString providerName = i.key();
-        if(qobject_cast<ClustersProvider*>(i.value())){
+        if (qobject_cast<ClustersProvider*>(i.value()))
+        {
             QList<int> clusterList = static_cast<ClustersProvider*>(i.value())->clusterIdList();
             QList<int> clustersToShow;
 
-            if(clustersToHide.isEmpty()){
+            if (clustersToHide.isEmpty())
+            {
                 //The new selection of clusters only means for the active view
-                activeView->shownClustersUpdate(providerName,clusterList);
+                activeView->shownClustersUpdate(providerName, clusterList);
             }
-            else{
+            else
+            {
                 QList<int>::iterator clustersToAdd;
-                for(clustersToAdd = clusterList.begin(); clustersToAdd != clusterList.end(); ++clustersToAdd ){
-                    if(!clustersToHide.contains(*clustersToAdd))
+                for (clustersToAdd = clusterList.begin(); clustersToAdd != clusterList.end(); ++clustersToAdd)
+                {
+                    if (!clustersToHide.contains(*clustersToAdd))
                         clustersToShow.append(*clustersToAdd);
                 }
 
                 const QList<int>* skippedClusterIds = activeView->getClustersNotUsedForBrowsing(providerName);
-                clusterPalette->selectItems(providerName,clustersToShow,*skippedClusterIds);
+                clusterPalette->selectItems(providerName, clustersToShow, *skippedClusterIds);
                 //The new selection of clusters only means for the active view
-                activeView->shownClustersUpdate(providerName,clustersToShow);
+                activeView->shownClustersUpdate(providerName, clustersToShow);
             }
         }
-        if(clustersToHide.isEmpty()) clusterPalette->selectAllItems();
+        if (clustersToHide.isEmpty())
+            clusterPalette->selectAllItems();
     }
 }
 
-void NeuroscopeDoc::deselectAllClusters(ItemPalette* clusterPalette,NeuroscopeView* activeView){
+void NeuroscopeDoc::deselectAllClusters(ItemPalette* clusterPalette, NeuroscopeView* activeView)
+{
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
 
         const QString providerName = i.key();
-        if(qobject_cast<ClustersProvider*>(i.value())){
+        if (qobject_cast<ClustersProvider*>(i.value()))
+        {
             QList<int> clustersToShow;
             //The new selection of clusters only means for the active view
-            activeView->shownClustersUpdate(providerName,clustersToShow);
+            activeView->shownClustersUpdate(providerName, clustersToShow);
         }
     }
     clusterPalette->deselectAllItems();
 }
 
-void NeuroscopeDoc::showAllEvents(ItemPalette* eventPalette,NeuroscopeView* activeView){
+void NeuroscopeDoc::showAllEvents(ItemPalette* eventPalette, NeuroscopeView* activeView)
+{
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         const QString providerName = i.key();
-        if(qobject_cast<EventsProvider*>(i.value())){
-            QMap<EventDescription,int> events = static_cast<EventsProvider*>(i.value())->eventDescriptionIdMap();
+        if (qobject_cast<EventsProvider*>(i.value()))
+        {
+            QMap<EventDescription, int> events = static_cast<EventsProvider*>(i.value())->eventDescriptionIdMap();
             QList<int> eventList = events.values();
             //The new selection of events only means for the active view
-            activeView->shownEventsUpdate(providerName,eventList);
+            activeView->shownEventsUpdate(providerName, eventList);
         }
     }
     eventPalette->selectAllItems();
 }
 
-void NeuroscopeDoc::deselectAllEvents(ItemPalette* eventPalette,NeuroscopeView* activeView){
+void NeuroscopeDoc::deselectAllEvents(ItemPalette* eventPalette, NeuroscopeView* activeView)
+{
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         QString providerName = i.key();
-        if(qobject_cast<EventsProvider*>(i.value())){
+        if (qobject_cast<EventsProvider*>(i.value()))
+        {
             QList<int> eventsToShow;
             //The new selection of events only means for the active view
-            activeView->shownEventsUpdate(providerName,eventsToShow);
+            activeView->shownEventsUpdate(providerName, eventsToShow);
         }
     }
     eventPalette->deselectAllItems();
 }
 
-void NeuroscopeDoc::deselectAllChannels(NeuroscopeView& activeView,bool editMode){
+void NeuroscopeDoc::deselectAllChannels(NeuroscopeView& activeView, bool editMode)
+{
     QList<int> channelsSelected;
 
     //The new selection of channels only means for the active view
-    if(editMode) activeView.setSelectedChannels(channelsSelected);
-    else activeView.shownChannelsUpdate(channelsSelected);
+    if (editMode)
+        activeView.setSelectedChannels(channelsSelected);
+    else
+        activeView.shownChannelsUpdate(channelsSelected);
 }
 
-void NeuroscopeDoc::synchronize(){
+void NeuroscopeDoc::synchronize()
+{
     //The information for spikes detection become the same as the one for displaying the field potentials.
     channelsSpikeGroups.clear();
     spikeGroupsChannels.clear();
 
-    QMap<int,int>::Iterator iterator;
-    QMap<int,int>::ConstIterator end(displayChannelsGroups.end());
-    for(iterator = displayChannelsGroups.begin(); iterator != end; ++iterator){
+    QMap<int, int>::Iterator iterator;
+    QMap<int, int>::ConstIterator end(displayChannelsGroups.end());
+    for (iterator = displayChannelsGroups.begin(); iterator != end; ++iterator)
+    {
         //set the color for the spike group to the one for the display group.
         QColor color = channelColorList->groupColor(iterator.key());
-        channelColorList->setSpikeGroupColor(iterator.key(),color);
-        channelsSpikeGroups.insert(iterator.key(),iterator.value());
+        channelColorList->setSpikeGroupColor(iterator.key(), color);
+        channelsSpikeGroups.insert(iterator.key(), iterator.value());
     }
 
-    QMap<int, QList<int> >::Iterator iterator2;
-    for(iterator2 = displayGroupsChannels.begin(); iterator2 != displayGroupsChannels.end(); ++iterator2){
-        spikeGroupsChannels.insert(iterator2.key(),iterator2.value());
+    QMap<int, QList<int>>::Iterator iterator2;
+    for (iterator2 = displayGroupsChannels.begin(); iterator2 != displayGroupsChannels.end(); ++iterator2)
+    {
+        spikeGroupsChannels.insert(iterator2.key(), iterator2.value());
     }
 }
 
-qlonglong NeuroscopeDoc::recordingLength() const{
+qlonglong NeuroscopeDoc::recordingLength() const
+{
     return tracesProvider->recordingLength();
 }
 
-void NeuroscopeDoc::setNoneEditMode(NeuroscopeView* activeView){
+void NeuroscopeDoc::setNoneEditMode(NeuroscopeView* activeView)
+{
     //Notify all the views of the modification
     //In none edit mode, the shown channels becom the selected ones.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView){
-            view->setMode(TraceView::ZOOM,false);
+        if (view != activeView)
+        {
+            view->setMode(TraceView::ZOOM, false);
             //view->setSelectedChannels(view->channels());
         }
-        else{
-            view->setMode(TraceView::ZOOM,true);
+        else
+        {
+            view->setMode(TraceView::ZOOM, true);
             view->setSelectedChannels(view->channels());
         }
     }
 }
 
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFile(const QString &clusterUrl,NeuroscopeView* activeView){
-    if(clusterUrl.indexOf(".nev") != -1)
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFile(const QString& clusterUrl, NeuroscopeView* activeView)
+{
+    if (clusterUrl.indexOf(".nev") != -1)
         return loadNevClusterFile(clusterUrl, activeView);
 
-    if(clusterUrl.indexOf(".clu") != -1)
+    if (clusterUrl.indexOf(".clu") != -1)
         return loadCluClusterFile(clusterUrl, activeView);
 
     return INCORRECT_FILE;
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadNevClusterFile(const QString &clusterUrl,NeuroscopeView* activeView){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadNevClusterFile(const QString& clusterUrl, NeuroscopeView* activeView)
+{
     // Open file with appropiate provider
     QList<NEVClustersProvider*> list = NEVClustersProvider::fromFile(clusterUrl,
-                                                                  this->channelLabels,
-                                                                  this->samplingRate,
-                                                                  this->tracesProvider->getTotalNbSamples(),
-                                                                  this->clusterPosition);
+                                                                     this->channelLabels,
+                                                                     this->samplingRate,
+                                                                     this->tracesProvider->getTotalNbSamples(),
+                                                                     this->clusterPosition);
 
     // Set spike event sample count and peak postition
-	this->peakSampleIndex = 12;
-	this->nbSamples = 48;
+    this->peakSampleIndex = 12;
+    this->nbSamples = 48;
 
-    for(QList<NEVClustersProvider*>::iterator providerIterator = list.begin();
-        providerIterator != list.end();
-        providerIterator++) {
+    for (QList<NEVClustersProvider*>::iterator providerIterator = list.begin();
+         providerIterator != list.end();
+         providerIterator++)
+    {
         // Get all needed properties from cluster provider
         NEVClustersProvider* clustersProvider = *providerIterator;
         QString name = clustersProvider->getName();
@@ -2184,24 +2476,29 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadNevClusterFile(con
         QList<int> clustersToSkip;
         //Constructs the clusterColorList and clustersToSkip
         QList<int>::iterator it;
-        for(it = clusterList.begin(); it != clusterList.end(); ++it){
+        for (it = clusterList.begin(); it != clusterList.end(); ++it)
+        {
             QColor color;
-            if(*it == 1) color.setHsv(0,0,220);//Cluster 1 is always gray
-            else if(*it == 0) color.setHsv(0,255,255);//Cluster 0 is always red
-            else color.setHsv(static_cast<int>(fmod(static_cast<double>(*it)*7,36))*10,255,255);
-            clusterColors->append(static_cast<int>(*it),color);
+            if (*it == 1)
+                color.setHsv(0, 0, 220); //Cluster 1 is always gray
+            else if (*it == 0)
+                color.setHsv(0, 255, 255); //Cluster 0 is always red
+            else
+                color.setHsv(static_cast<int>(fmod(static_cast<double>(*it) * 7, 36)) * 10, 255, 255);
+            clusterColors->append(static_cast<int>(*it), color);
             clustersToSkip.append(static_cast<int>(*it));
         }
         providerItemColors.insert(name, clusterColors);
 
-		// Compute which cluster files give data for a given anatomical group
-		computeClusterFilesMapping();
+        // Compute which cluster files give data for a given anatomical group
+        computeClusterFilesMapping();
 
         // Informs the views than there is a new cluster provider.
         // There should be only one view, since we only created one display.
         QList<int> clustersToShow;
-        for(int i = 0; i < this->viewList->count(); ++i) {
-			this->viewList->at(i)->setClusterProvider(
+        for (int i = 0; i < this->viewList->count(); ++i)
+        {
+            this->viewList->at(i)->setClusterProvider(
                 clustersProvider,
                 name,
                 clusterColors,
@@ -2211,79 +2508,92 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadNevClusterFile(con
                 &(this->channelsSpikeGroups),
                 this->peakSampleIndex - 1,
                 this->nbSamples - peakSampleIndex,
-                clustersToSkip
-            );
+                clustersToSkip);
         }
         emit clusterFileLoaded(name);
-	}
+    }
 
     return OK;
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadCluClusterFile(const QString &clusterUrl,NeuroscopeView* activeView){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadCluClusterFile(const QString& clusterUrl, NeuroscopeView* activeView)
+{
     // Open file with appropiate provider
-    ClustersProvider* clustersProvider = new ClustersProvider(clusterUrl,datSamplingRate,samplingRate,tracesProvider->getTotalNbSamples(),clusterPosition);
+    ClustersProvider* clustersProvider = new ClustersProvider(clusterUrl, datSamplingRate, samplingRate, tracesProvider->getTotalNbSamples(), clusterPosition);
     QString name = clustersProvider->getName();
 
     //The name should only contains digits
-    if(name.contains(QRegExp("\\D")) != 0){
+    if (name.contains(QRegExp("\\D")) != 0)
+    {
         delete clustersProvider;
         return INCORRECT_FILE;
     }
 
-    if(providers.contains(name) && qobject_cast<ClustersProvider*>(providers[name])){
+    if (providers.contains(name) && qobject_cast<ClustersProvider*>(providers[name]))
+    {
         delete clustersProvider;
         return ALREADY_OPENED;
     }
 
     int returnStatus = clustersProvider->loadData();
-    if(returnStatus == ClustersProvider::OPEN_ERROR){
+    if (returnStatus == ClustersProvider::OPEN_ERROR)
+    {
         delete clustersProvider;
         return OPEN_ERROR;
     }
-    else if(returnStatus == ClustersProvider::MISSING_FILE){
+    else if (returnStatus == ClustersProvider::MISSING_FILE)
+    {
         delete clustersProvider;
         return MISSING_FILE;
     }
-    else if(returnStatus == ClustersProvider::COUNT_ERROR){
+    else if (returnStatus == ClustersProvider::COUNT_ERROR)
+    {
         delete clustersProvider;
         return CREATION_ERROR;
     }
-    else if(returnStatus == ClustersProvider::INCORRECT_CONTENT){
+    else if (returnStatus == ClustersProvider::INCORRECT_CONTENT)
+    {
         delete clustersProvider;
         return INCORRECT_CONTENT;
     }
 
-    providers.insert(name,clustersProvider);
-    providerUrls.insert(name,clusterUrl);
+    providers.insert(name, clustersProvider);
+    providerUrls.insert(name, clusterUrl);
 
     ItemColors* clusterColors = new ItemColors();
     QList<int> clustersToSkip;
     //Constructs the clusterColorList and clustersToSkip
     QList<int> clusterList = clustersProvider->clusterIdList();
     QList<int>::iterator it;
-    for(it = clusterList.begin(); it != clusterList.end(); ++it){
+    for (it = clusterList.begin(); it != clusterList.end(); ++it)
+    {
         QColor color;
-        if(*it == 1) color.setHsv(0,0,220);//Cluster 1 is always gray
-        else if(*it == 0) color.setHsv(0,255,255);//Cluster 0 is always red
-        else color.setHsv(static_cast<int>(fmod(static_cast<double>(*it)*7,36))*10,255,255);
-        clusterColors->append(static_cast<int>(*it),color);
+        if (*it == 1)
+            color.setHsv(0, 0, 220); //Cluster 1 is always gray
+        else if (*it == 0)
+            color.setHsv(0, 255, 255); //Cluster 0 is always red
+        else
+            color.setHsv(static_cast<int>(fmod(static_cast<double>(*it) * 7, 36)) * 10, 255, 255);
+        clusterColors->append(static_cast<int>(*it), color);
         clustersToSkip.append(static_cast<int>(*it));
     }
 
-    providerItemColors.insert(name,clusterColors);
+    providerItemColors.insert(name, clusterColors);
 
 
-    if(displayGroupsClusterFile.isEmpty())
+    if (displayGroupsClusterFile.isEmpty())
         //compute which cluster files give data for a given anatomical group
         computeClusterFilesMapping();
 
     //Informs the views than there is a new cluster provider.
     QList<int> clustersToShow;
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView) view->setClusterProvider(clustersProvider,name,clusterColors,false,clustersToShow,&displayGroupsClusterFile,&channelsSpikeGroups,peakSampleIndex - 1,nbSamples - peakSampleIndex,clustersToSkip);
-        else view->setClusterProvider(clustersProvider,name,clusterColors,true,clustersToShow,&displayGroupsClusterFile,&channelsSpikeGroups,peakSampleIndex - 1,nbSamples - peakSampleIndex,clustersToSkip);
+        if (view != activeView)
+            view->setClusterProvider(clustersProvider, name, clusterColors, false, clustersToShow, &displayGroupsClusterFile, &channelsSpikeGroups, peakSampleIndex - 1, nbSamples - peakSampleIndex, clustersToSkip);
+        else
+            view->setClusterProvider(clustersProvider, name, clusterColors, true, clustersToShow, &displayGroupsClusterFile, &channelsSpikeGroups, peakSampleIndex - 1, nbSamples - peakSampleIndex, clustersToSkip);
     }
 
     emit clusterFileLoaded(name);
@@ -2291,14 +2601,17 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadCluClusterFile(con
     return OK;
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFileForSession(const QString &clusterUrl, QMap<EventDescription,QColor>& itemColors, const QDateTime &lastModified, bool firstFile){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFileForSession(const QString& clusterUrl, QMap<EventDescription, QColor>& itemColors, const QDateTime& lastModified, bool firstFile)
+{
     //Check that the selected file is a cluster file (should always be the case as the file has
     //already be loaded once).
     QString fileName = clusterUrl;
-    if(fileName.indexOf(".clu") == -1){
+    if (fileName.indexOf(".clu") == -1)
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical(0, tr("Error!"),tr("The requested cluster file %1 has an incorrect name, it has to be of the form baseName.n.clu or baseName.clu.n, with n a number identifier."
-                                                 "Therefore will not be loaded.").arg(clusterUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The requested cluster file %1 has an incorrect name, it has to be of the form baseName.n.clu or baseName.clu.n, with n a number identifier."
+                                                  "Therefore will not be loaded.")
+                                                   .arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return INCORRECT_FILE;
     }
@@ -2307,9 +2620,10 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFileForSess
     //check if the file still exist before trying to load it
     QFileInfo fileInfo = QFileInfo(clusterUrl);
 
-    if(!fileInfo.exists()){
+    if (!fileInfo.exists())
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The file %1 does not exist anymore.").arg(clusterUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The file %1 does not exist anymore.").arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return OPEN_ERROR;
     }
@@ -2317,53 +2631,64 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFileForSess
 
     bool modified = false;
     //check if the file has been modified since the last session.
-    if(fileInfo.lastModified() != lastModified) modified = true;
+    if (fileInfo.lastModified() != lastModified)
+        modified = true;
 
-    ClustersProvider* clustersProvider = new ClustersProvider(clusterUrl,datSamplingRate,samplingRate,tracesProvider->getTotalNbSamples(),clusterPosition);
+    ClustersProvider* clustersProvider = new ClustersProvider(clusterUrl, datSamplingRate, samplingRate, tracesProvider->getTotalNbSamples(), clusterPosition);
     QString name = clustersProvider->getName();
 
     //The name should only contains digits
-    if(name.contains(QRegExp("\\D")) != 0){
+    if (name.contains(QRegExp("\\D")) != 0)
+    {
         delete clustersProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical(0, tr("Error!"),tr("The requested cluster file %1 has an incorrect name, it has to be of the form baseName.n.clu or baseName.clu.n, with n a number identifier. Therefore will not be loaded.").arg(clusterUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The requested cluster file %1 has an incorrect name, it has to be of the form baseName.n.clu or baseName.clu.n, with n a number identifier. Therefore will not be loaded.").arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return INCORRECT_FILE;
     }
 
     int returnStatus = clustersProvider->loadData();
-    if(returnStatus == ClustersProvider::OPEN_ERROR){
+    if (returnStatus == ClustersProvider::OPEN_ERROR)
+    {
         delete clustersProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("Could not load the file %1").arg(clusterUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("Could not load the file %1").arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return OPEN_ERROR;
     }
-    else if(returnStatus == ClustersProvider::MISSING_FILE){
+    else if (returnStatus == ClustersProvider::MISSING_FILE)
+    {
         delete clustersProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("There is no time file (.res) corresponding to the requested file %1"
-                                                  ", therefore this file will not be loaded.").arg(clusterUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("There is no time file (.res) corresponding to the requested file %1"
+                                                  ", therefore this file will not be loaded.")
+                                                   .arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return MISSING_FILE;
-    } else if(returnStatus == ClustersProvider::COUNT_ERROR) {
+    }
+    else if (returnStatus == ClustersProvider::COUNT_ERROR)
+    {
         delete clustersProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The number of spikes of the requested file %1 could not be determined."
-                                                  " Therefore this file will not be loaded.").arg(clusterUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The number of spikes of the requested file %1 could not be determined."
+                                                  " Therefore this file will not be loaded.")
+                                                   .arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return CREATION_ERROR;
-    } else if(returnStatus == ClustersProvider::INCORRECT_CONTENT) {
+    }
+    else if (returnStatus == ClustersProvider::INCORRECT_CONTENT)
+    {
         delete clustersProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The number of spikes read in the requested file %1 or the corresponding time file (.res) does not correspond to number of spikes computed."
-                                                  " Therefore this file will not be loaded.").arg(clusterUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The number of spikes read in the requested file %1 or the corresponding time file (.res) does not correspond to number of spikes computed."
+                                                  " Therefore this file will not be loaded.")
+                                                   .arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return INCORRECT_CONTENT;
     }
 
-    providers.insert(name,clustersProvider);
-    providerUrls.insert(name,clusterUrl);
+    providers.insert(name, clustersProvider);
+    providerUrls.insert(name, clusterUrl);
     lastLoadedProvider = name;
 
     ItemColors* clusterColors = new ItemColors();
@@ -2371,48 +2696,59 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFileForSess
     QList<int> clusterList = clustersProvider->clusterIdList();
     QList<int>::iterator it;
     QList<int>::iterator end(clusterList.end());
-    for(it = clusterList.begin(); it != end; ++it){
-        if(itemColors.contains(QString::number(*it))){
-            clusterColors->append(static_cast<int>(*it),itemColors[QString::number(*it)]);
-        } else {
+    for (it = clusterList.begin(); it != end; ++it)
+    {
+        if (itemColors.contains(QString::number(*it)))
+        {
+            clusterColors->append(static_cast<int>(*it), itemColors[QString::number(*it)]);
+        }
+        else
+        {
             modified = true;
             QColor color;
-            if(*it == 1)
-                color.setHsv(0,0,220);//Cluster 1 is always gray
-            else if(*it == 0)
-                color.setHsv(0,255,255);//Cluster 0 is always red
+            if (*it == 1)
+                color.setHsv(0, 0, 220); //Cluster 1 is always gray
+            else if (*it == 0)
+                color.setHsv(0, 255, 255); //Cluster 0 is always red
             else
-                color.setHsv(static_cast<int>(fmod(static_cast<double>(*it)*7,36))*10,255,255);
-            clusterColors->append(static_cast<int>(*it),color);
+                color.setHsv(static_cast<int>(fmod(static_cast<double>(*it) * 7, 36)) * 10, 255, 255);
+            clusterColors->append(static_cast<int>(*it), color);
         }
     }
 
-    providerItemColors.insert(name,clusterColors);
+    providerItemColors.insert(name, clusterColors);
 
-    if(modified == true){
+    if (modified == true)
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::information(0, tr("Error!"),tr("The requested file %1 has been modified since the last session,"
-                                                    " therefore some session information may be lost.").arg(clusterUrl));
+        QMessageBox::information(0, tr("Error!"), tr("The requested file %1 has been modified since the last session,"
+                                                     " therefore some session information may be lost.")
+                                                      .arg(clusterUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     }
 
     // TODO: Use signals for this.
-    if(firstFile) {
+    if (firstFile)
+    {
         static_cast<NeuroscopeApp*>(parent)->createClusterPalette(name);
-    } else {
+    }
+    else
+    {
         static_cast<NeuroscopeApp*>(parent)->addClusterFile(name);
     }
     return OK;
 }
 
-void NeuroscopeDoc::removeClusterFile(QString providerName,NeuroscopeView* activeView){
+void NeuroscopeDoc::removeClusterFile(QString providerName, NeuroscopeView* activeView)
+{
     //Informs the views than the cluster provider will be removed.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView)
-            view->removeClusterProvider(providerName,false);
+        if (view != activeView)
+            view->removeClusterProvider(providerName, false);
         else
-            view->removeClusterProvider(providerName,true);
+            view->removeClusterProvider(providerName, true);
     }
 
     delete providers.take(providerName);
@@ -2420,98 +2756,117 @@ void NeuroscopeDoc::removeClusterFile(QString providerName,NeuroscopeView* activ
     providerUrls.remove(providerName);
 }
 
-void NeuroscopeDoc::clusterColorUpdate(const QString &providerName,int clusterId,NeuroscopeView* activeView, const QColor &color){
+void NeuroscopeDoc::clusterColorUpdate(const QString& providerName, int clusterId, NeuroscopeView* activeView, const QColor& color)
+{
     //Notify all the views of the modification
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView)
-            view->clusterColorUpdate(color, providerName,clusterId,false);
+        if (view != activeView)
+            view->clusterColorUpdate(color, providerName, clusterId, false);
         else
-            view->clusterColorUpdate(color, providerName,clusterId,true);
+            view->clusterColorUpdate(color, providerName, clusterId, true);
     }
 
     //Ask the active view to take the modification into account immediately
     activeView->showAllWidgets();
 }
 
-void NeuroscopeDoc::setClusterPosition(int position){
+void NeuroscopeDoc::setClusterPosition(int position)
+{
     clusterPosition = position;
-    QMap<QString,QString>::Iterator iterator;
-    for(iterator = providerUrls.begin(); iterator != providerUrls.end(); ++iterator){
+    QMap<QString, QString>::Iterator iterator;
+    for (iterator = providerUrls.begin(); iterator != providerUrls.end(); ++iterator)
+    {
         DataProvider* provider = providers[iterator.key()];
-        if(qobject_cast<ClustersProvider*>(provider))
+        if (qobject_cast<ClustersProvider*>(provider))
             static_cast<ClustersProvider*>(provider)->setClusterPosition(position);
     }
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFile(const QString &eventUrl, NeuroscopeView*activeView){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFile(const QString& eventUrl, NeuroscopeView* activeView)
+{
     //Check that the selected file is a event file
     QString fileName = eventUrl;
     EventsProvider* eventsProvider(NULL);
-    if(fileName.indexOf(".nev") != -1) {
+    if (fileName.indexOf(".nev") != -1)
+    {
         eventsProvider = new NEVEventsProvider(eventUrl, eventPosition);
-    } else if(fileName.indexOf(".evt") != -1){
+    }
+    else if (fileName.indexOf(".evt") != -1)
+    {
         eventsProvider = new EventsProvider(eventUrl, samplingRate, eventPosition);
-    } else {
+    }
+    else
+    {
         return INCORRECT_FILE;
     }
     QString name = eventsProvider->getName();
 
     //The name should contains 3 characters with at least one none digit character.
-    if(name.length() != 3 || name.contains(QRegExp("\\d{3}"))){
+    if (name.length() != 3 || name.contains(QRegExp("\\d{3}")))
+    {
         delete eventsProvider;
         return INCORRECT_FILE;
     }
 
-    if(providers.contains(name) && qobject_cast<EventsProvider*>(providers[name])){
+    if (providers.contains(name) && qobject_cast<EventsProvider*>(providers[name]))
+    {
         delete eventsProvider;
         return ALREADY_OPENED;
     }
 
     int returnStatus = eventsProvider->loadData();
-    if(returnStatus == EventsProvider::OPEN_ERROR){
+    if (returnStatus == EventsProvider::OPEN_ERROR)
+    {
         delete eventsProvider;
         return OPEN_ERROR;
     }
-    else if(returnStatus == EventsProvider::COUNT_ERROR){
+    else if (returnStatus == EventsProvider::COUNT_ERROR)
+    {
         delete eventsProvider;
         return CREATION_ERROR;
     }
-    else if(returnStatus == EventsProvider::INCORRECT_CONTENT){
+    else if (returnStatus == EventsProvider::INCORRECT_CONTENT)
+    {
         delete eventsProvider;
         return INCORRECT_CONTENT;
     }
 
     lastEventProviderGridX = eventsProvider->getDescriptionLength();
-    providers.insert(name,eventsProvider);
-    providerUrls.insert(name,eventUrl);
+    providers.insert(name, eventsProvider);
+    providerUrls.insert(name, eventUrl);
 
     ItemColors* eventColors = new ItemColors();
     QList<int> eventsToSkip;
     //Constructs the eventColorList and eventsToSkip
     //An id is assign to each event, this id will be used internally in NeuroScope and in the session file.
-    QMap<EventDescription,int> eventMap = eventsProvider->eventDescriptionIdMap();
-    QMap<EventDescription,int>::Iterator it;
-    for(it = eventMap.begin(); it != eventMap.end(); ++it){
+    QMap<EventDescription, int> eventMap = eventsProvider->eventDescriptionIdMap();
+    QMap<EventDescription, int>::Iterator it;
+    for (it = eventMap.begin(); it != eventMap.end(); ++it)
+    {
         QColor color;
-        color.setHsv(static_cast<int>(fmod(static_cast<double>(it.value())*7,36))*10,255,255);
-        eventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),color);
+        color.setHsv(static_cast<int>(fmod(static_cast<double>(it.value()) * 7, 36)) * 10, 255, 255);
+        eventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), color);
         eventsToSkip.append(static_cast<int>(it.value()));
     }
 
-    providerItemColors.insert(name,eventColors);
+    providerItemColors.insert(name, eventColors);
 
     //Install the connections with the provider
-    connect(eventsProvider, SIGNAL(newEventDescriptionCreated(QString,QMap<int,int>,QMap<int,int>,QString)),this, SLOT(slotNewEventDescriptionCreated(QString,QMap<int,int>,QMap<int,int>,QString)));
-    connect(eventsProvider, SIGNAL(eventDescriptionRemoved(QString,QMap<int,int>,QMap<int,int>,int,QString)),this, SLOT(slotEventDescriptionRemoved(QString,QMap<int,int>,QMap<int,int>,int,QString)));
+    connect(eventsProvider, SIGNAL(newEventDescriptionCreated(QString, QMap<int, int>, QMap<int, int>, QString)), this, SLOT(slotNewEventDescriptionCreated(QString, QMap<int, int>, QMap<int, int>, QString)));
+    connect(eventsProvider, SIGNAL(eventDescriptionRemoved(QString, QMap<int, int>, QMap<int, int>, int, QString)), this, SLOT(slotEventDescriptionRemoved(QString, QMap<int, int>, QMap<int, int>, int, QString)));
 
     //Informs the views than there is a new event provider.
     QList<int> eventsToShow;
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
 
-        if(view != activeView) view->setEventProvider(eventsProvider,name,eventColors,false,eventsToShow,eventsToSkip);
-        else view->setEventProvider(eventsProvider,name,eventColors,true,eventsToShow,eventsToSkip);
+        if (view != activeView)
+            view->setEventProvider(eventsProvider, name, eventColors, false, eventsToShow, eventsToSkip);
+        else
+            view->setEventProvider(eventsProvider, name, eventColors, true, eventsToShow, eventsToSkip);
     }
 
     emit eventFileLoaded(name);
@@ -2519,13 +2874,15 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFile(const QS
     return OK;
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFileForSession(const QString &eventUrl,QMap<EventDescription,QColor>& itemColors, const QDateTime& lastModified,bool firstFile){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFileForSession(const QString& eventUrl, QMap<EventDescription, QColor>& itemColors, const QDateTime& lastModified, bool firstFile)
+{
     //Check that the selected file is a event file (should always be the case as the file has
     //already be loaded once).
     QString fileName = eventUrl;
-    if(fileName.indexOf(".evt") == -1){
+    if (fileName.indexOf(".evt") == -1)
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The requested event file %1 has an incorrect name, it has to be of the form baseName.id.evt or baseName.evt.id (with id a 3 character identifier). Therefore it will not be loaded.").arg(eventUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The requested event file %1 has an incorrect name, it has to be of the form baseName.id.evt or baseName.evt.id (with id a 3 character identifier). Therefore it will not be loaded.").arg(eventUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return INCORRECT_FILE;
     }
@@ -2533,105 +2890,120 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFileForSessio
     //check if the file still exist before trying to load it
     QFileInfo fileInfo = QFileInfo(eventUrl);
 
-    if(!fileInfo.exists()){
+    if (!fileInfo.exists())
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The file %1 does not exist anymore.").arg(eventUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The file %1 does not exist anymore.").arg(eventUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return OPEN_ERROR;
     }
 
     bool modified = false;
-    if(fileInfo.lastModified() != lastModified) modified = true;
+    if (fileInfo.lastModified() != lastModified)
+        modified = true;
 
-    EventsProvider* eventsProvider = new EventsProvider(eventUrl,samplingRate,eventPosition);
+    EventsProvider* eventsProvider = new EventsProvider(eventUrl, samplingRate, eventPosition);
     QString name = eventsProvider->getName();
 
     //The name should be of 3 characters length with at least one none digit character.
-    if(name.length() != 3 || name.contains(QRegExp("\\d{3}"))){
+    if (name.length() != 3 || name.contains(QRegExp("\\d{3}")))
+    {
         delete eventsProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The requested event file %1 has an incorrect name, it has to be of the form baseName.id.evt or baseName.evt.id (with id a 3 character identifier). Therefore it will not be loaded.").arg(eventUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The requested event file %1 has an incorrect name, it has to be of the form baseName.id.evt or baseName.evt.id (with id a 3 character identifier). Therefore it will not be loaded.").arg(eventUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return INCORRECT_FILE;
     }
 
     int returnStatus = eventsProvider->loadData();
 
-    if(returnStatus == EventsProvider::OPEN_ERROR){
+    if (returnStatus == EventsProvider::OPEN_ERROR)
+    {
         delete eventsProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("Could not load the file %1").arg(eventUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("Could not load the file %1").arg(eventUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return OPEN_ERROR;
     }
-    else if(returnStatus == EventsProvider::COUNT_ERROR){
+    else if (returnStatus == EventsProvider::COUNT_ERROR)
+    {
         delete eventsProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The number of events of the requested file %1 could not be determined. Therefore this file will not be loaded.").arg(eventUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The number of events of the requested file %1 could not be determined. Therefore this file will not be loaded.").arg(eventUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return CREATION_ERROR;
     }
-    else if(returnStatus == EventsProvider::INCORRECT_CONTENT){
+    else if (returnStatus == EventsProvider::INCORRECT_CONTENT)
+    {
         delete eventsProvider;
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The content of the requested file %1 is incorrect. Therefore this file will not be loaded.").arg(eventUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The content of the requested file %1 is incorrect. Therefore this file will not be loaded.").arg(eventUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return INCORRECT_CONTENT;
     }
 
-    providers.insert(name,eventsProvider);
-    providerUrls.insert(name,eventUrl);
+    providers.insert(name, eventsProvider);
+    providerUrls.insert(name, eventUrl);
     lastLoadedProvider = name;
     lastEventProviderGridX = eventsProvider->getDescriptionLength();
 
     //Buil the eventColors
     ItemColors* eventColors = new ItemColors();
-    QMap<EventDescription,int> eventMap = eventsProvider->eventDescriptionIdMap();
+    QMap<EventDescription, int> eventMap = eventsProvider->eventDescriptionIdMap();
     //if possible, use the data from the session file to build the eventColorList.
     //The iterator gives the keys sorted.
     //An id is assign to each event, this id will be used internally in NeuroScope and in the session file.
-    QMap<EventDescription,int>::Iterator it;
-    for(it = eventMap.begin(); it != eventMap.end(); ++it){
-        if(itemColors.contains(it.key())){
-            eventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),itemColors[it.key()]);
+    QMap<EventDescription, int>::Iterator it;
+    for (it = eventMap.begin(); it != eventMap.end(); ++it)
+    {
+        if (itemColors.contains(it.key()))
+        {
+            eventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), itemColors[it.key()]);
         }
-        else{
+        else
+        {
             modified = true;
             QColor color;
-            color.setHsv(static_cast<int>(fmod(static_cast<double>(it.value())*7,36))*10,255,255);
-            eventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),color);
+            color.setHsv(static_cast<int>(fmod(static_cast<double>(it.value()) * 7, 36)) * 10, 255, 255);
+            eventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), color);
         }
     }
 
-    providerItemColors.insert(name,eventColors);
+    providerItemColors.insert(name, eventColors);
 
-    if(modified == true){
+    if (modified == true)
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::information(0, tr("Error!"),tr("The requested file %1 has been modified since the last session,"
-                                                    " therefore some session information may be lost.").arg(eventUrl));
+        QMessageBox::information(0, tr("Error!"), tr("The requested file %1 has been modified since the last session,"
+                                                     " therefore some session information may be lost.")
+                                                      .arg(eventUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     }
 
     //Install the connections with the provider
-    connect(eventsProvider, SIGNAL(newEventDescriptionCreated(QString,QMap<int,int>,QMap<int,int>,QString)),this, SLOT(slotNewEventDescriptionCreated(QString,QMap<int,int>,QMap<int,int>,QString)));
-    connect(eventsProvider, SIGNAL(eventDescriptionRemoved(QString,QMap<int,int>,QMap<int,int>,int,QString)),this, SLOT(slotEventDescriptionRemoved(QString,QMap<int,int>,QMap<int,int>,int,QString)));
+    connect(eventsProvider, SIGNAL(newEventDescriptionCreated(QString, QMap<int, int>, QMap<int, int>, QString)), this, SLOT(slotNewEventDescriptionCreated(QString, QMap<int, int>, QMap<int, int>, QString)));
+    connect(eventsProvider, SIGNAL(eventDescriptionRemoved(QString, QMap<int, int>, QMap<int, int>, int, QString)), this, SLOT(slotEventDescriptionRemoved(QString, QMap<int, int>, QMap<int, int>, int, QString)));
 
     // TODO: Use signals for this.
-    if(firstFile) dynamic_cast<NeuroscopeApp*>(parent)->createEventPalette(name);
-    else dynamic_cast<NeuroscopeApp*>(parent)->addEventFile(name);
+    if (firstFile)
+        dynamic_cast<NeuroscopeApp*>(parent)->createEventPalette(name);
+    else
+        dynamic_cast<NeuroscopeApp*>(parent)->addEventFile(name);
 
     return OK;
 }
 
-void NeuroscopeDoc::removeEventFile(const QString& providerName,NeuroscopeView* activeView,bool lastFile){
+void NeuroscopeDoc::removeEventFile(const QString& providerName, NeuroscopeView* activeView, bool lastFile)
+{
     //Informs the views than the event provider will be removed.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
 
-        if(view != activeView)
-            view->removeEventProvider(providerName,false,lastFile);
+        if (view != activeView)
+            view->removeEventProvider(providerName, false, lastFile);
         else
-            view->removeEventProvider(providerName,true,lastFile);
+            view->removeEventProvider(providerName, true, lastFile);
     }
 
     delete providers.take(providerName);
@@ -2639,47 +3011,56 @@ void NeuroscopeDoc::removeEventFile(const QString& providerName,NeuroscopeView* 
     providerUrls.remove(providerName);
 }
 
-void NeuroscopeDoc::eventColorUpdate(const QColor &color, const QString& providerName,int eventId,NeuroscopeView* activeView){
+void NeuroscopeDoc::eventColorUpdate(const QColor& color, const QString& providerName, int eventId, NeuroscopeView* activeView)
+{
     //Notify all the views of the modification
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
 
-        if(view != activeView)
-            view->eventColorUpdate(color, providerName,eventId,false);
+        if (view != activeView)
+            view->eventColorUpdate(color, providerName, eventId, false);
         else
-            view->eventColorUpdate(color, providerName,eventId,true);
+            view->eventColorUpdate(color, providerName, eventId, true);
     }
 
     //Ask the active view to take the modification into account immediately
     activeView->showAllWidgets();
 }
 
-void NeuroscopeDoc::setEventPosition(int position){
+void NeuroscopeDoc::setEventPosition(int position)
+{
     eventPosition = position;
-    QMap<QString,QString>::Iterator iterator;
-    for(iterator = providerUrls.begin(); iterator != providerUrls.end(); ++iterator){
+    QMap<QString, QString>::Iterator iterator;
+    for (iterator = providerUrls.begin(); iterator != providerUrls.end(); ++iterator)
+    {
         DataProvider* provider = providers[iterator.key()];
-        if(qobject_cast<EventsProvider*>(provider)) static_cast<EventsProvider*>(provider)->setEventPosition(position);
+        if (qobject_cast<EventsProvider*>(provider))
+            static_cast<EventsProvider*>(provider)->setEventPosition(position);
     }
 }
 
-void NeuroscopeDoc::eventModified(const QString& providerName,int selectedEventId,double time,double newTime,NeuroscopeView* activeView){
+void NeuroscopeDoc::eventModified(const QString& providerName, int selectedEventId, double time, double newTime, NeuroscopeView* activeView)
+{
     //clear the undo/redo data of all the event providers except providerName
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         QString name = i.key();
-        if(qobject_cast<EventsProvider*>(i.value()) && name != providerName){
+        if (qobject_cast<EventsProvider*>(i.value()) && name != providerName)
+        {
             static_cast<EventsProvider*>(i.value())->clearUndoRedoData();
         }
     }
 
     //Informs the views than an event has been modified.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
 
-        if(view != activeView)
-            view->updateEvents(providerName,selectedEventId,time,newTime,false);
+        if (view != activeView)
+            view->updateEvents(providerName, selectedEventId, time, newTime, false);
     }
 
     //Prepare the undo/redo mechanism
@@ -2690,22 +3071,28 @@ void NeuroscopeDoc::eventModified(const QString& providerName,int selectedEventI
 }
 
 
-void NeuroscopeDoc::eventRemoved(const QString& providerName,int selectedEventId,double time,NeuroscopeView* activeView){
+void NeuroscopeDoc::eventRemoved(const QString& providerName, int selectedEventId, double time, NeuroscopeView* activeView)
+{
     //clear the undo/redo data of all the event providers except providerName
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         QString name = i.key();
-        if(qobject_cast<EventsProvider*>(i.value()) && name != providerName){
+        if (qobject_cast<EventsProvider*>(i.value()) && name != providerName)
+        {
             static_cast<EventsProvider*>(i.value())->clearUndoRedoData();
         }
     }
 
     //Informs the views than an event has been removed.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView) view->updateEventsAfterRemoval(providerName,selectedEventId,time,false);
-        else view->updateEventsAfterRemoval(providerName,selectedEventId,time,true);
+        if (view != activeView)
+            view->updateEventsAfterRemoval(providerName, selectedEventId, time, false);
+        else
+            view->updateEventsAfterRemoval(providerName, selectedEventId, time, true);
     }
 
     //Prepare the undo/redo mechanism
@@ -2716,44 +3103,50 @@ void NeuroscopeDoc::eventRemoved(const QString& providerName,int selectedEventId
 }
 
 
-void NeuroscopeDoc::eventAdded(const QString &providerName,const QString &addEventDescription,double time,NeuroscopeView* activeView){
+void NeuroscopeDoc::eventAdded(const QString& providerName, const QString& addEventDescription, double time, NeuroscopeView* activeView)
+{
     int addedEventId = 0;
 
     //clear the undo/redo data of all the event providers except providerName and lookup for the selectedEventId
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         QString name = i.key();
-        if(qobject_cast<EventsProvider*>(i.value()) && name != providerName){
+        if (qobject_cast<EventsProvider*>(i.value()) && name != providerName)
+        {
             static_cast<EventsProvider*>(i.value())->clearUndoRedoData();
         }
-        else if(qobject_cast<EventsProvider*>(i.value()) && name == providerName){
-            QMap<EventDescription,int> eventMap = static_cast<EventsProvider*>(i.value())->eventDescriptionIdMap();
+        else if (qobject_cast<EventsProvider*>(i.value()) && name == providerName)
+        {
+            QMap<EventDescription, int> eventMap = static_cast<EventsProvider*>(i.value())->eventDescriptionIdMap();
             addedEventId = eventMap[addEventDescription];
         }
     }
 
     //Informs the views than an event has been added only if the added event in not of a new type.
     //In that case the views have already be informed by a call to updateSelectedEventsIds (via slotNewEventDescriptionCreated)
-    if(!newEventDescriptionCreated){
-        for(int i = 0; i<viewList->count(); ++i) {
+    if (!newEventDescriptionCreated)
+    {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
 
-            if(view != activeView)
-                view->updateEventsAfterAddition(providerName,addedEventId,time,false);
+            if (view != activeView)
+                view->updateEventsAfterAddition(providerName, addedEventId, time, false);
             else
-                view->updateEventsAfterAddition(providerName,addedEventId,time,true);
-
+                view->updateEventsAfterAddition(providerName, addedEventId, time, true);
         }
     }
-    else newEventDescriptionCreated = false;
+    else
+        newEventDescriptionCreated = false;
 
 
     //Update the event palette
     ItemPalette* eventPalette = static_cast<NeuroscopeApp*>(parent)->getEventPalette();
     const QList<int>* selectedEvents = activeView->getSelectedEvents(providerName);
     const QList<int>* skippedEvents = activeView->getEventsNotUsedForBrowsing(providerName);
-    eventPalette->selectItems(providerName,*selectedEvents,*skippedEvents);
+    eventPalette->selectItems(providerName, *selectedEvents, *skippedEvents);
 
     //Prepare the undo/redo mechanism
     undoRedoProviderName = providerName;
@@ -2762,68 +3155,87 @@ void NeuroscopeDoc::eventAdded(const QString &providerName,const QString &addEve
     modifiedEventTime = -1;
 }
 
-void NeuroscopeDoc::undo(NeuroscopeView* activeView){
+void NeuroscopeDoc::undo(NeuroscopeView* activeView)
+{
     float time = modifiedEventTime;
     modifiedEventTime = undoRedoEventTime;
     undoRedoEventTime = time;
 
     static_cast<EventsProvider*>(providers[undoRedoProviderName])->undo();
     newEventDescriptionCreated = false;
-    if(undoRedoEventTime != -1){
+    if (undoRedoEventTime != -1)
+    {
         //Informs the views than an event has been modified.
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
 
-            if(view != activeView) view->updateEvents(undoRedoProviderName,undoRedoEventId,undoRedoEventTime,modifiedEventTime,false);
-            else view->updateEvents(undoRedoProviderName,undoRedoEventId,undoRedoEventTime,modifiedEventTime,true);
+            if (view != activeView)
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, undoRedoEventTime, modifiedEventTime, false);
+            else
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, undoRedoEventTime, modifiedEventTime, true);
         }
     }
-    else{
+    else
+    {
         //Informs the views than an event has been added back (event previously removed) or added (event previously removed).
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView)
-                view->updateEvents(undoRedoProviderName,undoRedoEventId,modifiedEventTime,false);
+            if (view != activeView)
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, modifiedEventTime, false);
             else
-                view->updateEvents(undoRedoProviderName,undoRedoEventId,modifiedEventTime,true);
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, modifiedEventTime, true);
         }
     }
 }
 
-void NeuroscopeDoc::redo(NeuroscopeView* activeView){
+void NeuroscopeDoc::redo(NeuroscopeView* activeView)
+{
     float time = modifiedEventTime;
     modifiedEventTime = undoRedoEventTime;
     undoRedoEventTime = time;
 
     static_cast<EventsProvider*>(providers[undoRedoProviderName])->redo();
     newEventDescriptionCreated = false;
-    if(modifiedEventTime != -1){
+    if (modifiedEventTime != -1)
+    {
         //Informs the views than an event has been modified.
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView) view->updateEvents(undoRedoProviderName,undoRedoEventId,undoRedoEventTime,modifiedEventTime,false);
-            else view->updateEvents(undoRedoProviderName,undoRedoEventId,undoRedoEventTime,modifiedEventTime,true);
+            if (view != activeView)
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, undoRedoEventTime, modifiedEventTime, false);
+            else
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, undoRedoEventTime, modifiedEventTime, true);
         }
     }
-    else{
+    else
+    {
         //Informs the views than an event has been added back (event previously removed) or removed (event previously added).
-        for(int i = 0; i<viewList->count(); ++i) {
+        for (int i = 0; i < viewList->count(); ++i)
+        {
             NeuroscopeView* view = viewList->at(i);
-            if(view != activeView) view->updateEvents(undoRedoProviderName,undoRedoEventId,undoRedoEventTime,false);
-            else view->updateEvents(undoRedoProviderName,undoRedoEventId,undoRedoEventTime,true);
+            if (view != activeView)
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, undoRedoEventTime, false);
+            else
+                view->updateEvents(undoRedoProviderName, undoRedoEventId, undoRedoEventTime, true);
         }
     }
 }
 
-QList<EventDescription> NeuroscopeDoc::eventIds(const QString &providerName){
-    QMap<EventDescription,int> eventMap;
+QList<EventDescription> NeuroscopeDoc::eventIds(const QString& providerName)
+{
+    QMap<EventDescription, int> eventMap;
 
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
 
         QString name = i.key();
-        if(qobject_cast<EventsProvider*>(i.value()) && name == providerName){
+        if (qobject_cast<EventsProvider*>(i.value()) && name == providerName)
+        {
             eventMap = static_cast<EventsProvider*>(i.value())->eventDescriptionIdMap();
             break;
         }
@@ -2831,281 +3243,321 @@ QList<EventDescription> NeuroscopeDoc::eventIds(const QString &providerName){
     return eventMap.keys();
 }
 
-void NeuroscopeDoc::slotNewEventDescriptionCreated(const QString &providerName,QMap<int,int> oldNewEventIds,QMap<int,int> newOldEventIds, const QString& eventDescriptionAdded){
+void NeuroscopeDoc::slotNewEventDescriptionCreated(const QString& providerName, QMap<int, int> oldNewEventIds, QMap<int, int> newOldEventIds, const QString& eventDescriptionAdded)
+{
     newEventDescriptionCreated = true;
     EventsProvider* eventsProvider = static_cast<EventsProvider*>(providers[providerName]);
 
     //Constructs the new eventColorList
     //An id is assign to each event, this id will be used internally in NeuroScope and in the session file.
     ItemColors* eventColors = new ItemColors();
-    QMap<EventDescription,int> eventMap = eventsProvider->eventDescriptionIdMap();
+    QMap<EventDescription, int> eventMap = eventsProvider->eventDescriptionIdMap();
     ItemColors* currentEventColors = providerItemColors[providerName];
     int addedEventId = eventMap[EventDescription(eventDescriptionAdded)];
-    QMap<EventDescription,int>::Iterator it;
-    for(it = eventMap.begin(); it != eventMap.end(); ++it){
+    QMap<EventDescription, int>::Iterator it;
+    for (it = eventMap.begin(); it != eventMap.end(); ++it)
+    {
         //use the current color
-        if(it.key() != eventDescriptionAdded){
+        if (it.key() != eventDescriptionAdded)
+        {
             QColor color = currentEventColors->color(newOldEventIds[static_cast<int>(it.value())]);
-            eventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),color);
+            eventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), color);
         }
-        else{
+        else
+        {
             QColor color;
-            if(eventDescriptionAdded == removedDescription.first){
+            if (eventDescriptionAdded == removedDescription.first)
+            {
                 color = QColor(removedDescription.second);
             }
-            else color.setHsv(static_cast<int>(fmod(static_cast<double>(it.value())*7,36))*10,255,255);
-            eventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),color);
+            else
+                color.setHsv(static_cast<int>(fmod(static_cast<double>(it.value()) * 7, 36)) * 10, 255, 255);
+            eventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), color);
         }
     }
 
     currentEventColors->removeAll();
-    for(it = eventMap.begin(); it != eventMap.end(); ++it){
+    for (it = eventMap.begin(); it != eventMap.end(); ++it)
+    {
         QColor color = eventColors->color(static_cast<int>(it.value()));
-        currentEventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),color);
+        currentEventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), color);
     }
 
 
     //Update the event palette
     ItemPalette* eventPalette = static_cast<NeuroscopeApp*>(parent)->getEventPalette();
     eventPalette->removeGroup(providerName);
-    eventPalette->createItemList(currentEventColors,providerName,eventsProvider->getDescriptionLength());
+    eventPalette->createItemList(currentEventColors, providerName, eventsProvider->getDescriptionLength());
     eventPalette->selectGroup(providerName);
 
     //Informs the views than the event ids have changed.
     NeuroscopeView* activeView = dynamic_cast<NeuroscopeApp*>(parent)->activeView();
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView)
-            view->updateSelectedEventsIds(providerName,oldNewEventIds,addedEventId,false,true);
+        if (view != activeView)
+            view->updateSelectedEventsIds(providerName, oldNewEventIds, addedEventId, false, true);
         else
-            view->updateSelectedEventsIds(providerName,oldNewEventIds,addedEventId,true,true);
+            view->updateSelectedEventsIds(providerName, oldNewEventIds, addedEventId, true, true);
     }
 
     //Get the active view and update the eventPalette with the selected events.
     const QList<int>* selectedEvents = activeView->getSelectedEvents(providerName);
     const QList<int>* skippedEvents = activeView->getEventsNotUsedForBrowsing(providerName);
-    eventPalette->selectItems(providerName,*selectedEvents,*skippedEvents);
+    eventPalette->selectItems(providerName, *selectedEvents, *skippedEvents);
 }
 
-void NeuroscopeDoc::slotEventDescriptionRemoved(const QString &providerName,QMap<int,int> oldNewEventIds,QMap<int,int> newOldEventIds,int eventIdToRemove, const QString &eventDescriptionToRemove){
+void NeuroscopeDoc::slotEventDescriptionRemoved(const QString& providerName, QMap<int, int> oldNewEventIds, QMap<int, int> newOldEventIds, int eventIdToRemove, const QString& eventDescriptionToRemove)
+{
     EventsProvider* eventsProvider = static_cast<EventsProvider*>(providers[providerName]);
 
     //Constructs the new eventColorList
     ItemColors* eventColors = new ItemColors();
-    QMap<EventDescription,int> eventMap = eventsProvider->eventDescriptionIdMap();
+    QMap<EventDescription, int> eventMap = eventsProvider->eventDescriptionIdMap();
     ItemColors* currentEventColors = providerItemColors[providerName];
 
     removedDescription.first = eventDescriptionToRemove;
     removedDescription.second = currentEventColors->color(eventIdToRemove).name();
 
-    QMap<EventDescription,int>::Iterator it;
-    for(it = eventMap.begin(); it != eventMap.end(); ++it){
+    QMap<EventDescription, int>::Iterator it;
+    for (it = eventMap.begin(); it != eventMap.end(); ++it)
+    {
         //use the current color
         QColor color = currentEventColors->color(newOldEventIds[static_cast<int>(it.value())]);
-        eventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),color);
+        eventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), color);
     }
 
     currentEventColors->removeAll();
-    for(it = eventMap.begin(); it != eventMap.end(); ++it){
+    for (it = eventMap.begin(); it != eventMap.end(); ++it)
+    {
         QColor color = eventColors->color(static_cast<int>(it.value()));
-        currentEventColors->append(static_cast<int>(it.value()),static_cast<QString>(it.key()),color);
+        currentEventColors->append(static_cast<int>(it.value()), static_cast<QString>(it.key()), color);
     }
 
 
     //Update the event palette
     ItemPalette* eventPalette = static_cast<NeuroscopeApp*>(parent)->getEventPalette();
     eventPalette->removeGroup(providerName);
-    eventPalette->createItemList(currentEventColors,providerName,eventsProvider->getDescriptionLength());
+    eventPalette->createItemList(currentEventColors, providerName, eventsProvider->getDescriptionLength());
     eventPalette->selectGroup(providerName);
 
     //Informs the views than the event ids have changed.
     NeuroscopeView* activeView = dynamic_cast<NeuroscopeApp*>(parent)->activeView();
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView) view->updateSelectedEventsIds(providerName,oldNewEventIds,eventIdToRemove,false,false);
-        else view->updateSelectedEventsIds(providerName,oldNewEventIds,eventIdToRemove,true,false);
+        if (view != activeView)
+            view->updateSelectedEventsIds(providerName, oldNewEventIds, eventIdToRemove, false, false);
+        else
+            view->updateSelectedEventsIds(providerName, oldNewEventIds, eventIdToRemove, true, false);
     }
     //Get the active view and update the eventPalette with the selected events.
     const QList<int>* selectedEvents = activeView->getSelectedEvents(providerName);
     const QList<int>* skippedEvents = activeView->getEventsNotUsedForBrowsing(providerName);
-    eventPalette->selectItems(providerName,*selectedEvents,*skippedEvents);
+    eventPalette->selectItems(providerName, *selectedEvents, *skippedEvents);
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::createEventFile(const QString &eventUrl,NeuroscopeView*activeView){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::createEventFile(const QString& eventUrl, NeuroscopeView* activeView)
+{
     //Check that the selected file is a event file name
     const QString fileName = eventUrl;
-    if(fileName.indexOf(QLatin1String(".evt")) == -1)
+    if (fileName.indexOf(QLatin1String(".evt")) == -1)
         return INCORRECT_FILE;
 
-    EventsProvider* eventsProvider = new EventsProvider(eventUrl,samplingRate,eventPosition);
+    EventsProvider* eventsProvider = new EventsProvider(eventUrl, samplingRate, eventPosition);
     const QString name = eventsProvider->getName();
 
     //The name should be of 3 characters length with at least one none digit character.
-    if(name.length() != 3 || name.contains(QRegExp("\\d{3}"))){
+    if (name.length() != 3 || name.contains(QRegExp("\\d{3}")))
+    {
         delete eventsProvider;
         return INCORRECT_FILE;
     }
 
-    if(providers.contains(name)){
+    if (providers.contains(name))
+    {
         delete eventsProvider;
         return ALREADY_OPENED;
     }
 
     eventsProvider->initializeEmptyProvider();
     lastEventProviderGridX = eventsProvider->getDescriptionLength();
-    providers.insert(name,eventsProvider);
-    providerUrls.insert(name,eventUrl);
+    providers.insert(name, eventsProvider);
+    providerUrls.insert(name, eventUrl);
 
     ItemColors* eventColors = new ItemColors();
-    providerItemColors.insert(name,eventColors);
+    providerItemColors.insert(name, eventColors);
 
     //Install the connections with the provider
-    connect(eventsProvider, SIGNAL(newEventDescriptionCreated(QString,QMap<int,int>,QMap<int,int>,QString)),this, SLOT(slotNewEventDescriptionCreated(QString,QMap<int,int>,QMap<int,int>,QString)));
-    connect(eventsProvider, SIGNAL(eventDescriptionRemoved(QString,QMap<int,int>,QMap<int,int>,int,QString)),this, SLOT(slotEventDescriptionRemoved(QString,QMap<int,int>,QMap<int,int>,int,QString)));
+    connect(eventsProvider, SIGNAL(newEventDescriptionCreated(QString, QMap<int, int>, QMap<int, int>, QString)), this, SLOT(slotNewEventDescriptionCreated(QString, QMap<int, int>, QMap<int, int>, QString)));
+    connect(eventsProvider, SIGNAL(eventDescriptionRemoved(QString, QMap<int, int>, QMap<int, int>, int, QString)), this, SLOT(slotEventDescriptionRemoved(QString, QMap<int, int>, QMap<int, int>, int, QString)));
 
     //Informs the views than there is a new event provider.
     QList<int> eventsToShow;
     QList<int> eventsToSkip;
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
 
-        if(view != activeView)
-            view->setEventProvider(eventsProvider,name,eventColors,false,eventsToShow,eventsToSkip);
+        if (view != activeView)
+            view->setEventProvider(eventsProvider, name, eventColors, false, eventsToShow, eventsToSkip);
         else
-            view->setEventProvider(eventsProvider,name,eventColors,true,eventsToShow,eventsToSkip);
+            view->setEventProvider(eventsProvider, name, eventColors, true, eventsToShow, eventsToSkip);
     }
 
     emit eventFileLoaded(name);
 
     return OK;
-
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadPositionFile(const QString &url, NeuroscopeView* activeView){
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadPositionFile(const QString& url, NeuroscopeView* activeView)
+{
     //get the sampling rate for the given position file extension, if there is none already set, use the default
     QString positionFileName = url;
     QStringList fileParts = positionFileName.split(".", QString::SkipEmptyParts);
-    if(fileParts.count() < 2) return INCORRECT_FILE;
+    if (fileParts.count() < 2)
+        return INCORRECT_FILE;
     positionFileExtension = fileParts[fileParts.count() - 1];
 
-    if(extensionSamplingRates.contains(positionFileExtension)) videoSamplingRate = extensionSamplingRates[positionFileExtension];
-    else extensionSamplingRates.insert(positionFileExtension,videoSamplingRate);
+    if (extensionSamplingRates.contains(positionFileExtension))
+        videoSamplingRate = extensionSamplingRates[positionFileExtension];
+    else
+        extensionSamplingRates.insert(positionFileExtension, videoSamplingRate);
 
-    PositionsProvider* positionsProvider = new PositionsProvider(url,videoSamplingRate,videoWidth,videoHeight,rotation,flip);
+    PositionsProvider* positionsProvider = new PositionsProvider(url, videoSamplingRate, videoWidth, videoHeight, rotation, flip);
     QString name = positionsProvider->getName();
-    if(providers.contains(name)){
+    if (providers.contains(name))
+    {
         delete positionsProvider;
         return ALREADY_OPENED;
     }
 
     int returnStatus = positionsProvider->loadData();
-    if(returnStatus == PositionsProvider::OPEN_ERROR){
+    if (returnStatus == PositionsProvider::OPEN_ERROR)
+    {
         delete positionsProvider;
         return OPEN_ERROR;
     }
 
     lastLoadedProvider = name;
-    providers.insert(name,positionsProvider);
-    providerUrls.insert(name,url);
+    providers.insert(name, positionsProvider);
+    providerUrls.insert(name, url);
     positionFileOpenOnce = true;
 
-    if(!backgroundImage.isEmpty() || (backgroundImage.isEmpty() && drawPositionsOnBackground))
+    if (!backgroundImage.isEmpty() || (backgroundImage.isEmpty() && drawPositionsOnBackground))
         transformedBackground = transformBackgroundImage();
 
     //Informs the views than there is a new position provider.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view == activeView){
-            if(rotation != 90 && rotation != 270)
-                view->addPositionView(positionsProvider,transformedBackground,dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),videoWidth,videoHeight);
+        if (view == activeView)
+        {
+            if (rotation != 90 && rotation != 270)
+                view->addPositionView(positionsProvider, transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(), videoWidth, videoHeight);
             //If there is a rotation of 90 or 270 degree, the with and height have to be inverted.
             else
-                view->addPositionView(positionsProvider,transformedBackground,dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(),videoHeight,videoWidth);
+                view->addPositionView(positionsProvider, transformedBackground, dynamic_cast<NeuroscopeApp*>(parent)->getBackgroundColor(), videoHeight, videoWidth);
         }
     }
     return OK;
 }
 
-NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadPositionFile(const QString& fileUrl) {
+NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadPositionFile(const QString& fileUrl)
+{
     //get the sampling rate for the given position file extension, if there is none already set, use the default
     QString positionUrl = fileUrl;
     QString positionFileName = positionUrl;
     QStringList fileParts = positionFileName.split(QLatin1String("."), QString::SkipEmptyParts);
-    if(fileParts.count() < 2)
+    if (fileParts.count() < 2)
         return INCORRECT_FILE;
     positionFileExtension = fileParts[fileParts.count() - 1];
 
     //check if the file still exist before trying to load it
     QFileInfo fileInfo = QFileInfo(fileUrl);
 
-    if(!fileInfo.exists()){
+    if (!fileInfo.exists())
+    {
         QApplication::restoreOverrideCursor();
-        QMessageBox::critical (0, tr("Error!"),tr("The file %1 does not exist anymore.").arg(fileUrl));
+        QMessageBox::critical(0, tr("Error!"), tr("The file %1 does not exist anymore.").arg(fileUrl));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         return OPEN_ERROR;
     }
 
-    if(extensionSamplingRates.contains(positionFileExtension)) videoSamplingRate = extensionSamplingRates[positionFileExtension];
-    else extensionSamplingRates.insert(positionFileExtension,videoSamplingRate);
+    if (extensionSamplingRates.contains(positionFileExtension))
+        videoSamplingRate = extensionSamplingRates[positionFileExtension];
+    else
+        extensionSamplingRates.insert(positionFileExtension, videoSamplingRate);
 
-    PositionsProvider* positionsProvider = new PositionsProvider(fileUrl,videoSamplingRate,videoWidth,videoHeight,rotation,flip);
+    PositionsProvider* positionsProvider = new PositionsProvider(fileUrl, videoSamplingRate, videoWidth, videoHeight, rotation, flip);
     QString name = positionsProvider->getName();
 
     int returnStatus = positionsProvider->loadData();
-    if(returnStatus == PositionsProvider::OPEN_ERROR){
+    if (returnStatus == PositionsProvider::OPEN_ERROR)
+    {
         delete positionsProvider;
         return OPEN_ERROR;
     }
 
     lastLoadedProvider = name;
-    providers.insert(name,positionsProvider);
-    providerUrls.insert(name,fileUrl);
+    providers.insert(name, positionsProvider);
+    providerUrls.insert(name, fileUrl);
     positionFileOpenOnce = true;
 
     return OK;
 }
 
-void NeuroscopeDoc::addPositionView(NeuroscopeView* activeView,const QColor& backgroundColor){
+void NeuroscopeDoc::addPositionView(NeuroscopeView* activeView, const QColor& backgroundColor)
+{
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
-        if(qobject_cast<PositionsProvider*>(i.value())){
-            if(rotation != 90 && rotation != 270)
-                activeView->addPositionView(static_cast<PositionsProvider*>(i.value()),transformedBackground,
-                                            backgroundColor,videoWidth,videoHeight);
+        if (qobject_cast<PositionsProvider*>(i.value()))
+        {
+            if (rotation != 90 && rotation != 270)
+                activeView->addPositionView(static_cast<PositionsProvider*>(i.value()), transformedBackground,
+                                            backgroundColor, videoWidth, videoHeight);
 
             //If there is a rotation of 90 or 270 degree, the with and height have to be inverted.
-            else activeView->addPositionView(static_cast<PositionsProvider*>(i.value()),transformedBackground,
-                                             backgroundColor,videoHeight,videoWidth);
+            else
+                activeView->addPositionView(static_cast<PositionsProvider*>(i.value()), transformedBackground,
+                                            backgroundColor, videoHeight, videoWidth);
             break;
         }
     }
 }
 
 
-void NeuroscopeDoc::removePositionFile(NeuroscopeView* activeView){
+void NeuroscopeDoc::removePositionFile(NeuroscopeView* activeView)
+{
     QString name;
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
         name = i.key();
-        if(qobject_cast<PositionsProvider*>(i.value()))
+        if (qobject_cast<PositionsProvider*>(i.value()))
             break;
     }
 
     //Informs the views than the position provider will be removed.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
-        if(view != activeView) view->removePositionProvider(name,false);
-        else view->removePositionProvider(name,true);
+        if (view != activeView)
+            view->removePositionProvider(name, false);
+        else
+            view->removePositionProvider(name, true);
     }
 
     delete providers.take(name);
     providerUrls.remove(name);
 }
 
-void NeuroscopeDoc::setDefaultPositionInformation(double videoSamplingRate, int width, int height, const QString &backgroundImage,
-                                                  int rotation,int flip,bool positionsBackground){
+void NeuroscopeDoc::setDefaultPositionInformation(double videoSamplingRate, int width, int height, const QString& backgroundImage,
+                                                  int rotation, int flip, bool positionsBackground)
+{
 
     videoSamplingRateDefault = videoSamplingRate;
     videoWidthDefault = width;
@@ -3118,14 +3570,17 @@ void NeuroscopeDoc::setDefaultPositionInformation(double videoSamplingRate, int 
     //Update the current values if no position file is currently opened
     bool exists = false;
     QHashIterator<QString, DataProvider*> i(providers);
-    while (i.hasNext()) {
+    while (i.hasNext())
+    {
         i.next();
-        if(qobject_cast<PositionsProvider*>(i.value())){
+        if (qobject_cast<PositionsProvider*>(i.value()))
+        {
             exists = true;
             break;
         }
     }
-    if(!exists){
+    if (!exists)
+    {
         this->videoSamplingRate = videoSamplingRate;
         this->rotation = rotation;
         this->flip = flip;
@@ -3136,52 +3591,63 @@ void NeuroscopeDoc::setDefaultPositionInformation(double videoSamplingRate, int 
     }
 }
 
-void NeuroscopeDoc::updateSkippedChannelColors(bool whiteBackground, const QColor &backgroundColor){
+void NeuroscopeDoc::updateSkippedChannelColors(bool whiteBackground, const QColor& backgroundColor)
+{
     QColor color;
-    if(whiteBackground) color = Qt::white;
-    else color = backgroundColor;
+    if (whiteBackground)
+        color = Qt::white;
+    else
+        color = backgroundColor;
     skipStatus = displayChannelPalette.getSkipStatus();
 }
 
-void NeuroscopeDoc::updateSkipStatus(){
+void NeuroscopeDoc::updateSkipStatus()
+{
     QList<int> skippedChannels;
     skipStatus = displayChannelPalette.getSkipStatus();
-    QMap<int,bool>::const_iterator iterator;
-    for(iterator = skipStatus.begin(); iterator != skipStatus.end(); ++iterator) {
-        if(iterator.value()) {
+    QMap<int, bool>::const_iterator iterator;
+    for (iterator = skipStatus.begin(); iterator != skipStatus.end(); ++iterator)
+    {
+        if (iterator.value())
+        {
             skippedChannels.append(iterator.key());
         }
     }
 
     //Informs the views than the Skip Status has changed.
-    for(int i = 0; i<viewList->count(); ++i) {
+    for (int i = 0; i < viewList->count(); ++i)
+    {
         NeuroscopeView* view = viewList->at(i);
         view->updateSkipStatus(skippedChannels);
     }
 }
 
-void NeuroscopeDoc::setDefaultOffsets(NeuroscopeView* activeView){
+void NeuroscopeDoc::setDefaultOffsets(NeuroscopeView* activeView)
+{
     channelDefaultOffsets.clear();
     const QList<int>& offsets = activeView->getChannelOffset();
-    for(int i = 0; i < channelNb; ++i)
-        channelDefaultOffsets.insert(i,offsets[i]);
+    for (int i = 0; i < channelNb; ++i)
+        channelDefaultOffsets.insert(i, offsets[i]);
 }
 
-void NeuroscopeDoc::resetDefaultOffsets(){
+void NeuroscopeDoc::resetDefaultOffsets()
+{
     channelDefaultOffsets.clear();
-    for(int i = 0; i < channelNb; ++i)
-        channelDefaultOffsets.insert(i,0);
+    for (int i = 0; i < channelNb; ++i)
+        channelDefaultOffsets.insert(i, 0);
 }
 
-bool NeuroscopeDoc::isCurrentFileAdatFile() const{
-    if(extension == "dat")
+bool NeuroscopeDoc::isCurrentFileAdatFile() const
+{
+    if (extension == "dat")
         return true;
     else
         return false;
 }
 
-QImage NeuroscopeDoc::getWhiteTrajectoryBackground() {
-    if(!drawPositionsOnBackground)
+QImage NeuroscopeDoc::getWhiteTrajectoryBackground()
+{
+    if (!drawPositionsOnBackground)
         return QImage();
     return transformBackgroundImage(true);
 }

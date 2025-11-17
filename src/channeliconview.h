@@ -33,10 +33,11 @@
 /**Utilitary class used to build the channel palettes (anatomical and spike).
   *@author Lynn Hazan
   */
-class ChannelIconViewItem : public QListWidgetItem {
-// TODO: Use Qt type() functionality, to make this cleaner.
-public:
-    ChannelIconViewItem( QListWidget *view = 0)
+class ChannelIconViewItem : public QListWidgetItem
+{
+    // TODO: Use Qt type() functionality, to make this cleaner.
+  public:
+    ChannelIconViewItem(QListWidget* view = 0)
         : QListWidgetItem(view)
     {
         // Unknown id
@@ -45,7 +46,7 @@ public:
         setFlags(flags() | (Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled));
     }
 
-    ChannelIconViewItem(const QIcon &icon, const QString &text, int id, QListWidget *view = 0)
+    ChannelIconViewItem(const QIcon& icon, const QString& text, int id, QListWidget* view = 0)
         : QListWidgetItem(icon, text, view)
     {
         // Save id under user role
@@ -54,17 +55,18 @@ public:
         setFlags(flags() | (Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled));
     }
 
-    int getID() {
+    int getID()
+    {
         return data(Qt::UserRole).toInt();
     }
 };
 
 
-
-class ChannelIconView : public QListWidget  {
+class ChannelIconView : public QListWidget
+{
     Q_OBJECT
-public:
-    explicit ChannelIconView(const QColor& backgroundColor,int gridX,int gridY,bool edit,QWidget* parent = 0,const QString& name = QString());
+  public:
+    explicit ChannelIconView(const QColor& backgroundColor, int gridX, int gridY, bool edit, QWidget* parent = 0, const QString& name = QString());
     ~ChannelIconView();
 
     // Like the findItems for labels but finds item by id.
@@ -74,27 +76,27 @@ public:
 
     QSize sizeHint() const;
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void setDragAndDrop(bool dragDrop);
     void slotRowInsered();
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void mousePressMiddleButton(QListWidgetItem* item);
-    void channelsMoved(const QString& targetGroup,QListWidgetItem* after );
-    void channelsMoved(const QList<int>& channelIds,const QString& sourceGroup,QListWidgetItem* after);
-    void dropLabel(int sourceId,int targetId,int start,int destination);
+    void channelsMoved(const QString& targetGroup, QListWidgetItem* after);
+    void channelsMoved(const QList<int>& channelIds, const QString& sourceGroup, QListWidgetItem* after);
+    void dropLabel(int sourceId, int targetId, int start, int destination);
 
-    void removeGroup(const QString &name);
-    void moveListItem(const QList<int> &listId, const QString &sourceGroupName, const QString &destGroupName, int index, bool moveAll);
+    void removeGroup(const QString& name);
+    void moveListItem(const QList<int>& listId, const QString& sourceGroupName, const QString& destGroupName, int index, bool moveAll);
     void rowInsered();
 
-protected:
-    void keyPressEvent(QKeyEvent *event);
-    void contentsWheelEvent(QWheelEvent* event){event->accept();}
-    void mousePressEvent(QMouseEvent *event);
-    void wheelEvent ( QWheelEvent * e );
+  protected:
+    void keyPressEvent(QKeyEvent* event);
+    void contentsWheelEvent(QWheelEvent* event) { event->accept(); }
+    void mousePressEvent(QMouseEvent* event);
+    void wheelEvent(QWheelEvent* e);
     QMimeData* mimeData(const QList<QListWidgetItem*> items) const;
-    bool dropMimeData(int index, const QMimeData * data, Qt::DropAction action);
+    bool dropMimeData(int index, const QMimeData* data, Qt::DropAction action);
     Qt::DropActions supportedDropActions() const
     {
         return Qt::MoveAction;
@@ -105,10 +107,10 @@ protected:
     }
     // Skip internal dnd handling in QListWidget ---- how is one supposed to figure this out
     // without reading the QListWidget code !?
-    virtual void dropEvent(QDropEvent* ev) {
+    virtual void dropEvent(QDropEvent* ev)
+    {
         QAbstractItemView::dropEvent(ev);
     }
-
 };
 
 

@@ -28,12 +28,12 @@
 
 //Application specific include files
 #include "neuroscope.h"
-int main(int argc, char *argv[])
-{    
-    // QApplication::setGraphicsSystem() was removed from Qt5
-    #if QT_VERSION < 0x050000 
-      QApplication::setGraphicsSystem("raster");
-    #endif
+int main(int argc, char* argv[])
+{
+// QApplication::setGraphicsSystem() was removed from Qt5
+#if QT_VERSION < 0x050000
+    QApplication::setGraphicsSystem("raster");
+#endif
     QApplication::setOrganizationName("neurosuite");
     QApplication::setOrganizationDomain("neurosuite.github.io");
     QApplication::setApplicationName("neuroscope");
@@ -51,97 +51,137 @@ int main(int argc, char *argv[])
     QString timeWindow;
     bool streamMode = false;
     //TODO Qt5.2 use QCommandLineParser
-    for (int i = 1, n = args.size(); i < n; ++i) {
+    for (int i = 1, n = args.size(); i < n; ++i)
+    {
         const QString arg = args.at(i);
-        if (arg == "-h" || arg == "--help" || arg == "-help") {
-            std::cerr  << "Usage: " << qPrintable(args.at(0)) << " [file]\n"
-                       << "\n"
-                       << "Optional settings:\n"
-                       << "  -r, --resolution        Resolution of the acquisition system.\n"
-                       << "  -c, --nbChannels        Number of channels.\n"
-                       << "  -o, --offset            Initial offset.\n"
-                       << "  -m, --voltageRange      Voltage range.\n"
-                       << "  -a, --amplification     Amplification.\n"
-                       << "  -g, --screenGain        Screen gain.\n"
-                       << "  -s, --samplingRate      Sampling rate.\n"
-                       << "  -t, --timeWindow        Initial time window (in miliseconds).\n"
-                       << "\n"
-                       << "Optional flags:\n"
-            #if WITH_CEREBUS
-                       << "  -n, --stream            Open network stream instead of file.\n"
-            #endif
-                       << "  -h, --help              print this help\n"
-                       << "  -v, --version           print version info\n";
+        if (arg == "-h" || arg == "--help" || arg == "-help")
+        {
+            std::cerr << "Usage: " << qPrintable(args.at(0)) << " [file]\n"
+                      << "\n"
+                      << "Optional settings:\n"
+                      << "  -r, --resolution        Resolution of the acquisition system.\n"
+                      << "  -c, --nbChannels        Number of channels.\n"
+                      << "  -o, --offset            Initial offset.\n"
+                      << "  -m, --voltageRange      Voltage range.\n"
+                      << "  -a, --amplification     Amplification.\n"
+                      << "  -g, --screenGain        Screen gain.\n"
+                      << "  -s, --samplingRate      Sampling rate.\n"
+                      << "  -t, --timeWindow        Initial time window (in miliseconds).\n"
+                      << "\n"
+                      << "Optional flags:\n"
+#if WITH_CEREBUS
+                      << "  -n, --stream            Open network stream instead of file.\n"
+#endif
+                      << "  -h, --help              print this help\n"
+                      << "  -v, --version           print version info\n";
             return 1;
-        } else if (arg == "-v" || arg == "--version"  || arg == "-version") {
+        }
+        else if (arg == "-v" || arg == "--version" || arg == "-version")
+        {
             std::cout << "NeuroScope " << NEUROSCOPE_VERSION << std::endl;
             return 0;
         }
 
         bool handled = true;
-         if (i < n - 1) { // Parameter value flags
-             if (arg == "-r" || arg == "--resolution" || arg == "-resolution") {
-                 resolution = args.at(++i);
-             } else if (arg == "-c" || arg == "--nbChannels" || arg == "-nbChannels") {
-                 channelNb = args.at(++i);
-             } else if (arg == "-o" || arg == "--offset" || arg == "-offset") {
-                  offset = args.at(++i);
-             } else if (arg == "-m" || arg == "--voltageRange" || arg == "-voltageRange") {
-                  voltageRange = args.at(++i);
-             } else if (arg == "-a" || arg == "--amplification" || arg == "-amplification") {
-                  amplification = args.at(++i);
-             } else if (arg == "-g" || arg == "--screenGain" || arg == "-screenGain") {
-                  screenGain = args.at(++i);
-             } else if (arg == "-s" || arg == "--samplingRate" || arg == "-samplingRate") {
-                  SR = args.at(++i);
-             } else if (arg == "-t" || arg == "--timeWindow" || arg == "-timeWindow") {
-                  timeWindow = args.at(++i);
+        if (i < n - 1)
+        { // Parameter value flags
+            if (arg == "-r" || arg == "--resolution" || arg == "-resolution")
+            {
+                resolution = args.at(++i);
+            }
+            else if (arg == "-c" || arg == "--nbChannels" || arg == "-nbChannels")
+            {
+                channelNb = args.at(++i);
+            }
+            else if (arg == "-o" || arg == "--offset" || arg == "-offset")
+            {
+                offset = args.at(++i);
+            }
+            else if (arg == "-m" || arg == "--voltageRange" || arg == "-voltageRange")
+            {
+                voltageRange = args.at(++i);
+            }
+            else if (arg == "-a" || arg == "--amplification" || arg == "-amplification")
+            {
+                amplification = args.at(++i);
+            }
+            else if (arg == "-g" || arg == "--screenGain" || arg == "-screenGain")
+            {
+                screenGain = args.at(++i);
+            }
+            else if (arg == "-s" || arg == "--samplingRate" || arg == "-samplingRate")
+            {
+                SR = args.at(++i);
+            }
+            else if (arg == "-t" || arg == "--timeWindow" || arg == "-timeWindow")
+            {
+                timeWindow = args.at(++i);
 #ifdef WITH_CEREBUS
-             } else if (arg == "-n" || arg == "--stream" || arg == "-stream") {
-                 streamMode = true;
+            }
+            else if (arg == "-n" || arg == "--stream" || arg == "-stream")
+            {
+                streamMode = true;
 #endif
-             } else {
-                 handled = false;
-             }
-         } else {
-             handled = false;
-         }
-         // Nothing know. Treat it as path.
-         if (!handled)
-             file = args.at(i);
+            }
+            else
+            {
+                handled = false;
+            }
+        }
+        else
+        {
+            handled = false;
+        }
+        // Nothing know. Treat it as path.
+        if (!handled)
+            file = args.at(i);
     }
 
-    if (file.startsWith(QLatin1String("-")) ) {
+    if (file.startsWith(QLatin1String("-")))
+    {
         std::cerr << "The flag '" << file.toStdString() << "' is unknown or missing a parameter." << std::endl;
         return 1;
     }
 
     NeuroscopeApp* neuroscope = new NeuroscopeApp();
-    neuroscope->setFileProperties(channelNb,SR,resolution,
-                                  offset,voltageRange,amplification,
-                                  screenGain,timeWindow);
+    neuroscope->setFileProperties(channelNb, SR, resolution,
+                                  offset, voltageRange, amplification,
+                                  screenGain, timeWindow);
 
     neuroscope->show();
 #ifdef WITH_CEREBUS
-    if (streamMode) {
-        if(!file.isEmpty()) {
+    if (streamMode)
+    {
+        if (!file.isEmpty())
+        {
             int group = file.toInt();
-            if(group > 0 && group < 6) {
-    		    neuroscope->openNetworkStream(static_cast<CerebusTracesProvider::SamplingGroup>(group));
-            } else {
+            if (group > 0 && group < 6)
+            {
+                neuroscope->openNetworkStream(static_cast<CerebusTracesProvider::SamplingGroup>(group));
+            }
+            else
+            {
                 std::cerr << "Sampling group must be between 1 (500 samp/sec) and 5 (30k samp/sec)." << std::endl;
             }
-        } else {
+        }
+        else
+        {
             std::cerr << "Network stream mode expects a sampling group as file argument." << std::endl;
         }
-    } else {
+    }
+    else
+    {
 #endif
-        if (!file.isEmpty()) {
+        if (!file.isEmpty())
+        {
             QFileInfo fInfo(file);
-            if(fInfo.isRelative()) {
+            if (fInfo.isRelative())
+            {
                 const QString url = QDir::currentPath().append("/") + file;
                 neuroscope->openDocumentFile(url);
-            } else {
+            }
+            else
+            {
                 neuroscope->openDocumentFile(file);
             }
         }

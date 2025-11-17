@@ -29,29 +29,33 @@
 #include "types.h"
 
 
-
 /**Class representing the data of an event file for a given starting time and timeframe.
 @author Lynn Hazan
 */
-class EventData{
-public:
+class EventData
+{
+  public:
     /**Constructor.
    * @param d Array containing the events ids.
    * @param t Array containing the time indexes of the events relative to the current starting time. The indexes are computed using the currently open data file sampling rate.
    * @param status status of the data, true if the data are available, false otherwise.
    */
-    EventData(const Array<int> &d,const Array<dataType> &t,bool status){
+    EventData(const Array<int>& d, const Array<dataType>& t, bool status)
+    {
         times = t;
         ids = d;
         ready = status;
     }
 
-    EventData(){
+    EventData()
+    {
         ready = false;
     }
-    
-    EventData& operator=(const EventData& source){
-        if(&source != this){
+
+    EventData& operator=(const EventData& source)
+    {
+        if (&source != this)
+        {
             ready = source.ready;
             times = source.times;
             ids = source.ids;
@@ -59,34 +63,35 @@ public:
         return *this;
     }
 
-    void setStatus(bool status){ready = status;}
-    void setData(const Array<dataType>& t,const Array<int>& d){
+    void setStatus(bool status) { ready = status; }
+    void setData(const Array<dataType>& t, const Array<int>& d)
+    {
         times = t;
         ids = d;
     }
     /**Returns the true if the data are available, false otherwise.*/
-    bool status()const {return ready;}
+    bool status() const { return ready; }
 
     /**Returns an Array containing the events ids.*/
-    Array<int>& getIds(){return ids;}
+    Array<int>& getIds() { return ids; }
 
     /**Returns an Array containing the time indexes of the events relative to the current starting time.
    * The indexes are computed using the currently open data file sampling rate.*/
-    Array<dataType>& getTimes(){return times;}
+    Array<dataType>& getTimes() { return times; }
 
     /**
    * @param samplingRate sampling rate of the current open data file in Hz.
    * @param positionSamplingRate sampling rate of the position file in Hz.
    * @param startTime current start time of the time window in milisecond.
    */
-    void computePositions(double samplingRate,double positionSamplingRate,long startTime);
+    void computePositions(double samplingRate, double positionSamplingRate, long startTime);
 
     /**Returns an Array containing the positions indexes computed for the events.
    * The positions indexes are computed using the position file sampling rate.*/
-    Array<dataType>& getPositions(){return positions;}
+    Array<dataType>& getPositions() { return positions; }
 
-    
-private:    
+
+  private:
     Array<dataType> times;
     Array<int> ids;
     bool ready;

@@ -18,11 +18,9 @@
 #include "prefdefaults.h"
 
 
-
-
-PrefDefaults::PrefDefaults(QWidget *parent )
+PrefDefaults::PrefDefaults(QWidget* parent)
     : PrefDefaultsLayout(parent),
-      intValidator(this),doubleValidator(this)
+      intValidator(this), doubleValidator(this)
 {
     //Set a validator on the line edits, the values have to be integers.
     nbChannelsLineEdit->setValidator(&intValidator);
@@ -33,12 +31,12 @@ PrefDefaults::PrefDefaults(QWidget *parent )
     voltageRangeLineEdit->setValidator(&intValidator);
     amplificationLineEdit->setValidator(&intValidator);
 
-    connect(traceBackgroundButton,SIGNAL(clicked()),this,SLOT(updateTraceBackgroundImage()));
+    connect(traceBackgroundButton, SIGNAL(clicked()), this, SLOT(updateTraceBackgroundImage()));
 
     //Set an icon on the backgroundButton button
 
     traceBackgroundButton->setIcon(QIcon(":/shared-icons/folder-open"));
-
 }
-PrefDefaults::~PrefDefaults(){
+PrefDefaults::~PrefDefaults()
+{
 }

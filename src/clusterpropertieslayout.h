@@ -8,10 +8,8 @@ class ClusterPropertiesLayout : public QWidget, public Ui_ClusterPropertiesLayou
 {
     Q_OBJECT
 
-public:
-    explicit ClusterPropertiesLayout( QWidget* parent = 0 );
-
-   
+  public:
+    explicit ClusterPropertiesLayout(QWidget* parent = 0);
 };
 
 #endif

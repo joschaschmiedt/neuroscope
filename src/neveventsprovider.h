@@ -19,11 +19,12 @@
 #include "blackrock.h"
 #include "eventsprovider.h"
 
-class NEVEventsProvider : public EventsProvider  {
+class NEVEventsProvider : public EventsProvider
+{
     Q_OBJECT
 
-public:
-    NEVEventsProvider(const QString &fileUrl, int position);
+  public:
+    NEVEventsProvider(const QString& fileUrl, int position);
     ~NEVEventsProvider();
 
     /**Loads the event ids and the corresponding spike time.
@@ -31,7 +32,7 @@ public:
     */
     virtual int loadData();
 
-private:
+  private:
     NEVBasicHeader mBasicHeader;
     NEVExtensionHeader* mExtensionHeaders;
 };

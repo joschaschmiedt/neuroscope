@@ -22,8 +22,8 @@
 #include <QLabel>
 #include <QMimeData>
 
-ChannelGroupView::ChannelGroupView(bool drag,const QColor& backgroundColor,QWidget* parent)
-    :QWidget(parent),
+ChannelGroupView::ChannelGroupView(bool drag, const QColor& backgroundColor, QWidget* parent)
+    : QWidget(parent),
       iconView(0L),
       drag(drag),
       mLabel(0),
@@ -42,9 +42,9 @@ ChannelGroupView::ChannelGroupView(bool drag,const QColor& backgroundColor,QWidg
     int h;
     int s;
     int v;
-    backgroundColor.getHsv(&h,&s,&v);
+    backgroundColor.getHsv(&h, &s, &v);
     QColor legendColor;
-    if(s <= 80 && v >= 240 || (s <= 40 && v >= 220))
+    if (s <= 80 && v >= 240 || (s <= 40 && v >= 220))
         legendColor = Qt::black;
     else
         legendColor = Qt::white;
@@ -58,18 +58,19 @@ ChannelGroupView::ChannelGroupView(bool drag,const QColor& backgroundColor,QWidg
     setAcceptDrops(true);
 }
 
-void ChannelGroupView::reAdjustSize(int parentWidth,int labelSize)
+void ChannelGroupView::reAdjustSize(int parentWidth, int labelSize)
 {
-    if((iconView->size().width() != 1 && width() != parentWidth) || init){
+    if ((iconView->size().width() != 1 && width() != parentWidth) || init)
+    {
         init = false;
-        int futurWidth = parentWidth -10 ;
+        int futurWidth = parentWidth - 10;
 
-        if (futurWidth<0)
+        if (futurWidth < 0)
             return;
         setFixedWidth(futurWidth);
 
-        int viewfuturWidth = width() - labelSize - 6;//give so space on the right
-        if(viewfuturWidth < 0)
+        int viewfuturWidth = width() - labelSize - 6; //give so space on the right
+        if (viewfuturWidth < 0)
             return;
         iconView->setNewWidth(viewfuturWidth);
 
@@ -77,52 +78,60 @@ void ChannelGroupView::reAdjustSize(int parentWidth,int labelSize)
         if(iconView->size().height() != 1 && height() != iconView->size().height())
             setFixedHeight(iconView->size().height());
             */
-
     }
-    int iconHeight = iconView->sizeHint().height()+5;
-    if (iconHeight != 1 && height() != iconHeight) {
+    int iconHeight = iconView->sizeHint().height() + 5;
+    if (iconHeight != 1 && height() != iconHeight)
+    {
         setFixedHeight(iconHeight);
     }
 }
 
 void ChannelGroupView::dropEvent(QDropEvent* event)
 {
-    if(event->source() == 0 || !drag){
+    if (event->source() == 0 || !drag)
+    {
         event->ignore();
         return;
     }
-    if (ChannelMimeData::hasInformation(event->mimeData())) {
+    if (ChannelMimeData::hasInformation(event->mimeData()))
+    {
         int groupSource, start;
         ChannelMimeData::getInformation(event->mimeData(), &groupSource, &start);
         const QString groupTarget = this->objectName();
-        emit dropLabel(groupSource,groupTarget.toInt(),start,QWidget::mapToGlobal(event->pos()).y());
+        emit dropLabel(groupSource, groupTarget.toInt(), start, QWidget::mapToGlobal(event->pos()).y());
     }
 }
 
-void ChannelGroupView::dragEnterEvent(QDragEnterEvent* event){
-    if(event->source() == 0 || !drag){
+void ChannelGroupView::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->source() == 0 || !drag)
+    {
         event->ignore();
         return;
     }
 
-    if (ChannelMimeData::hasInformation(event->mimeData())) {
+    if (ChannelMimeData::hasInformation(event->mimeData()))
+    {
         event->acceptProposedAction();
     }
     //Enable the parent (ChannelPalette) to ensure that the current group is visible (will scroll if need it)
     emit dragObjectMoved(QWidget::mapToParent(event->pos()));
 }
 
-void ChannelGroupView::setIconView(ChannelIconView *view){
+void ChannelGroupView::setIconView(ChannelIconView* view)
+{
     iconView = view;
     iconView->viewport()->setAutoFillBackground(false);
     mLayout->addWidget(iconView);
 }
 
-void ChannelGroupView::setLabel(QLabel* label){
+void ChannelGroupView::setLabel(QLabel* label)
+{
     mLabel = label;
     mLayout->addWidget(mLabel);
 }
 
-QLabel* ChannelGroupView::label(){
+QLabel* ChannelGroupView::label()
+{
     return mLabel;
 }

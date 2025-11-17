@@ -17,7 +17,8 @@
 
 #include "tags.h"
 
-namespace neuroscope{
+namespace neuroscope
+{
 
 extern const QString NEUROSCOPE = "neuroscope";
 extern const QString PARAMETERS = "parameters";
@@ -143,5 +144,4 @@ extern const QString CHANNEL_POSITION = "channelPosition";
 //Tag included in CHANNEL_POSITION
 extern const QString GAIN = "gain";
 
-}
-
+} // namespace neuroscope

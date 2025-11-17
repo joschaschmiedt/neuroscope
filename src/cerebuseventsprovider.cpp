@@ -18,9 +18,10 @@
 
 #include "cerebuseventsprovider.h"
 
-CerebusEventsProvider::CerebusEventsProvider(CerebusTracesProvider* source, int samplingRate) :
-    EventsProvider("cerebus.nev", samplingRate),
-    mDataProvider(source) {
+CerebusEventsProvider::CerebusEventsProvider(CerebusTracesProvider* source, int samplingRate)
+    : EventsProvider("cerebus.nev", samplingRate),
+      mDataProvider(source)
+{
 
     EventDescription digital("Digital Event");
     this->eventIds.insert(digital, MAX_CHANS_DIGITAL_IN);
@@ -35,11 +36,13 @@ CerebusEventsProvider::CerebusEventsProvider(CerebusTracesProvider* source, int 
     descriptionLength = 13;
 }
 
-CerebusEventsProvider::~CerebusEventsProvider() {
+CerebusEventsProvider::~CerebusEventsProvider()
+{
     // Nothing to do here
- }
+}
 
-void CerebusEventsProvider::requestData(long start, long end, QObject* initiator, long /*startTimeInRecordingUnits*/) {
+void CerebusEventsProvider::requestData(long start, long end, QObject* initiator, long /*startTimeInRecordingUnits*/)
+{
     Array<dataType>* data = mDataProvider->getEventData(start, end);
 
     // Split data up into two arrays
@@ -49,25 +52,28 @@ void CerebusEventsProvider::requestData(long start, long end, QObject* initiator
     memcpy(&times[0], &(*data)[0], count * sizeof(dataType));
 
     Array<int> ids(1, count);
-    for(long i = 0; i < count; i++)
+    for (long i = 0; i < count; i++)
         ids[i] = (*data)[count + i];
 
     emit dataReady(times, ids, initiator, this->name);
-	delete data;
+    delete data;
 }
 
 
-void CerebusEventsProvider::requestNextEventData(long startTime, long timeFrame, const QList<int> &selectedIds, QObject* initiator) {
-     qCritical() << "requestNextEventData(...) not supported yet.";
- }
+void CerebusEventsProvider::requestNextEventData(long startTime, long timeFrame, const QList<int>& selectedIds, QObject* initiator)
+{
+    qCritical() << "requestNextEventData(...) not supported yet.";
+}
 
-void CerebusEventsProvider::requestPreviousEventData(long endTime, long timeFrame, QList<int> selectedIds, QObject* initiator) {
-     qCritical() << "requestPreviousEventData(...) not supported yet.";
- }
+void CerebusEventsProvider::requestPreviousEventData(long endTime, long timeFrame, QList<int> selectedIds, QObject* initiator)
+{
+    qCritical() << "requestPreviousEventData(...) not supported yet.";
+}
 
-int CerebusEventsProvider::loadData() {
+int CerebusEventsProvider::loadData()
+{
     if (mDataProvider->isInitialized())
-         return OPEN_ERROR;
+        return OPEN_ERROR;
     else
-         return OK;
- }
+        return OK;
+}

@@ -24,44 +24,48 @@
 #include <QPixmap>
 
 
-PositionProperties::PositionProperties(QWidget *parent ) : PositionPropertiesLayout(parent),
-    intValidator(this),doubleValidator(this){
+PositionProperties::PositionProperties(QWidget* parent)
+    : PositionPropertiesLayout(parent),
+      intValidator(this), doubleValidator(this)
+{
     //Set a validator on the line edits, the values have to be integers.
     samplingRateLineEdit->setValidator(&doubleValidator);
     widthLineEdit->setValidator(&intValidator);
     heightLineEdit->setValidator(&intValidator);
 
-    connect(backgroundButton,SIGNAL(clicked()),this,SLOT(updateBackgroundImage()));
-    connect(backgroundLineEdit,SIGNAL(textChanged(QString)),this,SLOT(updateBackgroundImage(QString)));
-    connect(rotateComboBox,SIGNAL(activated(int)),this,SLOT(updateDisplayedImage()));
-    connect(filpComboBox,SIGNAL(activated(int)),this,SLOT(updateDisplayedImage()));
+    connect(backgroundButton, SIGNAL(clicked()), this, SLOT(updateBackgroundImage()));
+    connect(backgroundLineEdit, SIGNAL(textChanged(QString)), this, SLOT(updateBackgroundImage(QString)));
+    connect(rotateComboBox, SIGNAL(activated(int)), this, SLOT(updateDisplayedImage()));
+    connect(filpComboBox, SIGNAL(activated(int)), this, SLOT(updateDisplayedImage()));
 
     //Set an icon on the backgroundButton button
 
     backgroundButton->setIcon(QIcon(":/shared-icons/folder-open"));
-
 }
 
-PositionProperties::~PositionProperties(){
+PositionProperties::~PositionProperties()
+{
 }
 
 void PositionProperties::updateDisplayedImage()
 {
 
-    if(!backgroungImage.isNull()){
+    if (!backgroungImage.isNull())
+    {
         //apply first the rotation and then the flip
         QImage rotatedImage = backgroungImage;
         QPixmap pixmap;
 
         int angle = getRotation();
-        if(angle != 0){
+        if (angle != 0)
+        {
             QTransform rot;
             //KDE counts clockwise, to have a counterclock-wise rotation 90 and 270 are inverted
-            if(angle == 90)
+            if (angle == 90)
                 rot.rotate(90);
-            else if(angle == 180)
+            else if (angle == 180)
                 rot.rotate(180);
-            else if(angle == 270)
+            else if (angle == 270)
                 rot.rotate(270);
             rotatedImage = backgroungImage.transformed(rot);
         }
@@ -70,19 +74,23 @@ void PositionProperties::updateDisplayedImage()
         QImage flippedImage = rotatedImage;
         // 0 stands for none, 1 for vertical flip and 2 for horizontal flip.
         int flip = getFlip();
-        if(flip != 0){
+        if (flip != 0)
+        {
             bool horizontal;
             bool vertical;
-            if(flip == 1){
+            if (flip == 1)
+            {
                 horizontal = false;
                 vertical = true;
-            } else {
+            }
+            else
+            {
                 horizontal = true;
                 vertical = false;
             }
-            flippedImage = rotatedImage.mirrored(horizontal,vertical);
+            flippedImage = rotatedImage.mirrored(horizontal, vertical);
         }
-        if(pixmap.convertFromImage(flippedImage))
+        if (pixmap.convertFromImage(flippedImage))
             backgroundPixmap2->setPixmap(pixmap);
     }
 }
@@ -90,16 +98,19 @@ void PositionProperties::updateDisplayedImage()
 void PositionProperties::updateBackgroundImage()
 {
     const QString image = QFileDialog::getOpenFileName(this, tr("Select the background image..."));
-    if(!image.isEmpty())
+    if (!image.isEmpty())
         setBackgroundImage(image);
 }
 
 void PositionProperties::updateBackgroundImage(const QString& image)
 {
-    if(!image.isEmpty()) {
+    if (!image.isEmpty())
+    {
         setBackgroundImage(image);
-    } else {
-        QPixmap pixmap(getWidth(),getHeight());
+    }
+    else
+    {
+        QPixmap pixmap(getWidth(), getHeight());
         pixmap.fill(Qt::black);
         backgroundPixmap2->setPixmap(pixmap);
     }
@@ -107,7 +118,8 @@ void PositionProperties::updateBackgroundImage(const QString& image)
 
 int PositionProperties::getFlip() const
 {
-    switch(filpComboBox->currentIndex()){
+    switch (filpComboBox->currentIndex())
+    {
     case 0:
         return 0;
     case 1:
@@ -120,8 +132,10 @@ int PositionProperties::getFlip() const
 }
 
 
-int PositionProperties::getRotation() const {
-    switch(rotateComboBox->currentIndex()){
+int PositionProperties::getRotation() const
+{
+    switch (rotateComboBox->currentIndex())
+    {
     case 0:
         return 0;
     case 1:
@@ -136,8 +150,10 @@ int PositionProperties::getRotation() const {
 }
 
 
-void PositionProperties::setFlip(int orientation){
-    switch(orientation){
+void PositionProperties::setFlip(int orientation)
+{
+    switch (orientation)
+    {
     case 0:
         filpComboBox->setCurrentIndex(0);
         break;
@@ -154,8 +170,10 @@ void PositionProperties::setFlip(int orientation){
 }
 
 
-void PositionProperties::setRotation(int angle){
-    switch(angle){
+void PositionProperties::setRotation(int angle)
+{
+    switch (angle)
+    {
     case 0:
         rotateComboBox->setCurrentIndex(0);
         break;
@@ -175,11 +193,14 @@ void PositionProperties::setRotation(int angle){
 }
 
 
-void PositionProperties::setBackgroundImage(const QString& image){
+void PositionProperties::setBackgroundImage(const QString& image)
+{
     backgroundLineEdit->setText(image);
-    if(!image.isEmpty()){
-       backgroungImage.load(image);
-        if(!backgroungImage.isNull()){
+    if (!image.isEmpty())
+    {
+        backgroungImage.load(image);
+        if (!backgroungImage.isNull())
+        {
             //flip and rotation values should have been set before any call to this function.
             updateDisplayedImage();
         }
@@ -187,7 +208,8 @@ void PositionProperties::setBackgroundImage(const QString& image){
 }
 
 
-void PositionProperties::setEnabled (bool state){
+void PositionProperties::setEnabled(bool state)
+{
     groupBox1->setEnabled(state);
     groupBox2->setEnabled(state);
     samplingRateLineEdit->setEnabled(state);
@@ -204,8 +226,9 @@ void PositionProperties::setEnabled (bool state){
     rotateLabel->setEnabled(state);
     flipLabel->setEnabled(state);
 
-    if(!state){
-        QPixmap pixmap(getWidth(),getHeight());
+    if (!state)
+    {
+        QPixmap pixmap(getWidth(), getHeight());
         pixmap.fill(Qt::black);
         backgroundPixmap2->setPixmap(pixmap);
     }

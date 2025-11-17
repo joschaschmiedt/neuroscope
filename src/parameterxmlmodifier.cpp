@@ -25,21 +25,23 @@
 #include <QList>
 
 //include files for QT
-#include <QFile> 
-#include <QString> 
+#include <QFile>
+#include <QString>
 
 using namespace neuroscope;
 
-ParameterXmlModifier::ParameterXmlModifier(){}
-ParameterXmlModifier::~ParameterXmlModifier(){}
+ParameterXmlModifier::ParameterXmlModifier() {}
+ParameterXmlModifier::~ParameterXmlModifier() {}
 
-bool ParameterXmlModifier::parseFile(const QString& url){
+bool ParameterXmlModifier::parseFile(const QString& url)
+{
 
     QFile file(url);
-    if(!file.open(QIODevice::ReadWrite))
+    if (!file.open(QIODevice::ReadWrite))
         return false;
     //actually load the file in a tree in  memory
-    if(!doc.setContent(&file)){
+    if (!doc.setContent(&file))
+    {
         file.close();
         return false;
     }
@@ -48,12 +50,12 @@ bool ParameterXmlModifier::parseFile(const QString& url){
 
     //Find the root element
     root = doc.firstChild();
-    if(root.isNull())
+    if (root.isNull())
         return false;
     //if the first element is an Processing Instruction takes the sibiling child as the root.
-    if(root.isProcessingInstruction())
+    if (root.isProcessingInstruction())
         root = root.nextSibling();
-    if(root.isNull())
+    if (root.isNull())
         return false;
 
     //Find the neuroscope node
@@ -68,29 +70,35 @@ bool ParameterXmlModifier::parseFile(const QString& url){
     return true;
 }
 
-bool ParameterXmlModifier::writeTofile(const QString& url){ 
+bool ParameterXmlModifier::writeTofile(const QString& url)
+{
     QFile sessionFile(url);
     bool status = sessionFile.open(QIODevice::WriteOnly);
-    if(!status) return status;
+    if (!status)
+        return status;
 
     //insert a video node if one has been created
     QDomNode newChild;
-    if(newVideoNode){
-        newChild = root.insertAfter(video,acquisitionSystem);
-        if(newChild.isNull()){
+    if (newVideoNode)
+    {
+        newChild = root.insertAfter(video, acquisitionSystem);
+        if (newChild.isNull())
+        {
             QTextStream stream(&sessionFile);
-            stream<< initialXmlDocument;
+            stream << initialXmlDocument;
             sessionFile.close();
             return false;
         }
     }
 
     //insert a files node if one has been created
-    if(newFilesNode){
-        newChild = root.insertAfter(files,lfp);
-        if(newChild.isNull()){
+    if (newFilesNode)
+    {
+        newChild = root.insertAfter(files, lfp);
+        if (newChild.isNull())
+        {
             QTextStream stream(&sessionFile);
-            stream<< initialXmlDocument;
+            stream << initialXmlDocument;
             sessionFile.close();
             return false;
         }
@@ -98,18 +106,22 @@ bool ParameterXmlModifier::writeTofile(const QString& url){
 
     //Creates the neuroscope tag
     QDomElement neuroscopeElement = doc.createElement(NEUROSCOPE);
-    neuroscopeElement.setAttribute(VERSION,NEUROSCOPE_VERSION);
+    neuroscopeElement.setAttribute(VERSION, NEUROSCOPE_VERSION);
     neuroscopeElement.appendChild(miscellaneous);
     neuroscopeElement.appendChild(neuroscopeVideo);
 
-    if(!spikes.isNull())neuroscopeElement.appendChild(spikes);
+    if (!spikes.isNull())
+        neuroscopeElement.appendChild(spikes);
     neuroscopeElement.appendChild(channels);
 
-    if(!neuroscope.isNull()) newChild = root.replaceChild(neuroscopeElement,neuroscope);
-    else newChild = root.insertAfter(neuroscopeElement,spikeDetection);
-    if (newChild.isNull()){
+    if (!neuroscope.isNull())
+        newChild = root.replaceChild(neuroscopeElement, neuroscope);
+    else
+        newChild = root.insertAfter(neuroscopeElement, spikeDetection);
+    if (newChild.isNull())
+    {
         QTextStream stream(&sessionFile);
-        stream<< initialXmlDocument;
+        stream << initialXmlDocument;
         sessionFile.close();
         return false;
     }
@@ -117,17 +129,20 @@ bool ParameterXmlModifier::writeTofile(const QString& url){
     QString xmlDocument = doc.toString();
 
     QTextStream stream(&sessionFile);
-    stream<< xmlDocument;
+    stream << xmlDocument;
     sessionFile.close();
 
     return true;
 }
 
-QDomNode ParameterXmlModifier::findDirectChild(const QString &childName){
+QDomNode ParameterXmlModifier::findDirectChild(const QString& childName)
+{
     QDomNode child = root.firstChild();
-    while(!child.isNull()){
+    while (!child.isNull())
+    {
         // the node really is an element and has the right tag.
-        if(child.isElement() && child.nodeName() == childName) return child;
+        if (child.isElement() && child.nodeName() == childName)
+            return child;
         child = child.nextSibling();
     }
 
@@ -135,33 +150,44 @@ QDomNode ParameterXmlModifier::findDirectChild(const QString &childName){
     return QDomNode();
 }
 
-QDomNode ParameterXmlModifier::findDirectChild(const QString& childName,const QDomNode& ancestor){
-    if(ancestor.isNull()) return QDomNode();
-    QDomNode child = ancestor.firstChild();
-    while(!child.isNull()){
-        // the node really is an element and has the right tag.
-        if(child.isElement() && child.nodeName() == childName)  return child;
-        child = child.nextSibling();
-    }
-
-    //No node has been found, return an empty node
-    return QDomNode();
-}
-
-QDomNode ParameterXmlModifier::findDirectChild(const QString& childName,const QString &grandChildName,const QString& value,const QDomNode &ancestor){
-    if(ancestor.isNull())
+QDomNode ParameterXmlModifier::findDirectChild(const QString& childName, const QDomNode& ancestor)
+{
+    if (ancestor.isNull())
         return QDomNode();
     QDomNode child = ancestor.firstChild();
-    while(!child.isNull()){
+    while (!child.isNull())
+    {
         // the node really is an element and has the right tag.
-        if(child.isElement() && child.nodeName() == childName){
+        if (child.isElement() && child.nodeName() == childName)
+            return child;
+        child = child.nextSibling();
+    }
+
+    //No node has been found, return an empty node
+    return QDomNode();
+}
+
+QDomNode ParameterXmlModifier::findDirectChild(const QString& childName, const QString& grandChildName, const QString& value, const QDomNode& ancestor)
+{
+    if (ancestor.isNull())
+        return QDomNode();
+    QDomNode child = ancestor.firstChild();
+    while (!child.isNull())
+    {
+        // the node really is an element and has the right tag.
+        if (child.isElement() && child.nodeName() == childName)
+        {
             QDomNodeList list = child.childNodes();
-            for(uint i=0;i<list.count();++i){
+            for (uint i = 0; i < list.count(); ++i)
+            {
                 QDomNode grandChild = list.item(i);
-                if(grandChild.isElement() && grandChild.nodeName() == grandChildName){
+                if (grandChild.isElement() && grandChild.nodeName() == grandChildName)
+                {
                     QDomNode textNode = grandChild.firstChild();
-                    if(textNode.isText() && textNode.nodeValue() == value) return child;
-                    else break;
+                    if (textNode.isText() && textNode.nodeValue() == value)
+                        return child;
+                    else
+                        break;
                 }
             }
         }
@@ -173,71 +199,99 @@ QDomNode ParameterXmlModifier::findDirectChild(const QString& childName,const QS
 }
 
 
-bool ParameterXmlModifier::setAcquisitionSystemInformation(int resolution,int nbChannels,double samplingRate,int voltageRange,int amplification,int offset){
+bool ParameterXmlModifier::setAcquisitionSystemInformation(int resolution, int nbChannels, double samplingRate, int voltageRange, int amplification, int offset)
+{
     acquisitionSystem = findDirectChild(ACQUISITION);
-    if(acquisitionSystem.isNull()) return false;
+    if (acquisitionSystem.isNull())
+        return false;
 
-    QDomNode resolutionNode = findDirectChild(BITS,acquisitionSystem);
-    if(!resolutionNode.isNull()){
+    QDomNode resolutionNode = findDirectChild(BITS, acquisitionSystem);
+    if (!resolutionNode.isNull())
+    {
         QDomText resolutionTextChild = resolutionNode.firstChild().toText();
-        if(!resolutionTextChild.isNull()) resolutionTextChild.setNodeValue(QString::number(resolution));
-        else return false;
+        if (!resolutionTextChild.isNull())
+            resolutionTextChild.setNodeValue(QString::number(resolution));
+        else
+            return false;
     }
-    else return false;
+    else
+        return false;
 
-    QDomNode nbChannelsNode = findDirectChild(NB_CHANNELS,acquisitionSystem);
-    if(!nbChannelsNode.isNull()){
+    QDomNode nbChannelsNode = findDirectChild(NB_CHANNELS, acquisitionSystem);
+    if (!nbChannelsNode.isNull())
+    {
         QDomText nbChannelsTextChild = nbChannelsNode.firstChild().toText();
-        if(!nbChannelsTextChild.isNull()) nbChannelsTextChild.setNodeValue(QString::number(nbChannels));
-        else return false;
+        if (!nbChannelsTextChild.isNull())
+            nbChannelsTextChild.setNodeValue(QString::number(nbChannels));
+        else
+            return false;
     }
-    else return false;
+    else
+        return false;
 
-    QDomNode samplingRateNode = findDirectChild(SAMPLING_RATE,acquisitionSystem);
-    if(!samplingRateNode.isNull()){
+    QDomNode samplingRateNode = findDirectChild(SAMPLING_RATE, acquisitionSystem);
+    if (!samplingRateNode.isNull())
+    {
         QDomText samplingRateTextChild = samplingRateNode.firstChild().toText();
-        if(!samplingRateTextChild.isNull()) samplingRateTextChild.setNodeValue(QString::fromLatin1("%1").arg(samplingRate,0,'g',14));
-        else return false;
+        if (!samplingRateTextChild.isNull())
+            samplingRateTextChild.setNodeValue(QString::fromLatin1("%1").arg(samplingRate, 0, 'g', 14));
+        else
+            return false;
     }
-    else return false;
+    else
+        return false;
 
-    QDomNode voltageRangeNode = findDirectChild(VOLTAGE_RANGE,acquisitionSystem);
-    if(!voltageRangeNode.isNull()){
+    QDomNode voltageRangeNode = findDirectChild(VOLTAGE_RANGE, acquisitionSystem);
+    if (!voltageRangeNode.isNull())
+    {
         QDomText voltageRangeTextChild = voltageRangeNode.firstChild().toText();
-        if(!voltageRangeTextChild.isNull()) voltageRangeTextChild.setNodeValue(QString::number(voltageRange));
-        else return false;
+        if (!voltageRangeTextChild.isNull())
+            voltageRangeTextChild.setNodeValue(QString::number(voltageRange));
+        else
+            return false;
     }
-    else return false;
+    else
+        return false;
 
-    QDomNode amplificationNode = findDirectChild(AMPLIFICATION,acquisitionSystem);
-    if(!amplificationNode.isNull()){
+    QDomNode amplificationNode = findDirectChild(AMPLIFICATION, acquisitionSystem);
+    if (!amplificationNode.isNull())
+    {
         QDomText amplificationTextChild = amplificationNode.firstChild().toText();
-        if(!amplificationTextChild.isNull()) amplificationTextChild.setNodeValue(QString::number(amplification));
-        else return false;
+        if (!amplificationTextChild.isNull())
+            amplificationTextChild.setNodeValue(QString::number(amplification));
+        else
+            return false;
     }
-    else return false;
+    else
+        return false;
 
-    QDomNode offsetNode = findDirectChild(OFFSET,acquisitionSystem);
-    if(!offsetNode.isNull()){
+    QDomNode offsetNode = findDirectChild(OFFSET, acquisitionSystem);
+    if (!offsetNode.isNull())
+    {
         QDomText offsetTextChild = offsetNode.firstChild().toText();
-        if(!offsetTextChild.isNull()) offsetTextChild.setNodeValue(QString::number(offset));
-        else return false;
+        if (!offsetTextChild.isNull())
+            offsetTextChild.setNodeValue(QString::number(offset));
+        else
+            return false;
     }
-    else return false;
+    else
+        return false;
 
     return true;
 }
 
-bool ParameterXmlModifier::setLfpInformation(double lfpSamplingRate){
+bool ParameterXmlModifier::setLfpInformation(double lfpSamplingRate)
+{
     lfp = findDirectChild(FIELD_POTENTIALS);
-    if(lfp.isNull())
+    if (lfp.isNull())
         return false;
 
-    QDomNode lfpSamplingRateNode = findDirectChild(LFP_SAMPLING_RATE,lfp);
-    if(!lfpSamplingRateNode.isNull()){
+    QDomNode lfpSamplingRateNode = findDirectChild(LFP_SAMPLING_RATE, lfp);
+    if (!lfpSamplingRateNode.isNull())
+    {
         QDomText lfpSamplingRateTextChild = lfpSamplingRateNode.firstChild().toText();
-        if(!lfpSamplingRateTextChild.isNull())
-            lfpSamplingRateTextChild.setNodeValue(QString::fromLatin1("%1").arg(lfpSamplingRate,0,'g',14));
+        if (!lfpSamplingRateTextChild.isNull())
+            lfpSamplingRateTextChild.setNodeValue(QString::fromLatin1("%1").arg(lfpSamplingRate, 0, 'g', 14));
         else
             return false;
     }
@@ -248,7 +302,8 @@ bool ParameterXmlModifier::setLfpInformation(double lfpSamplingRate){
 }
 
 
-void ParameterXmlModifier::setMiscellaneousInformation(float screenGain,const QString& traceBackgroungImage){
+void ParameterXmlModifier::setMiscellaneousInformation(float screenGain, const QString& traceBackgroungImage)
+{
     //AS part of the NEUROSCOPE tag, this tag is overwritten: the current MISCELLANEOUS tag will be replace by this new one
     miscellaneous = doc.createElement(MISCELLANEOUS);
     QDomElement gainElement = doc.createElement(SCREENGAIN);
@@ -263,7 +318,8 @@ void ParameterXmlModifier::setMiscellaneousInformation(float screenGain,const QS
     miscellaneous.appendChild(imageElement);
 }
 
-void ParameterXmlModifier::setNeuroscopeVideoInformation(int rotation,int flip,const QString& backgroundPath,int drawTrajectory){
+void ParameterXmlModifier::setNeuroscopeVideoInformation(int rotation, int flip, const QString& backgroundPath, int drawTrajectory)
+{
 
     //AS part of the NEUROSCOPE tag, this tag is overwritten: the current NEUROSCOPE/VIDEO tag will be replace by this new one
     neuroscopeVideo = doc.createElement(VIDEO);
@@ -290,10 +346,12 @@ void ParameterXmlModifier::setNeuroscopeVideoInformation(int rotation,int flip,c
     neuroscopeVideo.appendChild(drawTrajectoryElement);
 }
 
-bool ParameterXmlModifier::setVideoInformation(int width,int height){
+bool ParameterXmlModifier::setVideoInformation(int width, int height)
+{
     video = findDirectChild(VIDEO);
     //If the video element does not exist, create it
-    if(video.isNull()){
+    if (video.isNull())
+    {
         newVideoNode = true;
         video = doc.createElement(VIDEO);
 
@@ -310,34 +368,45 @@ bool ParameterXmlModifier::setVideoInformation(int width,int height){
         video.appendChild(heightElement);
     }
     //Modify the existing video element
-    else{
-        QDomNode widthNode = findDirectChild(WIDTH,video);
-        if(!widthNode.isNull()){
+    else
+    {
+        QDomNode widthNode = findDirectChild(WIDTH, video);
+        if (!widthNode.isNull())
+        {
             QDomText widthTextChild = widthNode.firstChild().toText();
-            if(!widthTextChild.isNull()) widthTextChild.setNodeValue(QString::number(width));
-            else return false;
+            if (!widthTextChild.isNull())
+                widthTextChild.setNodeValue(QString::number(width));
+            else
+                return false;
         }
-        else return false;
+        else
+            return false;
 
-        QDomNode heightNode = findDirectChild(HEIGHT,video);
-        if(!heightNode.isNull()){
+        QDomNode heightNode = findDirectChild(HEIGHT, video);
+        if (!heightNode.isNull())
+        {
             QDomText heightTextChild = heightNode.firstChild().toText();
-            if(!heightTextChild.isNull()) heightTextChild.setNodeValue(QString::number(height));
-            else return false;
+            if (!heightTextChild.isNull())
+                heightTextChild.setNodeValue(QString::number(height));
+            else
+                return false;
         }
-        else return false;
+        else
+            return false;
     }
 
     return true;
 }
 
 
-bool ParameterXmlModifier::setChannelDisplayInformation(ChannelColors* channelColors,QMap<int,int>& channelsGroups,QMap<int,int>& channelDefaultOffsets){
+bool ParameterXmlModifier::setChannelDisplayInformation(ChannelColors* channelColors, QMap<int, int>& channelsGroups, QMap<int, int>& channelDefaultOffsets)
+{
     //AS part of the NEUROSCOPE tag, this tag is overwritten: the current CHANNELS tag will be replace by this new one
     channels = doc.createElement(CHANNELS);
 
-    QMap<int,int>::Iterator iterator;
-    for(iterator = channelsGroups.begin(); iterator != channelsGroups.end(); ++iterator){
+    QMap<int, int>::Iterator iterator;
+    for (iterator = channelsGroups.begin(); iterator != channelsGroups.end(); ++iterator)
+    {
         //Get the channel information (id, default offset and colors)
         int channelId = iterator.key();
         QColor color = channelColors->color(channelId);
@@ -385,57 +454,67 @@ bool ParameterXmlModifier::setChannelDisplayInformation(ChannelColors* channelCo
     return true;
 }
 
-bool ParameterXmlModifier::setAnatomicalDescription(QMap<int, QList<int> >& anatomicalGroups,QMap<int,bool> skipStatus){
+bool ParameterXmlModifier::setAnatomicalDescription(QMap<int, QList<int>>& anatomicalGroups, QMap<int, bool> skipStatus)
+{
     anatomicalDescription = findDirectChild(ANATOMY);
-    if(anatomicalDescription.isNull())
+    if (anatomicalDescription.isNull())
         return false;
-    QDomNode channelGroupsNode = findDirectChild(CHANNEL_GROUPS,anatomicalDescription);
+    QDomNode channelGroupsNode = findDirectChild(CHANNEL_GROUPS, anatomicalDescription);
 
     QDomElement channelGroupsElement = doc.createElement(CHANNEL_GROUPS);
 
     //Create the anatomical groups
-    QMap<int,QList<int> >::Iterator iterator;
+    QMap<int, QList<int>>::Iterator iterator;
     //The iterator gives the keys sorted.
-    for(iterator = anatomicalGroups.begin(); iterator != anatomicalGroups.end(); ++iterator){
+    for (iterator = anatomicalGroups.begin(); iterator != anatomicalGroups.end(); ++iterator)
+    {
         //the trash groups are not stored
-        if(iterator.key() == 0)
+        if (iterator.key() == 0)
             continue;
         QList<int> channelIds = iterator.value();
         QList<int>::iterator channelIterator;
 
         QDomElement groupElement = doc.createElement(GROUP);
 
-        for(channelIterator = channelIds.begin(); channelIterator != channelIds.end(); ++channelIterator){
+        for (channelIterator = channelIds.begin(); channelIterator != channelIds.end(); ++channelIterator)
+        {
             QDomElement idElement = doc.createElement(CHANNEL);
             QDomText idValue = doc.createTextNode(QString::number(*channelIterator));
             idElement.appendChild(idValue);
-            idElement.setAttribute(SKIP,skipStatus[*channelIterator]);
+            idElement.setAttribute(SKIP, skipStatus[*channelIterator]);
             groupElement.appendChild(idElement);
         }
 
         channelGroupsElement.appendChild(groupElement);
-    }//end of groups loop
+    } //end of groups loop
 
     //This erase all previous information contained in the CHANNEL_GROUPS tag including information which have been set by external applications.
-    if(channelGroupsElement.hasChildNodes()){
-        if(!channelGroupsNode.isNull()){
-            QDomNode newChild = anatomicalDescription.replaceChild(channelGroupsElement,channelGroupsNode);
-            if(newChild.isNull())
+    if (channelGroupsElement.hasChildNodes())
+    {
+        if (!channelGroupsNode.isNull())
+        {
+            QDomNode newChild = anatomicalDescription.replaceChild(channelGroupsElement, channelGroupsNode);
+            if (newChild.isNull())
                 return false;
             else
                 return true;
-        } else {
+        }
+        else
+        {
             anatomicalDescription.appendChild(channelGroupsElement);
         }
         return true;
     }
-    else{
-        if(!channelGroupsNode.isNull()) anatomicalDescription.removeChild(channelGroupsNode);
+    else
+    {
+        if (!channelGroupsNode.isNull())
+            anatomicalDescription.removeChild(channelGroupsNode);
         return true;
     }
 }
 
-bool ParameterXmlModifier::setSpikeDetectionInformation(int nbSamples,int peakSampleIndex,QMap<int, QList<int> >& spikeGroups){
+bool ParameterXmlModifier::setSpikeDetectionInformation(int nbSamples, int peakSampleIndex, QMap<int, QList<int>>& spikeGroups)
+{
     //AS part of the NEUROSCOPE tag, this tag is overwritten: the current SPIKES tag will be replace by this new one
     //The spikes element is a neuroscope specific element. The tag contains nbSamples and peakSampleIndex information used for all the spike groups
     //in Neuroscope.
@@ -457,74 +536,90 @@ bool ParameterXmlModifier::setSpikeDetectionInformation(int nbSamples,int peakSa
 }
 
 
-bool ParameterXmlModifier::setSpikeDetectionInformation(QMap<int, QList<int> >& spikeGroups){
+bool ParameterXmlModifier::setSpikeDetectionInformation(QMap<int, QList<int>>& spikeGroups)
+{
     spikeDetection = findDirectChild(SPIKE);
-    if(spikeDetection.isNull()) return false;
+    if (spikeDetection.isNull())
+        return false;
 
-    QDomNode channelGroupsNode = findDirectChild(CHANNEL_GROUPS,spikeDetection);
+    QDomNode channelGroupsNode = findDirectChild(CHANNEL_GROUPS, spikeDetection);
     QDomElement channelGroupsElement = doc.createElement(CHANNEL_GROUPS);
 
     //The trash groups are not store in the parameter file, they should not be counted when comparing the number of groups between the parameter
     //file and the current groups.
     int nbSpikegroups = spikeGroups.count();
-    if(spikeGroups.contains(0)) nbSpikegroups--;
-    if(spikeGroups.contains(-1)) nbSpikegroups--;
+    if (spikeGroups.contains(0))
+        nbSpikegroups--;
+    if (spikeGroups.contains(-1))
+        nbSpikegroups--;
 
     //if the number of groups in the parameter file and currently defined are the same, check if the groups are identical
     //if so do not do anything otherwise go to the next section and erase all previous information contained in the CHANNEL_GROUPS tag including
     //information which have been set by external applications.
     QDomNode groupNode;
-    if(!channelGroupsNode.isNull() && channelGroupsNode.childNodes().count() == nbSpikegroups){
+    if (!channelGroupsNode.isNull() && channelGroupsNode.childNodes().count() == nbSpikegroups)
+    {
         bool identical = true;
-        groupNode = findDirectChild(GROUP,channelGroupsNode);
-        QMap<int,QList<int> >::Iterator iterator;
+        groupNode = findDirectChild(GROUP, channelGroupsNode);
+        QMap<int, QList<int>>::Iterator iterator;
         //The iterator gives the keys sorted.
-        for(iterator = spikeGroups.begin(); iterator != spikeGroups.end(); ++iterator){
+        for (iterator = spikeGroups.begin(); iterator != spikeGroups.end(); ++iterator)
+        {
             //the trashs groups are not stored
-            if(iterator.key() == -1 || iterator.key() == 0) continue;
+            if (iterator.key() == -1 || iterator.key() == 0)
+                continue;
             QList<int> channelIds = iterator.value();
             int nbChannels = channelIds.size();
-            QDomNode channelList = findDirectChild(CHANNELS,groupNode);
+            QDomNode channelList = findDirectChild(CHANNELS, groupNode);
 
             //If the 2 groups do not have the same number of channels stop here.
-            if(static_cast<int>(channelList.childNodes().count()) != nbChannels){
+            if (static_cast<int>(channelList.childNodes().count()) != nbChannels)
+            {
                 identical = false;
                 break;
             }
-            else{
+            else
+            {
                 QDomNode channelNode = channelList.firstChild();
-                for(int i = 0; i < nbChannels; ++i){
+                for (int i = 0; i < nbChannels; ++i)
+                {
                     QDomText channelTextChild = channelNode.firstChild().toText();
 
-                    if(channelIds[i] != channelTextChild.nodeValue().toInt()){
+                    if (channelIds[i] != channelTextChild.nodeValue().toInt())
+                    {
                         identical = false;
                         break;
                     }
                     channelNode = channelNode.nextSibling();
                 }
-                if(!identical) break;
+                if (!identical)
+                    break;
             }
             groupNode = groupNode.nextSibling();
         }
 
         //if the groups are identical, return otherwise go to the next step and erase the current CHANNEL_GROUPS tag by a new one.
-        if(identical) return true;
+        if (identical)
+            return true;
     }
 
 
     //Create the spike groups
-    QMap<int,QList<int> >::Iterator iterator;
+    QMap<int, QList<int>>::Iterator iterator;
     //The iterator gives the keys sorted.
-    for(iterator = spikeGroups.begin(); iterator != spikeGroups.end(); ++iterator){
+    for (iterator = spikeGroups.begin(); iterator != spikeGroups.end(); ++iterator)
+    {
         //the trashs groups are not stored
-        if(iterator.key() == -1 || iterator.key() == 0) continue;
+        if (iterator.key() == -1 || iterator.key() == 0)
+            continue;
         QList<int> channelIds = iterator.value();
         QList<int>::iterator channelIterator;
 
         QDomElement groupElement = doc.createElement(GROUP);
         QDomElement channelListElement = doc.createElement(CHANNELS);
 
-        for(channelIterator = channelIds.begin(); channelIterator != channelIds.end(); ++channelIterator){
+        for (channelIterator = channelIds.begin(); channelIterator != channelIds.end(); ++channelIterator)
+        {
             QDomElement idElement = doc.createElement(CHANNEL);
             QDomText idValue = doc.createTextNode(QString::number(*channelIterator));
             idElement.appendChild(idValue);
@@ -533,35 +628,44 @@ bool ParameterXmlModifier::setSpikeDetectionInformation(QMap<int, QList<int> >& 
 
         groupElement.appendChild(channelListElement);
         channelGroupsElement.appendChild(groupElement);
-    }//end of groups loop
+    } //end of groups loop
 
     //This erase all previous information contained in the CHANNEL_GROUPS tag including information which have been set by external applications.
-    if(channelGroupsElement.hasChildNodes()){
-        if(!channelGroupsNode.isNull()){
-            QDomNode newChild = spikeDetection.replaceChild(channelGroupsElement,channelGroupsNode);
-            if(newChild.isNull()) return false;
-            else return true;
+    if (channelGroupsElement.hasChildNodes())
+    {
+        if (!channelGroupsNode.isNull())
+        {
+            QDomNode newChild = spikeDetection.replaceChild(channelGroupsElement, channelGroupsNode);
+            if (newChild.isNull())
+                return false;
+            else
+                return true;
         }
-        else spikeDetection.appendChild(channelGroupsElement);
+        else
+            spikeDetection.appendChild(channelGroupsElement);
         return true;
     }
-    else{
-        if(!channelGroupsNode.isNull()) spikeDetection.removeChild(channelGroupsNode);
+    else
+    {
+        if (!channelGroupsNode.isNull())
+            spikeDetection.removeChild(channelGroupsNode);
         return true;
     }
 }
 
 
-
-bool ParameterXmlModifier::setSampleRateByExtension(const QMap<QString,double>& extensionSamplingRates){
+bool ParameterXmlModifier::setSampleRateByExtension(const QMap<QString, double>& extensionSamplingRates)
+{
     files = findDirectChild(FILES);
     //If the files element does not exist, create it
-    if(files.isNull()){
+    if (files.isNull())
+    {
         newFilesNode = true;
         files = doc.createElement(FILES);
 
-        QMap<QString,double>::ConstIterator iterator;
-        for(iterator = extensionSamplingRates.constBegin(); iterator != extensionSamplingRates.constEnd(); ++iterator){
+        QMap<QString, double>::ConstIterator iterator;
+        for (iterator = extensionSamplingRates.constBegin(); iterator != extensionSamplingRates.constEnd(); ++iterator)
+        {
             //Get the extension information (extension and sampling rate)
             QString extension = iterator.key();
             double samplingRate = iterator.value();
@@ -571,7 +675,7 @@ bool ParameterXmlModifier::setSampleRateByExtension(const QMap<QString,double>& 
             extensionElement.appendChild(extensionValue);
 
             QDomElement samplingRateElement = doc.createElement(SAMPLING_RATE);
-            QDomText samplingRateValue = doc.createTextNode(QString::fromLatin1("%1").arg(samplingRate,0,'g',14));
+            QDomText samplingRateValue = doc.createTextNode(QString::fromLatin1("%1").arg(samplingRate, 0, 'g', 14));
             samplingRateElement.appendChild(samplingRateValue);
 
             QDomElement file = doc.createElement(neuroscope::FILE);
@@ -582,28 +686,34 @@ bool ParameterXmlModifier::setSampleRateByExtension(const QMap<QString,double>& 
         }
         return true;
     }
-    else{
-        QMap<QString,double>::ConstIterator iterator;
-        for(iterator = extensionSamplingRates.constBegin(); iterator != extensionSamplingRates.constEnd(); ++iterator){
+    else
+    {
+        QMap<QString, double>::ConstIterator iterator;
+        for (iterator = extensionSamplingRates.constBegin(); iterator != extensionSamplingRates.constEnd(); ++iterator)
+        {
             //Get the extension information (extension and sampling rate)
             QString extension = iterator.key();
             double samplingRate = iterator.value();
-            QDomNode file = findDirectChild(neuroscope::FILE,EXTENSION,extension,files);
+            QDomNode file = findDirectChild(neuroscope::FILE, EXTENSION, extension, files);
             //if a node with the given criteria exists modify it
-            if(!file.isNull()){
-                QDomNode samplingRateNode = findDirectChild(SAMPLING_RATE,file);
+            if (!file.isNull())
+            {
+                QDomNode samplingRateNode = findDirectChild(SAMPLING_RATE, file);
                 QDomText samplingRateTextChild = samplingRateNode.firstChild().toText();
-                if(!samplingRateTextChild.isNull()) samplingRateTextChild.setNodeValue(QString::fromLatin1("%1").arg(samplingRate,0,'g',14));
-                else return false;
+                if (!samplingRateTextChild.isNull())
+                    samplingRateTextChild.setNodeValue(QString::fromLatin1("%1").arg(samplingRate, 0, 'g', 14));
+                else
+                    return false;
             }
             //else create a new one
-            else{
+            else
+            {
                 QDomElement extensionElement = doc.createElement(EXTENSION);
                 QDomText extensionValue = doc.createTextNode(extension);
                 extensionElement.appendChild(extensionValue);
 
                 QDomElement samplingRateElement = doc.createElement(SAMPLING_RATE);
-                QDomText samplingRateValue = doc.createTextNode(QString::fromLatin1("%1").arg(samplingRate,0,'g',14));
+                QDomText samplingRateValue = doc.createTextNode(QString::fromLatin1("%1").arg(samplingRate, 0, 'g', 14));
                 samplingRateElement.appendChild(samplingRateValue);
 
                 QDomElement file = doc.createElement(neuroscope::FILE);
@@ -616,4 +726,3 @@ bool ParameterXmlModifier::setSampleRateByExtension(const QMap<QString,double>& 
         return true;
     }
 }
-

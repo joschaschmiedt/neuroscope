@@ -15,19 +15,19 @@
  *                                                                         *
  ***************************************************************************/
 // include files for QT
-#include <QLayout>        // for QVBoxLayout
-#include <QLabel>         // for QLabel
+#include <QLayout> // for QVBoxLayout
+#include <QLabel>  // for QLabel
 #include <QTabWidget>
 
 #include <QMessageBox>
 
 
 //include files for the application
-#include "prefdialog.h"     // class PrefDialog
+#include "prefdialog.h" // class PrefDialog
 
-#include "configuration.h"          // class Configuration and Config()
-#include "prefgeneral.h"            // class PrefGeneral
-#include "prefdefaults.h" // class prefDefaults
+#include "configuration.h" // class Configuration and Config()
+#include "prefgeneral.h"   // class PrefGeneral
+#include "prefdefaults.h"  // class prefDefaults
 #include "positionproperties.h"
 #include "clusterproperties.h"
 #include "qhelpviewer.h"
@@ -37,7 +37,7 @@
   *@author Lynn Hazan
 */
 
-PrefDialog::PrefDialog(QWidget *parent)
+PrefDialog::PrefDialog(QWidget* parent)
     : QPageDialog(parent)
 {
 
@@ -47,12 +47,12 @@ PrefDialog::PrefDialog(QWidget *parent)
     setWindowTitle(tr("Preferences"));
 
 
-    setHelp("settings","neuroscope");
-    
+    setHelp("settings", "neuroscope");
+
     //adding page "General options"
-    QWidget * w = new QWidget(this);
+    QWidget* w = new QWidget(this);
     prefGeneral = new PrefGeneral(w);
-    QPageWidgetItem *item = new QPageWidgetItem(prefGeneral,tr("General"));
+    QPageWidgetItem* item = new QPageWidgetItem(prefGeneral, tr("General"));
     item->setHeader(tr("NeuroScope Configuration"));
     item->setIcon(QIcon(":/shared-icons/folder-open"));
 
@@ -64,17 +64,17 @@ PrefDialog::PrefDialog(QWidget *parent)
     QTabWidget* tabWidget = new QTabWidget(w);
     //adding "Channels" tab
     prefDefaults = new PrefDefaults();
-    tabWidget->addTab(prefDefaults,tr("Channels"));
+    tabWidget->addTab(prefDefaults, tr("Channels"));
     //connect(prefDefaults,SIGNAL(changed(bool)),this, SIGNAL(changed(bool)) );
     //adding "Units" tab
     clusterProperties = new ClusterProperties();
-    tabWidget->addTab(clusterProperties,tr("Units"));
+    tabWidget->addTab(clusterProperties, tr("Units"));
     //adding "Positions" tab
     positionProperties = new PositionProperties();
-    tabWidget->addTab(positionProperties,tr("Positions"));
+    tabWidget->addTab(positionProperties, tr("Positions"));
 
 
-    item = new QPageWidgetItem(tabWidget,tr("Defaults"));
+    item = new QPageWidgetItem(tabWidget, tr("Defaults"));
     item->setHeader(tr("NeuroScope Defaults"));
     item->setIcon(QIcon(":/icons/defaults"));
 
@@ -82,46 +82,47 @@ PrefDialog::PrefDialog(QWidget *parent)
     addPage(item);
 
     // connect interactive widgets and selfmade signals to the enableApply slotDefault
-    connect(prefGeneral->headerCheckBox,SIGNAL(clicked()),this,SLOT(enableApply()));
-    connect(prefGeneral->backgroundColorButton,SIGNAL(colorChanged(QColor)),this,SLOT(enableApply()));
-    connect(prefGeneral->eventPositionSpinBox,SIGNAL(valueChanged(int)),this,SLOT(enableApply()));
-    connect(prefGeneral->clusterPositionSpinBox,SIGNAL(valueChanged(int)),this,SLOT(enableApply()));
-    connect(prefGeneral->useWhiteColorPrinting,SIGNAL(clicked()),this,SLOT(enableApply()));
-    connect(prefDefaults->screenGainLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(prefDefaults->voltageRangeLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(prefDefaults->amplificationLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(prefDefaults->nbChannelsLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(prefDefaults->datSamplingRateLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(prefDefaults->eegSamplingRateLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(prefDefaults->offsetLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(prefDefaults->resolutionComboBox,SIGNAL(activated(int)),this,SLOT(enableApply()));
-    connect(prefDefaults->traceBackgroundLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(clusterProperties->nbSamplesLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(clusterProperties->peakIndexLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(positionProperties->samplingRateLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(positionProperties->widthLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(positionProperties->heightLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(positionProperties->backgroundLineEdit,SIGNAL(textChanged(QString)),this,SLOT(enableApply()));
-    connect(positionProperties->rotateComboBox,SIGNAL(activated(int)),this,SLOT(enableApply()));
-    connect(positionProperties->filpComboBox,SIGNAL(activated(int)),this,SLOT(enableApply()));
-    connect(positionProperties->checkBoxBackground,SIGNAL(clicked()),this,SLOT(enableApply()));
+    connect(prefGeneral->headerCheckBox, SIGNAL(clicked()), this, SLOT(enableApply()));
+    connect(prefGeneral->backgroundColorButton, SIGNAL(colorChanged(QColor)), this, SLOT(enableApply()));
+    connect(prefGeneral->eventPositionSpinBox, SIGNAL(valueChanged(int)), this, SLOT(enableApply()));
+    connect(prefGeneral->clusterPositionSpinBox, SIGNAL(valueChanged(int)), this, SLOT(enableApply()));
+    connect(prefGeneral->useWhiteColorPrinting, SIGNAL(clicked()), this, SLOT(enableApply()));
+    connect(prefDefaults->screenGainLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(prefDefaults->voltageRangeLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(prefDefaults->amplificationLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(prefDefaults->nbChannelsLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(prefDefaults->datSamplingRateLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(prefDefaults->eegSamplingRateLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(prefDefaults->offsetLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(prefDefaults->resolutionComboBox, SIGNAL(activated(int)), this, SLOT(enableApply()));
+    connect(prefDefaults->traceBackgroundLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(clusterProperties->nbSamplesLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(clusterProperties->peakIndexLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(positionProperties->samplingRateLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(positionProperties->widthLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(positionProperties->heightLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(positionProperties->backgroundLineEdit, SIGNAL(textChanged(QString)), this, SLOT(enableApply()));
+    connect(positionProperties->rotateComboBox, SIGNAL(activated(int)), this, SLOT(enableApply()));
+    connect(positionProperties->filpComboBox, SIGNAL(activated(int)), this, SLOT(enableApply()));
+    connect(positionProperties->checkBoxBackground, SIGNAL(clicked()), this, SLOT(enableApply()));
 
 
     connect(this, SIGNAL(applyClicked()), SLOT(slotApply()));
     connect(this, SIGNAL(defaultClicked()), SLOT(slotDefault()));
-    connect(this,SIGNAL(helpClicked()),SLOT(slotHelp()));
+    connect(this, SIGNAL(helpClicked()), SLOT(slotHelp()));
     applyEnable = false;
 }
 
 void PrefDialog::slotHelp()
 {
-    QHelpViewer *helpDialog = new QHelpViewer(this);
+    QHelpViewer* helpDialog = new QHelpViewer(this);
     helpDialog->setHtml(QApplication::applicationDirPath() + NEUROSCOPE_DOC_PATH + QLatin1String("index.html"));
-    helpDialog->setAttribute( Qt::WA_DeleteOnClose );
+    helpDialog->setAttribute(Qt::WA_DeleteOnClose);
     helpDialog->show();
 }
 
-void PrefDialog::updateDialog() {
+void PrefDialog::updateDialog()
+{
     prefGeneral->setUseWhiteColorDuringPrinting(configuration().getUseWhiteColorDuringPrinting());
     prefGeneral->setBackgroundColor(configuration().getBackgroundColor());
     prefGeneral->setPaletteHeaders(configuration().isPaletteHeadersDisplayed());
@@ -147,12 +148,13 @@ void PrefDialog::updateDialog() {
     positionProperties->setBackgroundImage(configuration().getBackgroundImage());
     positionProperties->setPositionsBackground(configuration().getPositionsBackground());
 
-    enableButtonApply(false);   // disable apply button
+    enableButtonApply(false); // disable apply button
     applyEnable = false;
 }
 
 
-void PrefDialog::updateConfiguration(){
+void PrefDialog::updateConfiguration()
+{
     configuration().setUseWhiteColorDuringPrinting(prefGeneral->useWhiteColorDuringPrinting());
     configuration().setBackgroundColor(prefGeneral->getBackgroundColor());
     configuration().setPaletteHeaders(prefGeneral->isPaletteHeadersDisplayed());
@@ -177,15 +179,18 @@ void PrefDialog::updateConfiguration(){
     configuration().setFlip(positionProperties->getFlip());
     configuration().setPositionsBackground(positionProperties->getPositionsBackground());
 
-    enableButtonApply(false);   // disable apply button
+    enableButtonApply(false); // disable apply button
     applyEnable = false;
 }
 
 
-void PrefDialog::slotDefault() {
-    if(QMessageBox::question(this, tr("Set default options?"), tr("This will set the default options "
-                                                   "in ALL pages of the preferences dialog! Do you wish to continue?"),QMessageBox::RestoreDefaults|QMessageBox::Cancel)==QMessageBox::RestoreDefaults){
-        
+void PrefDialog::slotDefault()
+{
+    if (QMessageBox::question(this, tr("Set default options?"), tr("This will set the default options "
+                                                                   "in ALL pages of the preferences dialog! Do you wish to continue?"),
+                              QMessageBox::RestoreDefaults | QMessageBox::Cancel) == QMessageBox::RestoreDefaults)
+    {
+
         prefGeneral->setBackgroundColor(configuration().getBackgroundColorDefault());
         prefGeneral->setPaletteHeaders(configuration().isPaletteHeadersDisplayedDefault());
         prefGeneral->setEventPosition(configuration().getEventPositionDefault());
@@ -210,19 +215,21 @@ void PrefDialog::slotDefault() {
         positionProperties->setFlip(configuration().getFlipDefault());
         positionProperties->setPositionsBackground(configuration().getPositionsBackgroundDefault());
 
-        enableApply();   // enable apply button
+        enableApply(); // enable apply button
     }
 }
 
 
-void PrefDialog::slotApply() {
-    updateConfiguration();      // transfer settings to configuration object
-    emit settingsChanged();     // apply the preferences
-    enableButtonApply(false);   // disable apply button again
+void PrefDialog::slotApply()
+{
+    updateConfiguration();    // transfer settings to configuration object
+    emit settingsChanged();   // apply the preferences
+    enableButtonApply(false); // disable apply button again
 }
 
 
-void PrefDialog::enableApply() {
-    enableButtonApply(true);   // enable apply button
+void PrefDialog::enableApply()
+{
+    enableButtonApply(true); // enable apply button
     applyEnable = true;
 }

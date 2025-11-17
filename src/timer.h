@@ -19,28 +19,28 @@
 #define _TIMER_H_
 
 #ifdef _MSC_VER
-  #include "gettimeofday.h"
+#include "gettimeofday.h"
 #else
-  #include <sys/time.h>
+#include <sys/time.h>
 #endif
 
 static struct timeval tv0;
 
 inline void RestartTimer()
 {
-  struct timezone tz;
-  gettimeofday(&tv0,&tz);
+    struct timezone tz;
+    gettimeofday(&tv0, &tz);
 }
 
 inline float Timer()
 {
-  struct timeval tv;
-  struct timezone tz;
-  gettimeofday(&tv,&tz);
-  float msec = static_cast<int>(tv.tv_usec/1000)/1000.0;
-  float msec0 = static_cast<int>(tv0.tv_usec/1000)/1000.0;
-  float time = (tv.tv_sec+msec)-(tv0.tv_sec+msec0);
-  return time;
+    struct timeval tv;
+    struct timezone tz;
+    gettimeofday(&tv, &tz);
+    float msec = static_cast<int>(tv.tv_usec / 1000) / 1000.0;
+    float msec0 = static_cast<int>(tv0.tv_usec / 1000) / 1000.0;
+    float time = (tv.tv_sec + msec) - (tv0.tv_sec + msec0);
+    return time;
 }
 
 #endif

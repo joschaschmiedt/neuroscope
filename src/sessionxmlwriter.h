@@ -19,15 +19,13 @@
 #define SESSIONXMLWRITER_H
 
 
-
-
 //Application specific includes
 #include "sessionInformation.h"
 
 //include files for QT
 #include <QList>
 #include <QMap>
-#include <qdom.h> 
+#include <qdom.h>
 
 // forward declaration
 
@@ -36,9 +34,9 @@
   *@author Lynn Hazan
   */
 
-class SessionXmlWriter {
-public:
-
+class SessionXmlWriter
+{
+  public:
     /**Constructor which will write a session file to the @p url.
   */
     SessionXmlWriter();
@@ -56,16 +54,15 @@ public:
   * cluster, spike or event files.
   * @param fileList list of files loaded during the session.
   */
-    void setLoadedFilesInformation(const QList<SessionFile> &fileList);
+    void setLoadedFilesInformation(const QList<SessionFile>& fileList);
 
     /**
   * Creates the elements related to the displays.
   * @param displayList list of DisplayInformation given the information on each display.
   */
-    void setDisplayInformation(const QList<DisplayInformation> &displayList);
+    void setDisplayInformation(const QList<DisplayInformation>& displayList);
 
-private:
-
+  private:
     /**The session document.*/
     QDomDocument doc;
 
@@ -83,7 +80,6 @@ private:
 
     /**The element containing the display information.*/
     QDomElement displays;
-
 };
 
 #endif

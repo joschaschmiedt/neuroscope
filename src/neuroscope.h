@@ -19,9 +19,6 @@
 #define NEUROSCOPE_H
 
 
-
-
-
 #include <QDockWidget>
 
 #include <QMenu>
@@ -36,7 +33,7 @@
 #include "neuroscopeview.h"
 
 #ifdef WITH_CEREBUS
-    #include "cerebustraceprovider.h" // For SamplingGroup
+#include "cerebustraceprovider.h" // For SamplingGroup
 #endif
 
 
@@ -62,7 +59,7 @@ class NeuroscopeApp : public QMainWindow
 
     friend class NeuroscopeView;
 
-public:
+  public:
     /** Construtor of NeuroscopeApp, calls all init functions to create the application.
      */
     explicit NeuroscopeApp();
@@ -71,7 +68,7 @@ public:
     /**Opens a file, only one document at the time is allowed.
     * Asking for a new one will open a new instance of the application with it.
     */
-    void openDocumentFile(const QString& url=QString());
+    void openDocumentFile(const QString& url = QString());
 
 #ifdef WITH_CEREBUS
     /** Open a stream, only one document (file or stream) at the time allowed.
@@ -101,8 +98,8 @@ public:
     * @param screenGain screen gain in milivolts by centimeters used to display the field potentiels.
     * @param timeWindow initial time window in miliseconds.
     */
-    void setFileProperties(const QString& channelNb,const QString& SR,const QString& resolution,const QString& offset,const QString& voltageRange,
-                           const QString& amplification,const QString& screenGain,const QString& timeWindow);
+    void setFileProperties(const QString& channelNb, const QString& SR, const QString& resolution, const QString& offset, const QString& voltageRange,
+                           const QString& amplification, const QString& screenGain, const QString& timeWindow);
 
     /**Displays the properties which will be used for the current file
     * (number of channels, sampling rate of the dat file and eeg file). This dialog is only presented at the opening
@@ -127,10 +124,10 @@ public:
     * @param positionsBackground true if the all the positions contain in the position file have to be drawn on the background, false otherwise.
     * @param traceBackgroundImage image used as a background for the trace view.
     */
-    void displayFileProperties(int channelNb,double SR,int resolution,int offset,int voltageRange,int amplification,
-                               float screenGain,int currentNbSamples,int currentPeakIndex,double videoSamplingRate,
-                               int width, int height, QString backgroundImage,int rotation,int flip,
-                               double acquisitionSystemSamplingRate,bool isaDatFile,bool positionsBackground,QString traceBackgroundImage);
+    void displayFileProperties(int channelNb, double SR, int resolution, int offset, int voltageRange, int amplification,
+                               float screenGain, int currentNbSamples, int currentPeakIndex, double videoSamplingRate,
+                               int width, int height, QString backgroundImage, int rotation, int flip,
+                               double acquisitionSystemSamplingRate, bool isaDatFile, bool positionsBackground, QString traceBackgroundImage);
 
     /**Resize the panel containing the palettes.*/
     void resizePalettePanel();
@@ -152,33 +149,33 @@ public:
    * @param rasterHeight height of the rasters in the world coordinate system.
    * @param tabLabel label for the display when in tab page mode.
    */
-    void createDisplay(QList<int>* channelsToDisplay,bool verticalLines,bool raster,bool waveforms,bool showLabels,
-                       bool multipleColumns,bool greyMode,bool autocenterChannels,QList<int> offsets,QList<int> channelGains,
-                       QList<int> selectedChannels,long startTime,long duration,int rasterHeight,QString tabLabel = "");
+    void createDisplay(QList<int>* channelsToDisplay, bool verticalLines, bool raster, bool waveforms, bool showLabels,
+                       bool multipleColumns, bool greyMode, bool autocenterChannels, QList<int> offsets, QList<int> channelGains,
+                       QList<int> selectedChannels, long startTime, long duration, int rasterHeight, QString tabLabel = "");
 
     /**Creates a cluster palette and adds a group corresponding to the cluster file identified by @p clusterFileId.
    * @param clusterFileId identifier of the cluster file providing the data accessible through
    * the future palette.
    */
-    void createClusterPalette(const QString &clusterFileId);
+    void createClusterPalette(const QString& clusterFileId);
 
     /**Adds a group corresponding to the cluster file identified by @p clusterFileId to the existing cluster palette.
    * @param clusterFileId identifier of the cluster file providing the data accessible through
    * the future palette.
    */
-    void addClusterFile(const QString &clusterFileId);
+    void addClusterFile(const QString& clusterFileId);
 
     /**Creates a event palette and adds a group corresponding to the event file identified by @p eventFileId.
    * @param eventFileId identifier of the event file providing the data accessible through
    * the future palette.
    */
-    void createEventPalette(const QString &eventFileId);
+    void createEventPalette(const QString& eventFileId);
 
     /**Adds a group corresponding to the event file identified by @p eventFileId to the existing event palette.
    * @param eventFileId identifier of the event file providing the data accessible through
    * the future palette.
    */
-    void addEventFile(const QString &eventFileId);
+    void addEventFile(const QString& eventFileId);
 
     /**Returns the event palette.
    * @return pointer on the event palette.*/
@@ -187,10 +184,11 @@ public:
     /**Returns the current background color.
    * @return the current background color.
    */
-    inline QColor getBackgroundColor()const{return backgroundColor;}
+    inline QColor getBackgroundColor() const { return backgroundColor; }
 
     /**Informs the application that a position file has been loaded from the session file.*/
-    void positionFileLoaded(){
+    void positionFileLoaded()
+    {
         isPositionFileLoaded = true;
         slotStateChanged("positionState");
     }
@@ -198,50 +196,60 @@ public:
     /**Tells if there are cluster files loaded.
    * @return true if at least one cluster file is loaded, false otherwise.
    */
-    inline bool isClusterFilesLoaded()const{return !clusterFileList.isEmpty();}
+    inline bool isClusterFilesLoaded() const { return !clusterFileList.isEmpty(); }
 
     /**Tells if there is a position file loaded.
    * @return true a position file is loaded, false otherwise.
    */
-    inline bool isApositionFileLoaded()const{return isPositionFileLoaded;}
+    inline bool isApositionFileLoaded() const { return isPositionFileLoaded; }
 
-	 /// Added by M.Zugaro to enable automatic forward paging
-	 bool isStill() { return ( !activeView() || activeView()->isStill() ); }
+    /// Added by M.Zugaro to enable automatic forward paging
+    bool isStill() { return (!activeView() || activeView()->isStill()); }
 
-public Q_SLOTS:
+  public Q_SLOTS:
 
     /** Toggle paging (a.k.a. auto advance to end of recording) */
-    void page() {
-        if(activeView()) {
-            if(activeView()->isStill())
+    void page()
+    {
+        if (activeView())
+        {
+            if (activeView()->isStill())
                 activeView()->page();
             else
                 activeView()->stop();
-        } else {
+        }
+        else
+        {
             // No view, no paging
             slotStateChanged("pageOffState");
         }
     }
 
     /** Stop paging */
-    void stop() {
-        if(activeView() ) {
+    void stop()
+    {
+        if (activeView())
+        {
             activeView()->stop();
-        } else {
+        }
+        else
+        {
             // No view, no paging
             slotStateChanged("pageOffState");
         }
     }
 
     /** Increase paging speed */
-    void accelerate() {
-        if(activeView())
+    void accelerate()
+    {
+        if (activeView())
             activeView()->accelerate();
     }
 
     /** Decrease paging speed */
-    void decelerate() {
-        if(activeView())
+    void decelerate()
+    {
+        if (activeView())
             activeView()->decelerate();
     }
 
@@ -251,7 +259,7 @@ public Q_SLOTS:
   * @param time initial time of the modified event.
   * @param newTime new time of the modified event.
   */
-    void slotEventModified(const QString &providerName,int selectedEventId,double time,double newTime);
+    void slotEventModified(const QString& providerName, int selectedEventId, double time, double newTime);
 
     /**Deletes the selected event.
   */
@@ -262,7 +270,7 @@ public Q_SLOTS:
   * @param selectedEventId id of the removed event.
   * @param time initial time of the removed event.
   */
-    void slotEventRemoved(const QString &providerName,int selectedEventId,double time);
+    void slotEventRemoved(const QString& providerName, int selectedEventId, double time);
 
     /**Adds an event.
   */
@@ -271,17 +279,17 @@ public Q_SLOTS:
     /**Called when an event file has been selected in the event palette.
   * @param eventGroupName name use to identified the selected event file.
   */
-    void slotEventGroupSelected(const QString &eventGroupName);
+    void slotEventGroupSelected(const QString& eventGroupName);
 
     /**Called when an event has been added.
   * @param providerName name use to identified the event provider containing the added event.
   * @param addedEventDescription description of the added event.
   * @param time time of the added event.
   */
-    void slotEventAdded(const QString &providerName, const QString &addedEventDescription, double time);
+    void slotEventAdded(const QString& providerName, const QString& addedEventDescription, double time);
 
     /**Update the positions menu due to the closing of the current position view.*/
-    void positionViewClosed(){positionViewToggle->setChecked(false);}
+    void positionViewClosed() { positionViewToggle->setChecked(false); }
 
     /**Disables clusters browsing as no clusters have been selected for browsing.
   */
@@ -301,7 +309,8 @@ public Q_SLOTS:
     void slotEventsToBrowse();
 
     void slotStateChanged(const QString& state);
-protected:
+
+  protected:
     /** initializes the KActions of the application */
     void initActions();
     /** sets up the statusbar for the main window by initialzing a statuslabel.
@@ -320,18 +329,18 @@ protected:
     * @param startTime starting time in miliseconds.
     * @param tabLabel label for the display when in tab page mode.
     */
-    void initDisplay(QList<int>* channelsToDisplay,bool autocenterChannels,QList<int> offsets,QList<int> channelGains,
-                     QList<int> selectedChannels,QMap<int,bool>& skipStatus,int rasterHeight=-1,long duration = 1000,long startTime = 0,QString tabLabel = QString());
+    void initDisplay(QList<int>* channelsToDisplay, bool autocenterChannels, QList<int> offsets, QList<int> channelGains,
+                     QList<int> selectedChannels, QMap<int, bool>& skipStatus, int rasterHeight = -1, long duration = 1000, long startTime = 0, QString tabLabel = QString());
 
     /**
      * queryClose is called by closeEvent
      */
     bool queryClose();
 
-    void customEvent (QEvent* event);
-    void closeEvent(QCloseEvent *event);
+    void customEvent(QEvent* event);
+    void closeEvent(QCloseEvent* event);
 
-private Q_SLOTS:
+  private Q_SLOTS:
 
     void slotAbout();
 
@@ -409,7 +418,7 @@ private Q_SLOTS:
     /**Changes the statusbar contents for the standard label permanently, used to indicate current actions.
      * @param text the text that is displayed in the statusbar.
      */
-    void slotStatusMsg(const QString &text);
+    void slotStatusMsg(const QString& text);
 
 
     /*Slots for the tools menu.*/
@@ -474,7 +483,7 @@ private Q_SLOTS:
     * @param channelDefaultOffsets map given the channel default offsets.
     * @param skipStatus map given the skip status of the channels.
     */
-    void slotDefaultSetUp(QMap<int,int>& channelDefaultOffsets,QMap<int,bool>& skipStatus);
+    void slotDefaultSetUp(QMap<int, int>& channelDefaultOffsets, QMap<int, bool>& skipStatus);
 
     /**Creates the initial set up using the session file.
     * @param channelsToDisplay list of the channels to show.
@@ -496,9 +505,9 @@ private Q_SLOTS:
     * @param rasterHeight height of the rasters in the world coordinate system.
     * @param showEventsInPositionView 1 if events are displayed in the PositionView, 0 otherwis.
     */
-    void slotSetUp(QList<int>* channelsToDisplay,bool verticalLines,bool raster,bool waveforms,bool showLabels,bool multipleColumns,
-                   bool greyMode,bool autocenterChannels,QList<int> offsets,QList<int> channelGains,QList<int> selectedChannels,QMap<int,bool>& skipStatus,
-                   long startTime,long duration,const QString &tabLabel,bool positionView,int rasterHeight,bool showEventsInPositionView);
+    void slotSetUp(QList<int>* channelsToDisplay, bool verticalLines, bool raster, bool waveforms, bool showLabels, bool multipleColumns,
+                   bool greyMode, bool autocenterChannels, QList<int> offsets, QList<int> channelGains, QList<int> selectedChannels, QMap<int, bool>& skipStatus,
+                   long startTime, long duration, const QString& tabLabel, bool positionView, int rasterHeight, bool showEventsInPositionView);
 
     /**All the channels of the current display are display either in a gradation of grey or in color.*/
     void slotSetGreyScale();
@@ -577,11 +586,11 @@ private Q_SLOTS:
 
     /**Triggers the increase of the amplitude of all the channels.
    */
-    void slotIncreaseAllChannelsAmplitude(){activeView()->increaseAllChannelsAmplitude();}
+    void slotIncreaseAllChannelsAmplitude() { activeView()->increaseAllChannelsAmplitude(); }
 
     /**Triggers the decrease of the amplitude of all the channels.
    */
-    void slotDecreaseAllChannelsAmplitude(){activeView()->decreaseAllChannelsAmplitude();}
+    void slotDecreaseAllChannelsAmplitude() { activeView()->decreaseAllChannelsAmplitude(); }
 
     /**Triggers the increase of the amplitude of the selected channels.
    */
@@ -622,12 +631,12 @@ private Q_SLOTS:
    * @param clusterId id of the cluster which has had its color changed.
    * @param groupName identifier of the file containing the cluster to update.
    */
-    void slotClusterColorUpdate(int clusterId, const QString &groupName, const QColor &color);
+    void slotClusterColorUpdate(int clusterId, const QString& groupName, const QColor& color);
 
     /**Updates the active display with the clusters selected in the cluster palette.
    *@param selection map given the list of the selected clusters by cluster file identified.
    */
-    void slotUpdateShownClusters(const QMap<QString,QList<int> >& selection);
+    void slotUpdateShownClusters(const QMap<QString, QList<int>>& selection);
 
     /**Retrieves the next cluster.*/
     void slotShowNextCluster();
@@ -639,12 +648,12 @@ private Q_SLOTS:
    * @param eventId id of the event which has had its color changed.
    * @param groupName identifier of the file containing the event to update.
    */
-    void slotEventColorUpdate(int eventId, const QString &groupName, const QColor &color);
+    void slotEventColorUpdate(int eventId, const QString& groupName, const QColor& color);
 
     /**Updates the active display with the events selected in the event palette.
    *@param selection map given the list of the selected events by event file identified.
    */
-    void slotUpdateShownEvents(const QMap<QString,QList<int> >& selection);
+    void slotUpdateShownEvents(const QMap<QString, QList<int>>& selection);
 
     /**Retrieves the next event.*/
     void slotShowNextEvent();
@@ -666,7 +675,7 @@ private Q_SLOTS:
    * Called after a click on the actionbar.
    * @param index currently checked item in the addEvent submenu.
    */
-    void slotAddEventButtonActivated(QAction * act );
+    void slotAddEventButtonActivated(QAction* act);
 
     /**Shows or hides the position view in the current display.*/
     void slotShowPositionView();
@@ -675,13 +684,13 @@ private Q_SLOTS:
    * @param groupName identifier of the file containing the events to browse.
    * @param eventsToSkip new list of events to skip while browsing
    */
-    void slotUpdateEventsToSkip(const QString &groupName, const QList<int>& eventsToSkip);
+    void slotUpdateEventsToSkip(const QString& groupName, const QList<int>& eventsToSkip);
 
     /**Updates the active display with the clusters to skip while browsing.
    * @param groupName identifier of the file containing the clusters to browse.
    * @param clustersToSkip new list of clusters to skip while browsing
    */
-    void slotUpdateClustersToSkip(const QString &groupName, const QList<int>& clustersToSkip);
+    void slotUpdateClustersToSkip(const QString& groupName, const QList<int>& clustersToSkip);
 
     /**Marks the selected channels has keeped.*/
     void slotKeepChannels();
@@ -717,16 +726,16 @@ private Q_SLOTS:
     void neuroscopeViewStarted() { slotStateChanged("pageOnState"); }
     void neuroscopeViewStopped() { slotStateChanged("pageOffState"); }
 
-private:
+  private:
     void readSettings();
     void initView();
 
-    QSplitter *mainSplitter;
+    QSplitter* mainSplitter;
 
     /** Doc represents your actual document and is created only once. It keeps
      * information such as filename and does the serialization of your files.
      */
-    NeuroscopeDoc *doc;
+    NeuroscopeDoc* doc;
 
     /**Settings dialog.*/
     PrefDialog* prefDialog;
@@ -811,13 +820,13 @@ private:
     QAction* mViewStatusBar;
     QAction* mPreferenceAction;
 
-    QToolBar *mMainToolBar;
-    QToolBar *mToolBar;
-    QToolBar *mChannelToolBar;
-    QToolBar *mEventToolBar;
-    QToolBar *mClusterToolBar;
+    QToolBar* mMainToolBar;
+    QToolBar* mToolBar;
+    QToolBar* mChannelToolBar;
+    QToolBar* mEventToolBar;
+    QToolBar* mClusterToolBar;
 
-    QRecentFileAction *mFileOpenRecent;
+    QRecentFileAction* mFileOpenRecent;
     /** A counter that gets increased each time the user creates a new display of the document with "Displays"->"New ...".*/
     int displayCount;
 
@@ -989,7 +998,7 @@ private:
 
     bool useWhiteColorDuringPrinting;
 
-    QAction *actNewEvent;
+    QAction* actNewEvent;
 };
 
 Q_DECLARE_METATYPE(QList<int>*)

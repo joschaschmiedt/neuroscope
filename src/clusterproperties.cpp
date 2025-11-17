@@ -17,14 +17,16 @@
 
 #include "clusterproperties.h"
 
-ClusterProperties::ClusterProperties(QWidget *parent ) : ClusterPropertiesLayout(parent),
-    intValidator(this){
+ClusterProperties::ClusterProperties(QWidget* parent)
+    : ClusterPropertiesLayout(parent),
+      intValidator(this)
+{
     //Set a validator on the line edits, the values have to be integers.
     nbSamplesLineEdit->setValidator(&intValidator);
     peakIndexLineEdit->setValidator(&intValidator);
 }
 
 
-ClusterProperties::~ClusterProperties(){
+ClusterProperties::~ClusterProperties()
+{
 }
-

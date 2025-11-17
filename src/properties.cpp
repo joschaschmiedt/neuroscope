@@ -18,9 +18,9 @@
 //includes files for the application
 #include "properties.h"
 
-Properties::Properties(QWidget *parent)
+Properties::Properties(QWidget* parent)
     : PropertiesLayout(parent),
-      intValidator(this),doubleValidator(this)
+      intValidator(this), doubleValidator(this)
 {
     //Set a validator on the line edits, the values have to be integers or doubles.
     nbChannelsLineEdit->setValidator(&intValidator);
@@ -31,12 +31,12 @@ Properties::Properties(QWidget *parent)
     amplificationLineEdit->setValidator(&intValidator);
     asSamplingRateLineEdit->setValidator(&doubleValidator);
 
-    connect(traceBackgroundButton,SIGNAL(clicked()),this,SLOT(updateTraceBackgroundImage()));
+    connect(traceBackgroundButton, SIGNAL(clicked()), this, SLOT(updateTraceBackgroundImage()));
 
     //Set an icon on the backgroundButton button
 
     traceBackgroundButton->setIcon(QIcon(":/shared-icons/folder-open"));
-
 }
-Properties::~Properties(){
+Properties::~Properties()
+{
 }

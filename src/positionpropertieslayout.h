@@ -8,9 +8,8 @@ class PositionPropertiesLayout : public QWidget, public Ui_PositionPropertiesLay
 {
     Q_OBJECT
 
-public:
-    explicit PositionPropertiesLayout( QWidget* parent = 0 );
-
+  public:
+    explicit PositionPropertiesLayout(QWidget* parent = 0);
 };
 
 #endif

@@ -27,7 +27,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QImage>
-#include <QCheckBox> 
+#include <QCheckBox>
 
 
 //include files for the application
@@ -37,20 +37,21 @@
   *@author Lynn Hazan
   */
 
-class PositionProperties : public PositionPropertiesLayout  {
+class PositionProperties : public PositionPropertiesLayout
+{
     Q_OBJECT
-public: 
-    explicit PositionProperties(QWidget *parent=0);
+  public:
+    explicit PositionProperties(QWidget* parent = 0);
     ~PositionProperties();
 
     /**Sets the video acquisition sampling rate.*/
-    void setSamplingRate(double rate){samplingRateLineEdit->setText(QString::fromLatin1("%1").arg(rate,0,'g',14));}
+    void setSamplingRate(double rate) { samplingRateLineEdit->setText(QString::fromLatin1("%1").arg(rate, 0, 'g', 14)); }
 
     /**Sets the video image width.*/
-    void setWidth(int width){widthLineEdit->setText(QString::number(width));}
+    void setWidth(int width) { widthLineEdit->setText(QString::number(width)); }
 
     /**Sets the video image height.*/
-    void setHeight(int height){heightLineEdit->setText(QString::number(height));}
+    void setHeight(int height) { heightLineEdit->setText(QString::number(height)); }
 
     /**Sets the background image.*/
     void setBackgroundImage(const QString& image);
@@ -58,7 +59,7 @@ public:
     /**All the positions contained in a position file can be used to create a background image for the PositionView.
   * This function sets if such background has to be created.
   */
-    void setPositionsBackground(bool draw){checkBoxBackground->setChecked(draw);}
+    void setPositionsBackground(bool draw) { checkBoxBackground->setChecked(draw); }
 
     /**Sets the video image rotation angle.*/
     void setRotation(int angle);
@@ -69,46 +70,46 @@ public:
     void setFlip(int orientation);
 
     /**Returns the video acquisition sampling rate.*/
-    double getSamplingRate()const{return samplingRateLineEdit->text().toDouble();}
+    double getSamplingRate() const { return samplingRateLineEdit->text().toDouble(); }
 
     /**Returns the video image width.*/
-    int getWidth()const{return widthLineEdit->text().toInt();}
+    int getWidth() const { return widthLineEdit->text().toInt(); }
 
     /**Returns the video image height.*/
-    int getHeight()const{return heightLineEdit->text().toInt();}
+    int getHeight() const { return heightLineEdit->text().toInt(); }
 
     /**Returns the background image.*/
-    QString getBackgroundImage()const{return backgroundLineEdit->text();}
+    QString getBackgroundImage() const { return backgroundLineEdit->text(); }
 
     /**All the positions contained in a position file can be used to create a background image for the PositionView.
   * The value return by this function tells if such background has to be created.
   * @return true if the all the positions contain in the position file have to be drawn on the background, false otherwise.
   */
-    bool getPositionsBackground()const{return checkBoxBackground->isChecked();}
+    bool getPositionsBackground() const { return checkBoxBackground->isChecked(); }
 
-    
+
     /**Returns the video image rotation angle.*/
-    int getRotation()const;
+    int getRotation() const;
 
     /**Returns the video image flip orientation.
   * 0 stands for none, 1 for vertical and 2 for horizontal.
   */
     int getFlip() const;
 
-public Q_SLOTS:
+  public Q_SLOTS:
     /**Sets whether the widget is enabled
   * @param state true if the widget is enable, false otherwise.
   */
-    void setEnabled (bool state);
+    void setEnabled(bool state);
 
 
-private Q_SLOTS:
+  private Q_SLOTS:
     void updateBackgroundImage();
 
     void updateBackgroundImage(const QString& image);
     void updateDisplayedImage();
 
-private:
+  private:
     QIntValidator intValidator;
     QDoubleValidator doubleValidator;
     QImage backgroungImage;

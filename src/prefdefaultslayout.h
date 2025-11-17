@@ -8,9 +8,8 @@ class PrefDefaultsLayout : public QWidget, public Ui_PrefDefaultsLayout
 {
     Q_OBJECT
 
-public:
-    explicit PrefDefaultsLayout( QWidget* parent = 0 );
-
+  public:
+    explicit PrefDefaultsLayout(QWidget* parent = 0);
 };
 
 #endif

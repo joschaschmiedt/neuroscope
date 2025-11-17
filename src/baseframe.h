@@ -45,11 +45,11 @@
   *@author Lynn Hazan
   */
 
-class BaseFrame : public QFrame  {
+class BaseFrame : public QFrame
+{
     Q_OBJECT
 
-public:
-
+  public:
     /**
   * typedef indicating in wich mode the user is.
   */
@@ -57,7 +57,10 @@ public:
 
     /**Enum to be use as a Mode.
   * The only value provided in this class is ZOOM, indicating that the user is in a mode enabling him to zoom.*/
-    enum {ZOOM = 1};
+    enum
+    {
+        ZOOM = 1
+    };
 
     /**
    * Constructs the view.
@@ -76,12 +79,12 @@ public:
    * to the part of the drawing which will actually be drawn onto the widget).
    * @param border size of the border between the frame and the contents.
    */
-    BaseFrame(int Xborder,int Yborder,QWidget* parent=0, const QString &name=QString(),const QColor& backgroundColor = Qt::black,
-              int minSize = 500, int maxSize = 4000, int windowTopLeft = -500,int windowBottomRight = 1001, int border = 0);
+    BaseFrame(int Xborder, int Yborder, QWidget* parent = 0, const QString& name = QString(), const QColor& backgroundColor = Qt::black,
+              int minSize = 500, int maxSize = 4000, int windowTopLeft = -500, int windowBottomRight = 1001, int border = 0);
     ~BaseFrame();
 
     /**Signals that the widget is about to be deleted.*/
-    virtual void willBeKilled(){}
+    virtual void willBeKilled() {}
 
     /**Sets the borders of the frame.
    * @param x border on the left and right sides inside the window (QRect corresponding
@@ -89,41 +92,41 @@ public:
    * @param y border on the top and bottom sides inside the window (QRect corresponding
    * to the part of the drawing which will actually be drawn onto the widget).
   */
-    void setBorders(int x,int y){
+    void setBorders(int x, int y)
+    {
         Xborder = x;
         Yborder = y;
     }
 
-public Q_SLOTS:
+  public Q_SLOTS:
 
     /**Update the information presented in the view if need it.*/
-    virtual void updateDrawing(){}
+    virtual void updateDrawing() {}
 
     /**If the frame is contained in a dockWidget, this slot can be used
   * when the enclosing dockwidget is being closed.
   * Emits the parentDockBeingClosed signal.
   */
-    virtual void dockBeingClosed(){emit parentDockBeingClosed(this);}
+    virtual void dockBeingClosed() { emit parentDockBeingClosed(this); }
 
     /**Changes the color of the background.*/
-    virtual void changeBackgroundColor(const QColor &color);
+    virtual void changeBackgroundColor(const QColor& color);
 
     /**Change the current mode, call by a selection of a tool.
   * @param selectedMode new mode of drawing.
   */
-    virtual void setMode(BaseFrame::Mode selectedMode){mode = selectedMode;}
+    virtual void setMode(BaseFrame::Mode selectedMode) { mode = selectedMode; }
 
-Q_SIGNALS:
+  Q_SIGNALS:
     /*s*Signals that the enclosing dockwidget is being closed
    * @param viewWidget pointer on the the current object.
    */
     void parentDockBeingClosed(QWidget* viewWidget);
 
-private:
-    void changeColor(const QColor & color);
+  private:
+    void changeColor(const QColor& color);
 
-protected:
-
+  protected:
     /**The view responds to a resize event.
   * @param event resize event.
   */
@@ -163,7 +166,8 @@ protected:
   * @param point point with coordinates relative to the widget (viewport).
   * @return the point on the viewport translated to a point in the world.
   */
-    QPoint viewportToWorld(const QPoint& point){
+    QPoint viewportToWorld(const QPoint& point)
+    {
         return viewportToWorld(point.x(), point.y());
     }
 
@@ -181,7 +185,8 @@ protected:
   * @param point point with coordinates in the world.
   * @return the point on the world translated to a point in the viewport.
   */
-    QPoint worldToViewport(const QPoint& point){
+    QPoint worldToViewport(const QPoint& point)
+    {
         return worldToViewport(point.x(), point.y());
     }
 
@@ -203,8 +208,9 @@ protected:
   * @param width width in the world's coordinates system.
   * @return width in the viewport's coordinates system.
   */
-    long worldToViewportWidth(long width){
-        float widthRatio = (static_cast<float>(viewport.width())/static_cast<float>(((QRect)window).width()));
+    long worldToViewportWidth(long width)
+    {
+        float widthRatio = (static_cast<float>(viewport.width()) / static_cast<float>(((QRect)window).width()));
         return static_cast<long>(width * widthRatio);
     }
 
@@ -213,8 +219,9 @@ protected:
   * @param height height in the world's coordinates system.
   * @return height in the viewport's coordinates system.
   */
-    long worldToViewportHeight(long height){
-        float heightRatio = (static_cast<float>(viewport.height())/static_cast<float>(((QRect)window).height()));
+    long worldToViewportHeight(long height)
+    {
+        float heightRatio = (static_cast<float>(viewport.height()) / static_cast<float>(((QRect)window).height()));
         return static_cast<long>(height * heightRatio);
     }
 
@@ -223,8 +230,9 @@ protected:
   * @param width width in the world's coordinates system.
   * @return width in the viewport's coordinates system.
   */
-    long viewportToWorldWidth(long width){
-        float widthRatio = (static_cast<float>(((QRect)window).width())/static_cast<float>(viewport.width()));
+    long viewportToWorldWidth(long width)
+    {
+        float widthRatio = (static_cast<float>(((QRect)window).width()) / static_cast<float>(viewport.width()));
         return static_cast<long>(width * widthRatio);
     }
 
@@ -233,8 +241,9 @@ protected:
   * @param height height in the world's coordinates system.
   * @return height in the viewport's coordinates system.
   */
-    long viewportToWorldHeight(long height){
-        float heightRatio = (static_cast<float>(((QRect)window).height())/static_cast<float>(viewport.height()));
+    long viewportToWorldHeight(long height)
+    {
+        float heightRatio = (static_cast<float>(((QRect)window).height()) / static_cast<float>(viewport.height()));
         return static_cast<long>(height * heightRatio);
     }
 
@@ -242,7 +251,8 @@ protected:
   * @param draw true if a rubber band has to be drawn, false otherwise.
   * @param vertical true if the rubber band has to be drawn on whole the height of the window, false otherwise.
   */
-    void drawRubberBand(bool draw,bool vertical = false){
+    void drawRubberBand(bool draw, bool vertical = false)
+    {
         isRubberBandToBeDrawn = draw;
         wholeHeightRectangle = vertical;
     }
@@ -253,12 +263,17 @@ protected:
   * Enumeration indicating in wich drawing contents mode the widget is:
   * reuse of the double buffer or redraw the contents into the double buffer
   */
-    enum DrawContentsMode{REFRESH=1, UPDATE=2,REDRAW=3};
+    enum DrawContentsMode
+    {
+        REFRESH = 1,
+        UPDATE = 2,
+        REDRAW = 3
+    };
 
-    const int MIN_SIZE; //Default 500
-    const int MAX_SIZE; //Default 4000
-    const int BORDER; //Default 0
-    const int WINDOW_TOP_LEFT; //Default -500
+    const int MIN_SIZE;            //Default 500
+    const int MAX_SIZE;            //Default 4000
+    const int BORDER;              //Default 0
+    const int WINDOW_TOP_LEFT;     //Default -500
     const int WINDOW_BOTTOM_RIGHT; //Default 1001
 
     QSize oldSize;
@@ -305,8 +320,7 @@ protected:
 
     /**Color use to display the legends.*/
     QColor colorLegend;
-    KlusterRubberBand *mRubberBand;
-
+    KlusterRubberBand* mRubberBand;
 };
 
 #endif

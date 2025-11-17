@@ -19,12 +19,15 @@
 
 #include <QDebug>
 
-ClusterColors::ClusterColors():ItemColors(){}
+ClusterColors::ClusterColors()
+    : ItemColors() {}
 
-ClusterColors::~ClusterColors(){
+ClusterColors::~ClusterColors()
+{
     qDebug() << "~ClusterColors()";
 }
 
-ClusterColors::ClusterColors(const ClusterColors& origin){
+ClusterColors::ClusterColors(const ClusterColors& origin)
+{
     ItemColors(dynamic_cast<const ItemColors&>(origin));
 }

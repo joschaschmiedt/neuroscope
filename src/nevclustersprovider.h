@@ -21,10 +21,11 @@
 #include "blackrock.h"
 #include "clustersprovider.h"
 
-class NEVClustersProvider : public ClustersProvider  {
+class NEVClustersProvider : public ClustersProvider
+{
     Q_OBJECT
 
-public:
+  public:
     static QList<NEVClustersProvider*> fromFile(const QString& file,
                                                 QStringList channelLabels,
                                                 double samplingRate,
@@ -38,7 +39,7 @@ public:
     */
     virtual int loadData();
 
-private:
+  private:
     NEVClustersProvider(unsigned int channel,
                         Array<dataType>& data,
                         int spikeCount,

@@ -17,17 +17,18 @@
 
 #include <QMap>
 
-NEVClustersProvider::NEVClustersProvider(unsigned int channel,Array<dataType>& data,
+NEVClustersProvider::NEVClustersProvider(unsigned int channel, Array<dataType>& data,
                                          int spikeCount,
                                          double samplingRate,
                                          double currentSamplingRate,
                                          dataType fileMaxTime,
                                          int position)
-    :   ClustersProvider(QString("nev.%1.clu").arg(channel + 1),
-                         samplingRate,
-                         currentSamplingRate,
-                         fileMaxTime,
-                         position) {
+    : ClustersProvider(QString("nev.%1.clu").arg(channel + 1),
+                       samplingRate,
+                       currentSamplingRate,
+                       fileMaxTime,
+                       position)
+{
 
     // Override base clase settings
     // TODO: Clean up base clases so this is no longer required.
@@ -39,8 +40,9 @@ NEVClustersProvider::NEVClustersProvider(unsigned int channel,Array<dataType>& d
     clusters.copySubset(data, this->nbSpikes);
 
     // Determine list of unique cluster
-    for(int i = 1; i <= this->nbSpikes; i++) {
-        if(!clusterIds.contains(clusters(1, i)))
+    for (int i = 1; i <= this->nbSpikes; i++)
+    {
+        if (!clusterIds.contains(clusters(1, i)))
             clusterIds << clusters(1, i);
     }
     this->nbClusters = clusterIds.size();
@@ -54,31 +56,35 @@ NEVClustersProvider::NEVClustersProvider(unsigned int channel,Array<dataType>& d
 }
 
 
-int NEVClustersProvider::loadData() {
+int NEVClustersProvider::loadData()
+{
     // Do nothing, this is all done by fromFile(...)
     return OK;
 }
 
-NEVClustersProvider::~NEVClustersProvider() {
-
+NEVClustersProvider::~NEVClustersProvider()
+{
 }
 
 QList<NEVClustersProvider*> NEVClustersProvider::fromFile(const QString& fileUrl,
                                                           QStringList channelLabels,
                                                           double currentSamplingRate,
                                                           dataType fileMaxTime,
-                                                          int position = 25) {
+                                                          int position = 25)
+{
     QList<NEVClustersProvider*> result;
 
-     // Try to open file
+    // Try to open file
     QFile clusterFile(fileUrl);
-    if(!clusterFile.open(QIODevice::ReadOnly)) {
+    if (!clusterFile.open(QIODevice::ReadOnly))
+    {
         return result;
     }
 
     // Read basic header
     NEVBasicHeader basicHeader;
-    if(!readStruct<NEVBasicHeader>(clusterFile, basicHeader)) {
+    if (!readStruct<NEVBasicHeader>(clusterFile, basicHeader))
+    {
         clusterFile.close();
         return result;
     }
@@ -90,14 +96,17 @@ QList<NEVClustersProvider*> NEVClustersProvider::fromFile(const QString& fileUrl
     // Read extension headers and extract label mapping
     QMap<QString, int> channelLabelsToIds;
     NEVExtensionHeader extensionHeader;
-    for(int extension = 0; extension < basicHeader.extension_count; extension++) {
-        if(!readStruct<NEVExtensionHeader>(clusterFile, extensionHeader)) {
+    for (int extension = 0; extension < basicHeader.extension_count; extension++)
+    {
+        if (!readStruct<NEVExtensionHeader>(clusterFile, extensionHeader))
+        {
             clusterFile.close();
             return result;
         }
 
         // Extract all the label headers
-        if(!strncmp(extensionHeader.id, NEVNeuralLabelID, 8)) {
+        if (!strncmp(extensionHeader.id, NEVNeuralLabelID, 8))
+        {
             NEVNeuralLabelExtensionData* labelHeader = reinterpret_cast<NEVNeuralLabelExtensionData*>(extensionHeader.data);
             channelLabelsToIds.insert(QString(labelHeader->label), labelHeader->id);
         }
@@ -105,15 +114,18 @@ QList<NEVClustersProvider*> NEVClustersProvider::fromFile(const QString& fileUrl
 
     // Find channel ids we need to extract
     QList<int> channelIds;
-    for(int i = 0; i < channelLabels.size(); i++) {
+    for (int i = 0; i < channelLabels.size(); i++)
+    {
         QMap<QString, int>::iterator id = channelLabelsToIds.find(channelLabels[i]);
-        if(id == channelLabelsToIds.end()) {
+        if (id == channelLabelsToIds.end())
+        {
             // Label could not be found in label header.
             qCritical("Can not find label '%s' in nev file.", channelLabels[i].toUtf8().constData());
             return result;
         }
         channelIds.append(id.value());
-        if((++id).key() == channelLabels[i]) {
+        if ((++id).key() == channelLabels[i])
+        {
             // Only complain about duplicate labels if we are actually using them.
             qCritical("Duplicate label '%s' found in nev file. Can not determine channel id correctly.", channelLabels[i].toUtf8().constData());
             return result;
@@ -126,29 +138,34 @@ QList<NEVClustersProvider*> NEVClustersProvider::fromFile(const QString& fileUrl
     QList<long> spikeCount;
     // Array copy constructor is broken, so we have to use pointers.
     QList<Array<dataType>*> data;
-    for(int i = 0; i < channelCount; i++) {
+    for (int i = 0; i < channelCount; i++)
+    {
         data << new Array<dataType>(2, eventCount);
         spikeCount << 0;
     }
 
     // Read data packages
     NEVDataHeader dataHeader;
-    for(long i = 0; i < eventCount; i++) {
-        if(!readStruct<NEVDataHeader>(clusterFile, dataHeader))
+    for (long i = 0; i < eventCount; i++)
+    {
+        if (!readStruct<NEVDataHeader>(clusterFile, dataHeader))
             return result;
 
-        if(dataHeader.timestamp == 0xFFFFFFFF){
+        if (dataHeader.timestamp == 0xFFFFFFFF)
+        {
             qCritical("Continuation packages are not supported!");
             return result;
         }
-        if(dataHeader.id > 0 && dataHeader.id < 2049) {
+        if (dataHeader.id > 0 && dataHeader.id < 2049)
+        {
             NEVSpikeDataHeader spikeData;
-            if(!readStruct<NEVSpikeDataHeader>(clusterFile, spikeData))
+            if (!readStruct<NEVSpikeDataHeader>(clusterFile, spikeData))
                 return result;
 
             // Check if we are interested in spikes on this channel.
             int index = channelIds.indexOf(dataHeader.id);
-            if(index != -1) {
+            if (index != -1)
+            {
                 // We are interested, so copy spike info;
                 spikeCount[index]++;
                 (*data[index])(1, spikeCount[index]) = spikeData.unit_class;
@@ -156,22 +173,23 @@ QList<NEVClustersProvider*> NEVClustersProvider::fromFile(const QString& fileUrl
             }
 
             // Skip the rest of the data
-            if(!clusterFile.seek(clusterFile.pos() + basicHeader.data_package_size
-                                                   - sizeof(NEVSpikeDataHeader)
-                                                   - sizeof(NEVDataHeader))) {
+            if (!clusterFile.seek(clusterFile.pos() + basicHeader.data_package_size - sizeof(NEVSpikeDataHeader) - sizeof(NEVDataHeader)))
+            {
                 return result;
             }
-        } else {
+        }
+        else
+        {
             // Skip event package
-            if(!clusterFile.seek(clusterFile.pos() + basicHeader.data_package_size
-                                                   - sizeof(NEVDataHeader)))
+            if (!clusterFile.seek(clusterFile.pos() + basicHeader.data_package_size - sizeof(NEVDataHeader)))
                 return result;
         }
     }
     clusterFile.close();
 
     // Create provider objects
-    for(int i = 0; i < channelCount; i++) {
+    for (int i = 0; i < channelCount; i++)
+    {
         result.append(new NEVClustersProvider(i,
                                               *data[i],
                                               spikeCount[i],
@@ -182,7 +200,8 @@ QList<NEVClustersProvider*> NEVClustersProvider::fromFile(const QString& fileUrl
     }
 
     // Array copy constructor is broken, so we have to use pointers.
-    for(int i = 0; i < channelCount; i++) {
+    for (int i = 0; i < channelCount; i++)
+    {
         delete data[i];
     }
 

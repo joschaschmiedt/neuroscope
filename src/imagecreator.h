@@ -39,7 +39,7 @@ Utility class used to create an image containing all the first spot positions of
 class ImageCreator : public QWidget
 {
     Q_OBJECT
-public:
+  public:
     /**
    * Constructor.
    * @param provider a reference on the provider of the position data.
@@ -49,23 +49,22 @@ public:
    * @param backgroundColor color used as the image background if no image has been set.
    * @param foregroundColor color used as the image foreground.
    */
-    explicit ImageCreator(PositionsProvider& provider,int width,int height,const QString& backgroundImage=QString(),const QColor& backgroundColor = Qt::black,const QColor& foregroundColor = "#BFBFBF");
+    explicit ImageCreator(PositionsProvider& provider, int width, int height, const QString& backgroundImage = QString(), const QColor& backgroundColor = Qt::black, const QColor& foregroundColor = "#BFBFBF");
     ~ImageCreator();
 
     /**Creates an image containg all the positions of a given position file.*/
     QImage createImage();
 
-public Q_SLOTS:     
+  public Q_SLOTS:
 
     /**Receive the data requested and actually creates the image containg all the positions.
    * @param data n column array containing the position of the animal. The two first columns contain
    * the position of the first spot and the following optional pair of columns contain the position of optional spots.
    * @param initiator instance requesting the data.
    */
-    void dataAvailable(Array<dataType>& data,QObject* initiator);
+    void dataAvailable(Array<dataType>& data, QObject* initiator);
 
-private:
-
+  private:
     /**Provider of the position data.*/
     PositionsProvider& positionsProvider;
 

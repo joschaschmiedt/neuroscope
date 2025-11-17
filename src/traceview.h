@@ -51,9 +51,10 @@ class EventsProvider;
   *@author Lynn Hazan
   */
 
-class TraceView : public BaseFrame  {
+class TraceView : public BaseFrame
+{
     Q_OBJECT
-public:
+  public:
     /**Constructor.
   * @param tracesProvider a reference on the provider of the channels data.
   * @param greyScale true if all the channels are display either in a gradation of grey false if they are display in color.
@@ -89,17 +90,17 @@ public:
   */
     TraceView(TracesProvider& tracesProvider, bool greyScale, bool multiColumns, bool verticalLines,
               bool raster, bool waveforms, bool labelsDisplay, QList<int>& channelsToDisplay, float screenGain, long start, long timeFrameWidth,
-              ChannelColors* channelColors, QMap<int, QList<int> >* groupsChannels, QMap<int,int>* channelsGroups,
-              bool autocenterChannels, QList<int>& channelOffsets, QList<int>& gains, const QList<int>& skippedChannels, int rasterHeight, const QImage &backgroundImage, QWidget* parent=0, const char* name=0, const QColor& backgroundColor = Qt::black, QStatusBar* statusBar = 0L,
+              ChannelColors* channelColors, QMap<int, QList<int>>* groupsChannels, QMap<int, int>* channelsGroups,
+              bool autocenterChannels, QList<int>& channelOffsets, QList<int>& gains, const QList<int>& skippedChannels, int rasterHeight, const QImage& backgroundImage, QWidget* parent = 0, const char* name = 0, const QColor& backgroundColor = Qt::black, QStatusBar* statusBar = 0L,
               int minSize = 500, int maxSize = 4000, int windowTopLeft = -500, int windowBottomRight = 1001, int border = 0);
-
 
 
     ~TraceView();
 
     /// Added by M.Zugaro to enable automatic forward paging
     qlonglong recordingLength() const { return length; }
-    void updateRecordingLength() {
+    void updateRecordingLength()
+    {
         tracesProvider.updateRecordingLength();
         length = tracesProvider.recordingLength();
     }
@@ -109,7 +110,15 @@ public:
   * <li>SELECT Enumeration indicating that the user is in a mode enabling him to select traces.</li>
   * </ul>
   */
-    enum {SELECT = ZOOM+1,MEASURE = ZOOM+2,SELECT_TIME = ZOOM+3,SELECT_EVENT = ZOOM+4,ADD_EVENT = ZOOM+5,DRAW_LINE = ZOOM+6};
+    enum
+    {
+        SELECT = ZOOM + 1,
+        MEASURE = ZOOM + 2,
+        SELECT_TIME = ZOOM + 3,
+        SELECT_EVENT = ZOOM + 4,
+        ADD_EVENT = ZOOM + 5,
+        DRAW_LINE = ZOOM + 6
+    };
 
 
     /**
@@ -143,7 +152,7 @@ public:
    * @param start starting time in miliseconds.
    * @param timeFrameWidth time window in miliseconds.
    */
-    void displayTimeFrame(long start,long timeFrameWidth);
+    void displayTimeFrame(long start, long timeFrameWidth);
 
     /**
   * Updates the list of channels shown with @p channelsToShow.
@@ -178,13 +187,13 @@ public:
   * @param channelId id of the channel to redraw.
   * @param active true if the view is the active one, false otherwise.
   */
-    void channelColorUpdate(int channelId,bool active);
+    void channelColorUpdate(int channelId, bool active);
 
     /**Changes the color of a group of channels.
   * @param groupId id of the group for which the color have been changed.
   * @param active true if the view is the active one, false otherwise.
   */
-    void groupColorUpdate(int groupId,bool active);
+    void groupColorUpdate(int groupId, bool active);
 
     /**Update the information presented in the view.*/
     void updateDrawing();
@@ -199,7 +208,7 @@ public:
   * @param selectedMode new mode of drawing.
   * @param active true if the view is the active one, false otherwise.
   */
-    void setMode(BaseFrame::Mode selectedMode,bool active);
+    void setMode(BaseFrame::Mode selectedMode, bool active);
 
     /**Selects the channels .
   *@param selectedIds ids of the selected channels.
@@ -209,7 +218,7 @@ public:
     /**Resets the offset of the selected channels to the default values.
   * @param selectedChannelDefaultOffsets map given the default offsets for the selected channels.
   */
-    void resetOffsets(const QMap<int,int>& selectedChannelDefaultOffsets);
+    void resetOffsets(const QMap<int, int>& selectedChannelDefaultOffsets);
 
     /**Resets the gain of the selected channels.
   *@param selectedChannels ids of the selected channels.
@@ -233,10 +242,11 @@ public:
   * @param show true if the scale has to be shown, false otherwise.
   * @param active true if the view is the active one, false otherwise.
   */
-    void showCalibration(bool show,bool active){
+    void showCalibration(bool show, bool active)
+    {
         drawContentsMode = REDRAW;
         showCalibrationScale = show;
-        if(active)
+        if (active)
             update();
     }
 
@@ -252,15 +262,15 @@ public:
   * @param nbSamplesAfter number of samples contained in the waveform of a spike after the sample of the peak.
   * @param clustersToSkip list of clusters to not use while browsing.
   */
-    void addClusterProvider(ClustersProvider* clustersProvider,QString name,ItemColors* clusterColors,
-                            bool active,QList<int>& clustersToShow,QMap<int, QList<int> >* displayGroupsClusterFile,
-                            QMap<int,int>* channelsSpikeGroups,int nbSamplesBefore,int nbSamplesAfter,const QList<int>& clustersToSkip);
+    void addClusterProvider(ClustersProvider* clustersProvider, QString name, ItemColors* clusterColors,
+                            bool active, QList<int>& clustersToShow, QMap<int, QList<int>>* displayGroupsClusterFile,
+                            QMap<int, int>* channelsSpikeGroups, int nbSamplesBefore, int nbSamplesAfter, const QList<int>& clustersToSkip);
 
     /**Removes a provider of cluster data.
   * @param name name use to identified the cluster provider.
   * @param active true if the view is the active one, false otherwise.
   */
-    void removeClusterProvider(const QString& name,bool active);
+    void removeClusterProvider(const QString& name, bool active);
 
     /**
   * Updates the list of clusters shown with @p clustersToShow for the cluster provider identified
@@ -268,14 +278,14 @@ public:
   * @param name name use to identified the cluster provider containing the clusters to show.
   * @param clustersToShow new list of clusters to be shown.
   */
-    void showClusters(const QString& name,const QList<int>& clustersToShow);
+    void showClusters(const QString& name, const QList<int>& clustersToShow);
 
     /**Changes the color of a cluster.
   * @param name name use to identified the cluster provider containing the updated cluster.
   * @param clusterId id of the cluster to redraw.
   * @param active true if the view is the active one, false otherwise.
   */
-    void clusterColorUpdate(const QColor &color, const QString &name, int clusterId, bool active);
+    void clusterColorUpdate(const QColor& color, const QString& name, int clusterId, bool active);
 
 
     /**Adds a new provider of event data.
@@ -286,14 +296,14 @@ public:
   * @param eventsToShow list of events to be shown.
   * @param eventsToSkip list of events to not use while browsing.
   */
-    void addEventProvider(EventsProvider* eventsProvider,QString name,ItemColors* eventColors,
-                          bool active,QList<int>& eventsToShow,const QList<int>& eventsToSkip);
+    void addEventProvider(EventsProvider* eventsProvider, QString name, ItemColors* eventColors,
+                          bool active, QList<int>& eventsToShow, const QList<int>& eventsToSkip);
 
     /**Removes a provider of event data.
   * @param name name use to identified the event provider.
   * @param active true if the view is the active one, false otherwise.
   */
-    void removeEventProvider(const QString &name, bool active);
+    void removeEventProvider(const QString& name, bool active);
 
     /**updateEvents
   * Updates the list of events shown with @p eventsToShow for the event provider identified
@@ -301,14 +311,14 @@ public:
   * @param name name use to identified the event provider containing the events to show.
   * @param eventsToShow new list of events to be shown.
   */
-    void showEvents(const QString &name, QList<int>& eventsToShow);
+    void showEvents(const QString& name, QList<int>& eventsToShow);
 
     /**Changes the color of an event.
   * @param name name use to identified the event provider containing the updated event.
   * @param eventId id of the event to redraw.
   * @param active true if the view is the active one, false otherwise.
   */
-    void eventColorUpdate(const QColor &color, const QString &name, int eventId, bool active);
+    void eventColorUpdate(const QColor& color, const QString& name, int eventId, bool active);
 
     /**Prints the currently display information on a printer via the painter @p printPainter.
   * Does not print zoomed display.
@@ -316,7 +326,7 @@ public:
   * @param metrics object providing informatin about the printer.
   * @param whiteBackground true if the printed background has to be white, false otherwise.
   */
-    void print(QPainter& printPainter,int width, int height,bool whiteBackground);
+    void print(QPainter& printPainter, int width, int height, bool whiteBackground);
 
     /**Retrieves the next event.*/
     void showNextEvent();
@@ -328,10 +338,11 @@ public:
   * @param providerName name use to identified the event provider containing the modified event.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateEvents(const QString& providerName,bool active){
-        if(!eventProvidersToUpdate.contains(providerName))
+    void updateEvents(const QString& providerName, bool active)
+    {
+        if (!eventProvidersToUpdate.contains(providerName))
             eventProvidersToUpdate.append(providerName);
-        if(active)
+        if (active)
             update();
     }
 
@@ -340,7 +351,7 @@ public:
   * @param eventsToShow new list of events to be shown.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateEvents(const QString &providerName, QList<int>& eventsToShow, bool active);
+    void updateEvents(const QString& providerName, QList<int>& eventsToShow, bool active);
 
     /**Deletes the selected event.
   */
@@ -356,26 +367,27 @@ public:
   * @param providerName name use to identified the event provider containing the modified event.
   * @param eventsToNotBrowse new list of events to not use while browsing.
   */
-    void updateNoneBrowsingEventList(const QString &providerName, const QList<int>& eventsToNotBrowse);
+    void updateNoneBrowsingEventList(const QString& providerName, const QList<int>& eventsToNotBrowse);
 
     /**Updates the list of clusters to not use while browsing.
   * @param providerName name use to identified the event provider containing the modified event.
   * @param clustersToNotBrowse new list of clusters to not use while browsing.
   */
-    void updateNoneBrowsingClusterList(const QString &providerName, const QList<int>& clustersToNotBrowse);
+    void updateNoneBrowsingClusterList(const QString& providerName, const QList<int>& clustersToNotBrowse);
 
     /** Updates the description of a spike waveform.
   * @param nbSamplesBefore number of samples contained in the waveform of a spike before the sample of the peak.
   * @param nbSamplesAfter number of samples contained in the waveform of a spike after the sample of the peak.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateWaveformInformation(int nbSamplesBefore,int nbSamplesAfter,bool active);
+    void updateWaveformInformation(int nbSamplesBefore, int nbSamplesAfter, bool active);
 
     /**
   * Updates the length of the document due to a modification of the sampling rate.
   * @param length the newly computed length of the document.
   */
-    void samplingRateModified(qlonglong length){
+    void samplingRateModified(qlonglong length)
+    {
         this->length = length;
         int samplingRate = tracesProvider.getSamplingRate();
         timeStepUnit = timeStep = static_cast<float>(static_cast<float>(1000) / static_cast<float>(samplingRate));
@@ -393,7 +405,7 @@ public:
   * @param clusterColors list of colors for the clusters.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateClusters(QString name,QList<int>& clustersToShow,ItemColors* clusterColors,bool active);
+    void updateClusters(QString name, QList<int>& clustersToShow, ItemColors* clusterColors, bool active);
 
     /**Increases the display ratio between the traces and the rasters when they are present.*/
     void increaseRatio();
@@ -406,20 +418,20 @@ public:
   * @param endTime end of the time interval from which to retrieve the data.
   * @param initiator instance requesting the data.
   */
-    void getCurrentEventInformation(long startTime,long endTime,QObject* initiator);
+    void getCurrentEventInformation(long startTime, long endTime, QObject* initiator);
 
     /**Updates the background image.
   * @param traceBackgroundImage image to be used as background.
   * @param active true if the view is the active one, false otherwise.
   */
-    void traceBackgroundImageUpdate(QImage traceBackgroundImage,bool active);
+    void traceBackgroundImageUpdate(QImage traceBackgroundImage, bool active);
 
-public Q_SLOTS:
+  public Q_SLOTS:
     /**Displays the data that has been retrieved.
   * @param data array of data (number of channels X number of samples).
   * @param initiator instance requesting the data.
   */
-    void dataAvailable(Array<dataType>& data,QObject* initiator);
+    void dataAvailable(Array<dataType>& data, QObject* initiator);
 
     /**Displays the cluster information that has been retrieved.
   * @param data 2 line array containing the sample index of the peak index of each spike existing in the requested time frame with the
@@ -427,7 +439,7 @@ public Q_SLOTS:
   * @param initiator instance requesting the data.
   * @param providerName name of the instance providing the data.
   */
-    void dataAvailable(Array<dataType>& data, QObject* initiator, const QString &providerName);
+    void dataAvailable(Array<dataType>& data, QObject* initiator, const QString& providerName);
 
     /**Displays the event information that has been retrieved.
   * @param times 1 line array containing the time (in recording samples) of each event existing in the requested time frame.
@@ -435,7 +447,7 @@ public Q_SLOTS:
   * @param initiator instance requesting the data.
   * @param providerName name of the instance providing the data.
   */
-    void dataAvailable(Array<dataType>& times, Array<int>& ids, QObject* initiator, const QString &providerName);
+    void dataAvailable(Array<dataType>& times, Array<int>& ids, QObject* initiator, const QString& providerName);
 
     /**Compute the cluster information that has been retrieved regarding the next cluster to display.
   * @param data 2 line array containing the sample index of the peak index of each spike existing in the requested time frame with the
@@ -445,7 +457,7 @@ public Q_SLOTS:
   * @param startingTime time from which the data have been retreived in milisesonds.
   * @param startingTimeInRecordingUnits time from which the data have been retrieved in recording units.
   */
-    void nextClusterDataAvailable(Array<dataType>& data,QObject* initiator,QString providerName,long startingTime,long startingTimeInRecordingUnits);
+    void nextClusterDataAvailable(Array<dataType>& data, QObject* initiator, QString providerName, long startingTime, long startingTimeInRecordingUnits);
 
     /**Compute the cluster information that has been retrieved regarding the previous cluster to display.
   * @param data 2 line array containing the sample index of the peak index of each spike existing in the requested time frame with the
@@ -455,7 +467,7 @@ public Q_SLOTS:
   * @param startingTime time from which the data have been retreived in milisesonds.
   * @param startingTimeInRecordingUnits time from which the data have been retrieved in recording units.
   */
-    void previousClusterDataAvailable(Array<dataType>& data,QObject* initiator,QString providerName,long startingTime,long startingTimeInRecordingUnits);
+    void previousClusterDataAvailable(Array<dataType>& data, QObject* initiator, QString providerName, long startingTime, long startingTimeInRecordingUnits);
 
     /**Compute the event information that has been retrieved regarding the next event to display.
   * @param times 1 line array containing the time (in recording samples) of each event existing in the requested time frame.
@@ -464,7 +476,7 @@ public Q_SLOTS:
   * @param providerName name of the instance providing the data.
   * @param startingTime time from which the data have been retreived.
   */
-    void nextEventDataAvailable(Array<dataType>& times,Array<int>& ids,QObject* initiator,QString providerName,long startingTime);
+    void nextEventDataAvailable(Array<dataType>& times, Array<int>& ids, QObject* initiator, QString providerName, long startingTime);
 
     /**Compute the event information that has been retrieved regarding the previous event to display.
   * @param times 1 line array containing the time (in recording samples) of each event existing in the requested time frame.
@@ -473,17 +485,19 @@ public Q_SLOTS:
   * @param providerName name of the instance providing the data.
   * @param startingTime time from which the data have been retreived.
   */
-    void previousEventDataAvailable(Array<dataType>& times,Array<int>& ids,QObject* initiator,QString providerName,long startingTime);
+    void previousEventDataAvailable(Array<dataType>& times, Array<int>& ids, QObject* initiator, QString providerName, long startingTime);
 
     /**Stores the properties for the next event to be added.
   * @param providerName name use to identified the event provider which will contain the added event.
   * @param eventDescription description of the next event to be created.
   */
-    void eventToAddProperties(const QString &providerName, const QString &eventDescription){
-qDebug()<<" eventToAddProperties***********************";
+    void eventToAddProperties(const QString& providerName, const QString& eventDescription)
+    {
+        qDebug() << " eventToAddProperties***********************";
         //If an event is being modified, this function can be called with eventDescription set to empty,
         //this should not be taken into account.
-        if(!eventBeingModified){
+        if (!eventBeingModified)
+        {
             eventDescriptionToCreate = eventDescription;
             eventProvider = providerName;
         }
@@ -497,26 +511,26 @@ qDebug()<<" eventToAddProperties***********************";
     /**Returns the height of the rasters in the world coordinate system.
   *@return raster height.
   */
-    int getRasterHeight(){return rasterHeight;}
+    int getRasterHeight() { return rasterHeight; }
 
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void channelsSelected(const QList<int>& selectedIds);
-    void setStartAndDuration(long time,long duration);
-    void eventModified(QString providerName,int selectedEventId,double time,double newTime);
-    void eventRemoved(QString providerName,int selectedEventId,double time);
-    void eventAdded(QString providerName,QString addedEventDescription,double time);
-    void eventsAvailable(QHash<QString, EventData*>& eventsData,QMap<QString, QList<int> >& selectedEvents,QHash<QString, ItemColors*>& providerItemColors,QObject* initiator,double samplingRate);
+    void setStartAndDuration(long time, long duration);
+    void eventModified(QString providerName, int selectedEventId, double time, double newTime);
+    void eventRemoved(QString providerName, int selectedEventId, double time);
+    void eventAdded(QString providerName, QString addedEventDescription, double time);
+    void eventsAvailable(QHash<QString, EventData*>& eventsData, QMap<QString, QList<int>>& selectedEvents, QHash<QString, ItemColors*>& providerItemColors, QObject* initiator, double samplingRate);
 
     // Emitted if dataAvailable(...) receives faulty data
     void dataError();
 
-protected:
+  protected:
     /**
   * Draws the contents of the frame
   * @param painter painter used to draw the contents
   */
-    void paintEvent ( QPaintEvent*ainter);
+    void paintEvent(QPaintEvent* ainter);
 
     /**The view responds to a mouse move event.
   * The time is display in the status bar.
@@ -545,7 +559,7 @@ protected:
   */
     void mouseDoubleClickEvent(QMouseEvent* event);
 
-private:
+  private:
     // Amplitude maximal of theta in microvolts, e.g. 400 uV
     static const float U_THETA;
 
@@ -619,15 +633,15 @@ private:
     /**Map the correspondence between the channel group ids and the channel ids.
   *Pointer to the variable belonging to NeuroscopeDoc.
   */
-    QMap<int, QList<int> >* groupsChannels;
+    QMap<int, QList<int>>* groupsChannels;
 
     /**Stores to which group each channel belongs. Pointer to the variable belonging to
   NeuroscopeDoc.*/
-    QMap<int,int>* channelsGroups;
+    QMap<int, int>* channelsGroups;
 
     /**Map the correspondence between the channel group ids and the channel ids for the displayed channels.
   */
-    QMap<int, QList<int> > shownGroupsChannels;
+    QMap<int, QList<int>> shownGroupsChannels;
 
     /**Minimal abscissa in window coordinate*/
     long abscissaMin;
@@ -723,10 +737,10 @@ private:
     long timeFrameWidth;
 
     /**Stores the ordinate of the first sample of each channel.*/
-    QMap<int,int> channelsStartingOrdinate;
+    QMap<int, int> channelsStartingOrdinate;
 
     /**Stores the abscissa of the first sample of each channel.*/
-    QMap<int,int> channelsStartingAbscissa;
+    QMap<int, int> channelsStartingAbscissa;
 
     /**Default value for the border on the left and right sides inside the window (QRect corresponding
   * to the part of the drawing which will actually be drawn onto the widget).*/
@@ -855,26 +869,29 @@ private:
     int initialTraceWidth;
 
     /**Map between the cluster provider names and the list of selected clusters.*/
-    QMap<int, QList<int> > selectedClusters;
+    QMap<int, QList<int>> selectedClusters;
 
     /**Structure representing cluster data, actual data and status.*/
-    struct ClusterData{
+    struct ClusterData
+    {
         Array<dataType> data;
         bool ready;
 
-        ClusterData(Array<dataType> d,bool status){
+        ClusterData(Array<dataType> d, bool status)
+        {
             data = d;
             ready = status;
         }
-        ClusterData(){
+        ClusterData()
+        {
             ready = false;
         }
-        void setStatus(bool status){ready = status;}
-        void setData(Array<dataType>& d){data = d;}
-        bool status(){return ready;}
-        Array<dataType>& getData(){return data;}
+        void setStatus(bool status) { ready = status; }
+        void setData(Array<dataType>& d) { data = d; }
+        bool status() { return ready; }
+        Array<dataType>& getData() { return data; }
 
-        ~ClusterData(){}
+        ~ClusterData() {}
     };
 
     /**Dictionary between the cluster provider names and the cluster data and status.*/
@@ -902,10 +919,10 @@ private:
   * the spike group used to create them (myFile.clu.1 correspond to the
   * spike group 1).
   */
-    QMap<int, QList<int> >* groupClusterFiles;
+    QMap<int, QList<int>>* groupClusterFiles;
 
     /*Map between the channel ids and the spike group ids. */
-    QMap<int,int>* channelClusterFiles;
+    QMap<int, int>* channelClusterFiles;
 
     /*Number of samples before the sample of the peak are contained in the waveform of a spike.*/
     int nbSamplesBefore;
@@ -917,15 +934,15 @@ private:
     bool printState;
 
     /**Map between the event provider names and the list of selected events.*/
-    QMap<QString, QList<int> > selectedEvents;
+    QMap<QString, QList<int>> selectedEvents;
 
     /**Pair storing the cluster provider having a selected cluster the closer in time to the current endTime,
   * the pair stores also the starting time of the retrieve data.*/
-    QPair<QString,long> nextClusterProvider;
+    QPair<QString, long> nextClusterProvider;
 
     /**Pair storing the cluster provider having a selected cluster the closer in time to the current startTime,
   * the pair stores also the starting time of the retrieve data.*/
-    QPair<QString,long> previousClusterProvider;
+    QPair<QString, long> previousClusterProvider;
 
     /**Stores the cluster provider which contains the cluster id look up in a nextCluster or previousCluster action.*/
     QString clusterProviderToSkip;
@@ -951,11 +968,11 @@ private:
 
     /**Pair storing the event provider having a selected event the closer in time to the current endTime,
   * the pair stores also the starting time of the retrieve data.*/
-    QPair<QString,long> nextEventProvider;
+    QPair<QString, long> nextEventProvider;
 
     /**Pair storing the event provider having a selected event the closer in time to the current startTime,
   * the pair stores also the starting time of the retrieve data.*/
-    QPair<QString,long> previousEventProvider;
+    QPair<QString, long> previousEventProvider;
 
     /**Stores the event provider which contains the event id look up in a nextEvent or previousEvent action.*/
     QString eventProviderToSkip;
@@ -964,7 +981,7 @@ private:
     qlonglong length;
 
     /**Pair storing the event provider and the event id corresponding to the currently selected event.*/
-    QPair<QString,int> selectedEvent;
+    QPair<QString, int> selectedEvent;
 
     /**Abscissa of the previous position while dragging channels.*/
     int previousDragAbscissa;
@@ -996,10 +1013,10 @@ private:
     bool eventBeingModified;
 
     /**Map between the cluster provider names and the list of clusters to not be used for browsing.*/
-    QMap<QString, QList<int> > clustersNotUsedForBrowsing;
+    QMap<QString, QList<int>> clustersNotUsedForBrowsing;
 
     /**Map between the event provider names and the list of events to not be used for browsing.*/
-    QMap<QString, QList<int> > eventsNotUsedForBrowsing;
+    QMap<QString, QList<int>> eventsNotUsedForBrowsing;
 
     bool retrieveClusterData;
 
@@ -1031,7 +1048,7 @@ private:
  * @param channels list of channels to draw.
  * @param highlight true if the channels have to be highlighted, false otherwise.
  */
-    void drawTraces(const QList<int>& channels,bool highlight);
+    void drawTraces(const QList<int>& channels, bool highlight);
 
     /**
  * Draws the trace for the channel @p channelId.
@@ -1045,7 +1062,7 @@ private:
  * @param mouseMoveEvent true if the function has been called from the mouseMoveEvent function. In that
  * case no waveforms are drawn even if requested.
  */
-    void drawTrace(QPainter& painter,int limit,int basePosition,int X,int channelId,int nbSamplesToDraw,bool mouseMoveEvent = false);
+    void drawTrace(QPainter& painter, int limit, int basePosition, int X, int channelId, int nbSamplesToDraw, bool mouseMoveEvent = false);
 
     /**Draws on the left side the id and the amplitude for each channel.
  * @param painter painter on which to draw the information.
@@ -1085,14 +1102,14 @@ private:
  * @param selectedEventIndex index of the event to draw.
  * @param highlight true if the event has to be highlighted, false otherwise.
  */
-    void drawEvent(const QString &providerName, int selectedEventId, dataType selectedEventIndex, bool highlight);
+    void drawEvent(const QString& providerName, int selectedEventId, dataType selectedEventIndex, bool highlight);
 
     /** Draws a vertical line at the cursor position. If the traces are displayed on multiple columns, a line is drawn in each column.
  * @param x abscissa of the cursor.
  * @param initialLine true if the line is drawn for the first time, false otherwise.
  * @param eraseLine true if the line has to be erase and not redraw.
  */
-    void drawTimeLine(QPainter *painter);
+    void drawTimeLine(QPainter* painter);
 
     /**Scale the background image to fit it in the widget.*/
     void scaleBackgroundImage();

@@ -1,7 +1,6 @@
 #include "clusterpropertieslayout.h"
-ClusterPropertiesLayout::ClusterPropertiesLayout( QWidget* parent )
-    : QWidget( parent ), Ui_ClusterPropertiesLayout()
+ClusterPropertiesLayout::ClusterPropertiesLayout(QWidget* parent)
+    : QWidget(parent), Ui_ClusterPropertiesLayout()
 {
-    setupUi( this );
-
+    setupUi(this);
 }

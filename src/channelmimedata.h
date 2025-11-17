@@ -21,11 +21,11 @@
 
 class ChannelMimeData : public QMimeData
 {
-public:
-  void setInformation(int groupSource, int mouseY);
+  public:
+    void setInformation(int groupSource, int mouseY);
 
-  static bool hasInformation(const QMimeData *mimeData);
-  static void getInformation(const QMimeData *mimeData, int *groupSource, int *mouseY);
+    static bool hasInformation(const QMimeData* mimeData);
+    static void getInformation(const QMimeData* mimeData, int* groupSource, int* mouseY);
 };
 
 #endif

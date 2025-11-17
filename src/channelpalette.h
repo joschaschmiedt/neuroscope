@@ -53,11 +53,14 @@ class SpaceWidget;
 class ChannelPalette : public QScrollArea
 {
     Q_OBJECT
-    
-public:
 
-    enum PaletteType {DISPLAY=0,SPIKE=1};
-    
+  public:
+    enum PaletteType
+    {
+        DISPLAY = 0,
+        SPIKE = 1
+    };
+
     /**Constructor.
     * @param type type of palette (anatomical or spike).
     * @param backgroundColor background color.
@@ -66,7 +69,7 @@ public:
     * @param name internal name of the palette.
     * @param fl widget flags.
     */
-    explicit ChannelPalette(PaletteType type, const QColor &backgroundColor, bool edition, QWidget* parent = 0, const char* name = 0);
+    explicit ChannelPalette(PaletteType type, const QColor& backgroundColor, bool edition, QWidget* parent = 0, const char* name = 0);
     /*
    *  Destroys the object and frees any allocated resources.
    */
@@ -77,7 +80,7 @@ public:
     * @param groupsChannels map given the list of channels for each group.
     * @param channelsGroups map given to which group each channel belongs.
     */
-    void createChannelLists(ChannelColors* channelColors,QMap<int, QList<int> >* groupsChannels,QMap<int,int>* channelsGroups, QStringList* channelLabels);
+    void createChannelLists(ChannelColors* channelColors, QMap<int, QList<int>>* groupsChannels, QMap<int, int>* channelsGroups, QStringList* channelLabels);
 
     /**Selects the channels contain in @p selectedChannels.
     * @param selectedChannels list of channels to select.
@@ -86,12 +89,12 @@ public:
 
     /**Resets the internal information of the palette.*/
     void reset();
-    
+
     /**Returns the list of selected channels*/
     const QList<int> selectedChannels();
 
     /**updates the background color of the palette.*/
-    void changeBackgroundColor(const QColor &color);
+    void changeBackgroundColor(const QColor& color);
 
     /**
     * Gets the channels with the @p showStatus show/hide status.
@@ -103,12 +106,12 @@ public:
     * Gets the skip status for each channel.
     * @return map between the channel and skip status.
     */
-    const QMap<int,bool>getSkipStatus(){return channelsSkipStatus;}
+    const QMap<int, bool> getSkipStatus() { return channelsSkipStatus; }
 
-    
-public Q_SLOTS:
+
+  public Q_SLOTS:
     void slotRowInsered();
-    void changeColor(QListWidgetItem *item, bool single = true);
+    void changeColor(QListWidgetItem* item, bool single = true);
     /**Creates a new group and fill it with the selected channels.
     */
     void createGroup();
@@ -118,10 +121,10 @@ public Q_SLOTS:
     void selectAllChannels();
     void deselectAllChannels();
     /**Channels moved to an existing group in a specific location.*/
-    void slotChannelsMoved(const QString& targetGroup, QListWidgetItem *after);
+    void slotChannelsMoved(const QString& targetGroup, QListWidgetItem* after);
     /**Channels moved around in a group.*/
-    void slotChannelsMoved(const QList<int>& channelIds,const QString& sourceGroup,QListWidgetItem* after);
-    void trashChannelsMovedAround(const QList<int>& channelIds,const int afterId,bool beforeFirst);
+    void slotChannelsMoved(const QList<int>& channelIds, const QString& sourceGroup, QListWidgetItem* after);
+    void trashChannelsMovedAround(const QList<int>& channelIds, const int afterId, bool beforeFirst);
     void discardChannels();
     void discardChannels(const QList<int>& channelsToDiscard);
     void discardChannels(const QList<int>& channelsToDiscard, const int afterID, bool beforeFirst);
@@ -129,9 +132,9 @@ public Q_SLOTS:
     void showChannels();
     void hideChannels();
     void hideUnselectAllChannels();
-    void updateShowHideStatus(const QList<int>&channelIds,bool showStatus);
-    void updateSkipStatus(const QMap<int,bool>& skipStatus);
-    void updateSkipStatus(const QList<int>&channelIds,bool skipStatus);
+    void updateShowHideStatus(const QList<int>& channelIds, bool showStatus);
+    void updateSkipStatus(const QMap<int, bool>& skipStatus);
+    void updateSkipStatus(const QList<int>& channelIds, bool skipStatus);
     void updateColor(const QList<int>& channelIds);
     void updateColor(int channelId);
     /**Sets the channel color to the group color for all the channels in the same group has channelId.
@@ -142,44 +145,45 @@ public Q_SLOTS:
     void applyGroupColor(PaletteType paletteType);
     void applyCustomColor();
     void setEditMode(bool edition);
-    void groupToMove(int sourceId,int targetId,int start, int destination);
+    void groupToMove(int sourceId, int targetId, int start, int destination);
     void removeChannelsFromTrash(const QList<int>& channelIds);
-    void selectionTool(){
+    void selectionTool()
+    {
         emit channelsSelected(selectedChannels());
     }
-    
-protected Q_SLOTS:
-    void slotMousePressMiddleButton(QListWidgetItem*item);
-    void slotMousePressed(const QString &sourceGroupName);
-    virtual void slotMidButtonPressed(const QString &sourceGroupId);
+
+  protected Q_SLOTS:
+    void slotMousePressMiddleButton(QListWidgetItem* item);
+    void slotMousePressed(const QString& sourceGroupName);
+    virtual void slotMidButtonPressed(const QString& sourceGroupId);
     virtual void slotClickRedraw();
     virtual void languageChange();
     virtual void createGroup(int id);
     virtual void setChannelLists();
-    void slotDragLabeltMoved(const QPoint& position){ensureVisible(position.x(),position.y());}
+    void slotDragLabeltMoved(const QPoint& position) { ensureVisible(position.x(), position.y()); }
 
-    void slotMoveListItem(const QList<int> &, const QString& sourceGroup, const QString& destinationGroup, int index, bool moveAll);
+    void slotMoveListItem(const QList<int>&, const QString& sourceGroup, const QString& destinationGroup, int index, bool moveAll);
 
-protected:
+  protected:
     void resizeEvent(QResizeEvent* event);
     void paintEvent(QPaintEvent* event);
-    
-Q_SIGNALS:
+
+  Q_SIGNALS:
     void singleChangeColor(int selectedChannel);
     void groupChangeColor(int groupId);
     //void channelsChangeColor(QValueList<int> selectedChannels);
     void updateShownChannels(const QList<int>& shownChannels);
     void updateHideChannels(const QList<int>& hiddenChannels);
-    void paletteResized(int parentWidth,int labelSize);
+    void paletteResized(int parentWidth, int labelSize);
     void channelsDiscarded(const QList<int>& discarded);
     void setDragAndDrop(bool dragAndDrop);
     void groupModified();
-    void channelsMovedToTrash(const QList<int> &channelIds, const int afterId,bool beforeFirst);
-    void channelsMovedAroundInTrash(const QList<int>& channelsToDiscard,int afterId,bool beforeFirst);
+    void channelsMovedToTrash(const QList<int>& channelIds, const int afterId, bool beforeFirst);
+    void channelsMovedAroundInTrash(const QList<int>& channelsToDiscard, int afterId, bool beforeFirst);
     void channelsRemovedFromTrash(const QList<int>& channelIds);
     void channelsSelected(const QList<int>& selectedChannels);
-    
-private:    
+
+  private:
     /**Pointer on the ChannelColors storing the color information for the channels.*/
     ChannelColors* channelColors;
 
@@ -189,7 +193,7 @@ private:
     /**Prevent from emitting signal while globaly selecting items*/
     bool isInSelectItems;
 
-    QVBoxLayout *verticalContainer;
+    QVBoxLayout* verticalContainer;
 
     /**Dictionnary of the iconviews representing the group of channels.*/
     QHash<QString, ChannelIconView*> iconviewDict;
@@ -202,18 +206,18 @@ private:
 
     /**Stores to which group each channel belongs. Pointer to the variable belonging to
     NeuroscopeDoc.*/
-    QMap<int,int>* channelsGroups;
+    QMap<int, int>* channelsGroups;
 
     /**Map the correspondence between the channel group ids and the channel ids.
     *Pointer to the variable belonging to NeuroscopeDoc.
     */
-    QMap<int, QList<int> >* groupsChannels;
+    QMap<int, QList<int>>* groupsChannels;
 
     /** Mapping between channel id and label */
     QStringList* channelLabels;
 
     int labelSize;
-    
+
     /**True if the the colors are in grey-scale*/
     bool greyScale;
 
@@ -224,22 +228,22 @@ private:
     PaletteType type;
 
     /**Stores show/hide status of each channel.*/
-    QMap<int,bool> channelsShowHideStatus;
-    
+    QMap<int, bool> channelsShowHideStatus;
+
     /**True if the palette is in edit mode, false otherwise.*/
     bool edit;
 
     /**Stores the group currently beeing selected.*/
     QString selected;
-    
+
     /**Stores skip status of each channel.*/
-    QMap<int,bool> channelsSkipStatus;
+    QMap<int, bool> channelsSkipStatus;
 
     /**Stores the selection status of each group. The selection status is true if all the group items have been selected by a click on the group label, false otherwise.*/
-    QMap<QString,bool> selectionStatus;
-    
+    QMap<QString, bool> selectionStatus;
+
     //Functions
-    
+
     /**
     * Updates the show/hide status of the currently slected channels.
     * @param showStatus true if the show/hide status has to be set to show, false if it has to be set to hide.
@@ -261,12 +265,12 @@ private:
     void moveTrashesToBottom();
 
     /**Moves channels around in a group.*/
-    void moveChannels(const QList<int>& channelIds, const QString &sourceGroup, QListWidgetItem *after);
+    void moveChannels(const QList<int>& channelIds, const QString& sourceGroup, QListWidgetItem* after);
 
     /**Channels moved to an empty group.*/
-    void moveChannels(const QList<int>& channelIds, const QString &sourceGroup, const QString &targetGroup, int index = -1, bool moveAll = false);
+    void moveChannels(const QList<int>& channelIds, const QString& sourceGroup, const QString& targetGroup, int index = -1, bool moveAll = false);
 
-    void dragChannels(const QList<int>& channelIds, const QString &sourceGroup, const QString &targetGroup, int index = -1, bool moveAll = false);
+    void dragChannels(const QList<int>& channelIds, const QString& sourceGroup, const QString& targetGroup, int index = -1, bool moveAll = false);
     /**Moves channels to either the trash group or the unspecified group in the spike palette.
     * @param destinationGroup the id of the group of destination.
     */
@@ -284,11 +288,12 @@ private:
 };
 
 /**IUtility class used to create the channel palettes of the application (anatomical and spike)..
-*/  
-class SpaceWidget : public QWidget{
+*/
+class SpaceWidget : public QWidget
+{
     Q_OBJECT
-public:
-    SpaceWidget(QWidget* parent,bool drag)
+  public:
+    SpaceWidget(QWidget* parent, bool drag)
         : QWidget(parent),
           drag(drag)
     {
@@ -299,35 +304,36 @@ public:
 
     void dragEnterEvent(QDragEnterEvent* event);
 
-public Q_SLOTS:
-    void setDragAndDrop(bool dragDrop){drag = dragDrop;}
+  public Q_SLOTS:
+    void setDragAndDrop(bool dragDrop) { drag = dragDrop; }
 
-Q_SIGNALS:
-    void dropLabel(int sourceId,int targetId,int start, int destination);
+  Q_SIGNALS:
+    void dropLabel(int sourceId, int targetId, int start, int destination);
 
-private:
+  private:
     /**True the drag and drop is allow, false otherwise.*/
     bool drag;
-
 };
 
 /**
   *Utility class used to create the group labels on the left side of the group boxes in the anatomical and spike palettes.
   *@author Lynn Hazan
   */
-class GroupLabel : public QLabel{
+class GroupLabel : public QLabel
+{
     Q_OBJECT
-public:
-    explicit GroupLabel(const QString& text,QWidget* parent):
-        QLabel(text,parent){
+  public:
+    explicit GroupLabel(const QString& text, QWidget* parent)
+        : QLabel(text, parent)
+    {
         setAutoFillBackground(true);
     }
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void middleClickOnLabel(const QString& sourceId);
     void leftClickOnLabel(const QString& sourceId);
 
-protected:
+  protected:
     void mousePressEvent(QMouseEvent* e);
 };
 

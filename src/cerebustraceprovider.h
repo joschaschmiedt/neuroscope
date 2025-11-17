@@ -43,27 +43,29 @@
   * @author Florian Franzen
   */
 
-class CerebusTracesProvider : public TracesProvider  {
+class CerebusTracesProvider : public TracesProvider
+{
     Q_OBJECT
 
-public:
+  public:
     // Callback that reacts to new data
-    static void packageCallback(UINT32 instance, const cbSdkPktType type,  const void* data, void* object);
+    static void packageCallback(UINT32 instance, const cbSdkPktType type, const void* data, void* object);
 
     // Different sampling groups one can describe to
-	enum SamplingGroup {
-		RATE_500 = 1,
-		RATE_1K = 2,
-		RATE_2K = 3,
-		RATE_10k = 4,
-		RATE_30k = 5
-	};
+    enum SamplingGroup
+    {
+        RATE_500 = 1,
+        RATE_1K = 2,
+        RATE_2K = 3,
+        RATE_10k = 4,
+        RATE_30k = 5
+    };
 
     /**
     * @param group is the sampling group to subscribe to.
     */
-	CerebusTracesProvider(SamplingGroup group);
-	virtual ~CerebusTracesProvider();
+    CerebusTracesProvider(SamplingGroup group);
+    virtual ~CerebusTracesProvider();
 
     /** Initializes the object by trying to connect to the Cerebus NSP.
     *
@@ -72,7 +74,8 @@ public:
     bool init();
 
     /** Returns true if initialized */
-    bool isInitialized() {
+    bool isInitialized()
+    {
         return mInitialized;
     }
 
@@ -90,47 +93,52 @@ public:
     // Called by callback to add spike event to buffer.
     void processSpike(const cbPKT_SPK* package);
 
-	// Called by callback to add digital and serial event to buffer.
-	void processEvent(const cbPKT_DINP* package);
+    // Called by callback to add digital and serial event to buffer.
+    void processEvent(const cbPKT_DINP* package);
 
     // Called by callback to process configuration changes.
     void processConfig(const cbPKT_GROUPINFO* package);
 
-	// Return last error message as string
-	std::string getLastErrorMessage();
+    // Return last error message as string
+    std::string getLastErrorMessage();
 
     /** Dummy function, definded to work around the bad interface design.
     * @param nb the number of channels.
     */
-    virtual void setNbChannels(int nb){
+    virtual void setNbChannels(int nb)
+    {
         qDebug() << "Cerebus NSP used. Ignoring setNbChannels(" << nb << ")";
     }
 
     /** Dummy function, definded to work around the bad interface design.
     * @param res resolution.
     */
-    virtual void setResolution(int res){
+    virtual void setResolution(int res)
+    {
         qDebug() << "Cerebus NSP used.  Ignoring setResolution(" << res << ")";
     }
 
     /** Dummy function, definded to work around the bad interface design.
     * @param rate the sampling rate.
     */
-    virtual void setSamplingRate(double rate){
+    virtual void setSamplingRate(double rate)
+    {
         qDebug() << "Cerebus NSP used. Ignoring setSamplingRate(" << rate << ")";
     }
 
     /** Dummy function, definded to work around the bad interface design.
     * @param range the voltage range.
     */
-    virtual void setVoltageRange(int range){
+    virtual void setVoltageRange(int range)
+    {
         qDebug() << "Cerebus NSP used. Ignoring setVoltageRange(" << range << ")";
     }
 
     /**  Dummy function, definded to work around the bad interface design.
     * @param value the amplification.
     */
-    virtual void setAmplification(int value){
+    virtual void setAmplification(int value)
+    {
         qDebug() << "Cerebus NSP used. Ignoring setAmplification(" << value << ")";
     }
 
@@ -167,16 +175,16 @@ public:
      */
     Array<dataType>* getEventData(long start, long end);
 
-Q_SIGNALS:
+  Q_SIGNALS:
     /**Signals that the data have been retrieved.
     * @param data array of data in uV (number of channels X number of samples).
     * @param initiator instance requesting the data.
     */
     void dataReady(Array<dataType>& data, QObject* initiator);
 
-private:
+  private:
     // Resolution of data packages received.
-    static const int CEREBUS_RESOLUTION ;
+    static const int CEREBUS_RESOLUTION;
     // Default instance id to use to talk to CB SDK
     static const unsigned int CEREBUS_INSTANCE;
     // Length of buffer in seconds (for events it is assumed there is an event for every tick in that second)
@@ -186,8 +194,8 @@ private:
 
     // True if connection, buffers and callback were initialized
     bool mInitialized;
-	// True if set of channels in sampling group were changed
-	bool mReconfigured;
+    // True if set of channels in sampling group were changed
+    bool mReconfigured;
 
     // Sampling group to listen to
     SamplingGroup mGroup;
@@ -214,17 +222,17 @@ private:
     size_t mEventCapacity;
 
     // Continous data storage
-    INT16*  mLiveTraceData;
+    INT16* mLiveTraceData;
     size_t* mLiveTracePosition;
-    INT16*  mViewTraceData;
+    INT16* mViewTraceData;
     size_t* mViewTracePosition;
 
     // Spike event data storage
     UINT32** mLiveClusterTime;
-    UINT8**  mLiveClusterID;
+    UINT8** mLiveClusterID;
     size_t** mLiveClusterPosition;
     UINT32** mViewClusterTime;
-    UINT8**  mViewClusterID;
+    UINT8** mViewClusterID;
     size_t** mViewClusterPosition;
 
     // Digital and serial event data storage
@@ -247,7 +255,7 @@ private:
     virtual void computeRecordingLength();
 
     /** Helper function that searches timestamps in buffer*/
-    template <typename T>
+    template<typename T>
     Array<dataType>* getTimeStampedData(UINT32* timeBuffer,
                                         T* dataBuffer,
                                         size_t* bufferPosition,

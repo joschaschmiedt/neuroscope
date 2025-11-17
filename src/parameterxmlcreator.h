@@ -19,15 +19,13 @@
 #define PARAMETERXMLCREATOR_H
 
 
-
-
 //Application specific includes
 #include "sessionInformation.h"
 
 //include files for QT
 #include <QList>
 #include <QMap>
-#include <qdom.h> 
+#include <qdom.h>
 
 // forward declaration
 class ChannelColors;
@@ -37,9 +35,9 @@ class ChannelColors;
   *@author Lynn Hazan
   */
 
-class ParameterXmlCreator {
-public:
-
+class ParameterXmlCreator
+{
+  public:
     /**Constructor which will create a parameter file.
   */
     ParameterXmlCreator();
@@ -61,7 +59,7 @@ public:
   * @param amplification amplification of the acquisition system.
   * @param offset initial offset for all the traces.
   */
-    void setAcquisitionSystemInformation(int resolution,int nbChannels,double samplingRate,int voltageRange,int amplification,int offset);
+    void setAcquisitionSystemInformation(int resolution, int nbChannels, double samplingRate, int voltageRange, int amplification, int offset);
 
     /**
   * Creates the element related to the field potentials.
@@ -74,7 +72,7 @@ public:
   * @param screenGain screen gain in milivolts by centimeters used to display the field potentiels.
   * @param traceBackgroundImage image used as background for the trace view.
   */
-    void setMiscellaneousInformation(float screenGain, const QString &traceBackgroundImage);
+    void setMiscellaneousInformation(float screenGain, const QString& traceBackgroundImage);
 
     /**
   * Creates the elements related to the channels colors.
@@ -84,14 +82,14 @@ public:
   * @param channelsGroups map given to which group each channel belongs.
   * @param channelDefaultOffsets map given the default channel offsets.
   */
-    void setChannelDisplayInformation(ChannelColors* channelColors,QMap<int,int>& channelsGroups,QMap<int,int>& channelDefaultOffsets);
+    void setChannelDisplayInformation(ChannelColors* channelColors, QMap<int, int>& channelsGroups, QMap<int, int>& channelDefaultOffsets);
 
     /**
   * Creates the elements related to the anatomical description.
   * @param anatomicalGroups map given to which anatomical group each channel belongs.
   * @param skipStatus map given the skip status of the channels.
   */
-    void setAnatomicalDescription(QMap<int, QList<int> >& anatomicalGroups, const QMap<int, bool> &skipStatus);
+    void setAnatomicalDescription(QMap<int, QList<int>>& anatomicalGroups, const QMap<int, bool>& skipStatus);
 
     /**
   * Creates the elements related to the spike detection.
@@ -99,13 +97,13 @@ public:
   * @param peakSampleIndex sample index corresponding to the peak of the spike.
   * @param spikeGroups map given to which spike group each channel belongs.
   */
-    void setSpikeDetectionInformation(int nbSamples,int peakSampleIndex,QMap<int, QList<int> >& spikeGroups);
+    void setSpikeDetectionInformation(int nbSamples, int peakSampleIndex, QMap<int, QList<int>>& spikeGroups);
 
     /**
   * Creates the elements related to the spike detection.
   * @param spikeGroups map given to which spike group each channel belongs.
   */
-    void setSpikeDetectionInformation(QMap<int, QList<int> >& spikeGroups);
+    void setSpikeDetectionInformation(QMap<int, QList<int>>& spikeGroups);
 
 
     /**
@@ -116,14 +114,14 @@ public:
   * @param drawTrajectory all the positions contained in a position file can be used to create a background image for the PositionView.
   * This value tells if such background has to be created.
   */
-    void setNeuroscopeVideoInformation(int rotation, int flip, const QString &backgroundPath, int drawTrajectory);
+    void setNeuroscopeVideoInformation(int rotation, int flip, const QString& backgroundPath, int drawTrajectory);
 
     /**
   * Creates the elements containing the video information.
   * @param width video image width.
   * @param height video image height.
   */
-    void setVideoInformation(int width,int height);
+    void setVideoInformation(int width, int height);
 
     /**A base file name can be used for different kind of files corresponding to the same data and having
   * different sampling rates. Each file is identified by its extension. this function creates the elements related to the mapping
@@ -131,10 +129,9 @@ public:
   * includes the sampling rates for the extension dat and eeg, they are treated separately.
   * @param extensionSamplingRates map between file extension and the sampling rate.
   */
-    void setSampleRateByExtension(const QMap<QString, double> &extensionSamplingRates);
+    void setSampleRateByExtension(const QMap<QString, double>& extensionSamplingRates);
 
-private:
-
+  private:
     /**The session document.*/
     QDomDocument doc;
 
@@ -171,8 +168,6 @@ private:
     QDomElement files;
 
     static const QString parameterVersion;
-
-    
 };
 
 #endif

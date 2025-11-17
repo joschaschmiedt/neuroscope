@@ -34,7 +34,7 @@ ChannelIconView::ChannelIconView(const QColor& backgroundColor, int gridX, int g
     : QListWidget(parent)
 {
     setObjectName(name);
-    QFont font( "Helvetica",8);
+    QFont font("Helvetica", 8);
     setFont(font);
     setSpacing(4);
     setFrameStyle(QFrame::Box | QFrame::Plain);
@@ -50,7 +50,7 @@ ChannelIconView::ChannelIconView(const QColor& backgroundColor, int gridX, int g
     int h;
     int s;
     int v;
-    backgroundColor.getHsv(&h,&s,&v);
+    backgroundColor.getHsv(&h, &s, &v);
     QColor legendColor;
     if (s <= 80 && v >= 240 || (s <= 40 && v >= 220))
         legendColor = Qt::black;
@@ -63,18 +63,21 @@ ChannelIconView::ChannelIconView(const QColor& backgroundColor, int gridX, int g
 
     setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    if (edit) {
+    if (edit)
+    {
         setDragEnabled(true);
         setMovement(QListView::Snap);
-    } else {
+    }
+    else
+    {
         setDragEnabled(false);
         setMovement(QListView::Static);
     }
     setSelectionRectVisible(false);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
-    connect(model(), SIGNAL(rowsInserted(QModelIndex, int,int)), this, SIGNAL(rowInsered()));
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    connect(model(), SIGNAL(rowsInserted(QModelIndex, int, int)), this, SIGNAL(rowInsered()));
 }
 
 
@@ -82,12 +85,14 @@ ChannelIconView::~ChannelIconView()
 {
 }
 
-QList<QListWidgetItem *> ChannelIconView::findItems(const int id) const {
-    QList<QListWidgetItem *> matchedItems;
+QList<QListWidgetItem*> ChannelIconView::findItems(const int id) const
+{
+    QList<QListWidgetItem*> matchedItems;
 
-    for(unsigned int row = 0; row < count(); row++) {
+    for (unsigned int row = 0; row < count(); row++)
+    {
         ChannelIconViewItem* channelItem = static_cast<ChannelIconViewItem*>(item(row));
-        if(channelItem->getID() == id)
+        if (channelItem->getID() == id)
             matchedItems.append(channelItem);
     }
     return matchedItems;
@@ -109,7 +114,8 @@ QMimeData* ChannelIconView::mimeData(const QList<QListWidgetItem*> items) const
     QByteArray data;
     //For the moment just one item
     QDataStream stream(&data, QIODevice::WriteOnly);
-    Q_FOREACH(QListWidgetItem* item, items) {
+    Q_FOREACH (QListWidgetItem* item, items)
+    {
         stream << *static_cast<ChannelIconViewItem*>(item);
     }
 
@@ -139,7 +145,7 @@ void ChannelIconView::setDragAndDrop(bool dragDrop)
     setDragEnabled(dragDrop);
 }
 
-void ChannelIconView::wheelEvent ( QWheelEvent * event )
+void ChannelIconView::wheelEvent(QWheelEvent* event)
 {
     event->accept();
 }
@@ -148,11 +154,12 @@ bool ChannelIconView::dropMimeData(int index, const QMimeData* mimeData, Qt::Dro
 {
     Q_UNUSED(action);
 
-    if (ChannelMimeData::hasInformation(mimeData)) {
+    if (ChannelMimeData::hasInformation(mimeData))
+    {
         int groupSource, start;
         ChannelMimeData::getInformation(mimeData, &groupSource, &start);
         QString groupTarget = objectName();
-        emit dropLabel(groupSource,groupTarget.toInt(),start,/*QWidget::mapToGlobal(event->pos()).y()*/0);
+        emit dropLabel(groupSource, groupTarget.toInt(), start, /*QWidget::mapToGlobal(event->pos()).y()*/ 0);
         return true;
     }
 
@@ -166,35 +173,43 @@ bool ChannelIconView::dropMimeData(int index, const QMimeData* mimeData, Qt::Dro
     const QString sourceGroupName = QString::fromUtf8(mimeData->data("application/x-channeliconview-name"));
     const bool moveAllGroup = (mimeData->data("application/x-channeliconview-move-all-channels") == "true");
 
-    if (sourceGroupName!= objectName()) {
+    if (sourceGroupName != objectName())
+    {
         //TODO this part is buggy
         QList<int> channelIds;
-        for (int i=0; i< numberOfItems; ++i) {
+        for (int i = 0; i < numberOfItems; ++i)
+        {
             ChannelIconViewItem sentItem(this);
             stream >> sentItem;
             channelIds.append(sentItem.getID());
         }
-        if (!channelIds.isEmpty()) {
+        if (!channelIds.isEmpty())
+        {
             emit moveListItem(channelIds, sourceGroupName, objectName(), index, moveAllGroup);
         }
-    } else {
+    }
+    else
+    {
         //Same group
-        if (moveAllGroup) {
+        if (moveAllGroup)
+        {
             //don't move it.
             return false;
         }
 
         QList<int> channelIds;
-        for (int i=0; i< numberOfItems; ++i) {
+        for (int i = 0; i < numberOfItems; ++i)
+        {
             ChannelIconViewItem sentItem(this);
             stream >> sentItem;
             channelIds.append(sentItem.getID());
         }
 
-        QListWidgetItem *posItem = item(index);
-        if (!posItem) {
+        QListWidgetItem* posItem = item(index);
+        if (!posItem)
+        {
             //Find last item
-            posItem = item(count()-1);
+            posItem = item(count() - 1);
         }
         emit channelsMoved(channelIds, sourceGroupName, posItem);
     }
@@ -208,31 +223,41 @@ void ChannelIconView::mousePressEvent(QMouseEvent* event)
     if (item == 0L)
         return;
 
-    if (event->button() == Qt::MiddleButton) {
+    if (event->button() == Qt::MiddleButton)
+    {
         emit mousePressMiddleButton(item);
     }
     QListWidget::mousePressEvent(event);
 }
 
-void ChannelIconView::keyPressEvent(QKeyEvent *event)
+void ChannelIconView::keyPressEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Right) {
-        QListWidgetItem *c = currentItem();
-        if (c) {
+    if (event->key() == Qt::Key_Right)
+    {
+        QListWidgetItem* c = currentItem();
+        if (c)
+        {
             const int i = row(c);
-            if (i < count()-1) {
-                setCurrentRow(i+1);
+            if (i < count() - 1)
+            {
+                setCurrentRow(i + 1);
             }
         }
-    } else if (event->key() == Qt::Key_Left) {
-        QListWidgetItem *c = currentItem();
-        if (c) {
+    }
+    else if (event->key() == Qt::Key_Left)
+    {
+        QListWidgetItem* c = currentItem();
+        if (c)
+        {
             const int i = row(c);
-            if (i > 0) {
-                setCurrentRow(i-1);
+            if (i > 0)
+            {
+                setCurrentRow(i - 1);
             }
         }
-    } else {
+    }
+    else
+    {
         QListWidget::keyPressEvent(event);
     }
 }

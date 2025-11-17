@@ -19,10 +19,10 @@
 
 
 DataProvider::DataProvider(const QString& fileUrl)
-    :QObject()
+    : QObject()
 {
-    fileName =fileUrl;
+    fileName = fileUrl;
 }
-DataProvider::~DataProvider(){
+DataProvider::~DataProvider()
+{
 }
-

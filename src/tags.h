@@ -27,7 +27,8 @@
   */
 
 /* @namespace neuroscope*/
-namespace neuroscope{
+namespace neuroscope
+{
 
 /**Tag for the neuroscope session file root element.*/
 extern const QString NEUROSCOPE;
@@ -224,6 +225,6 @@ extern const QString CHANNEL_POSITION;
 /**Tag for the gain element included in the channelPosition element.*/
 extern const QString GAIN;
 
-}
+} // namespace neuroscope
 
 #endif

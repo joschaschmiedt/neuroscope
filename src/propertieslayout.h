@@ -8,8 +8,8 @@ class PropertiesLayout : public QWidget, public Ui_PropertiesLayout
 {
     Q_OBJECT
 
-public:
-    explicit PropertiesLayout( QWidget* parent = 0 );
+  public:
+    explicit PropertiesLayout(QWidget* parent = 0);
 };
 
 #endif

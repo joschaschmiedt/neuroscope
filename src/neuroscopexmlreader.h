@@ -19,7 +19,7 @@
 #define NEUROSCOPEXMLREADER_H
 
 //include files for QT
-#include <QList> 
+#include <QList>
 #include <QDomNode>
 
 //Application specific includes
@@ -30,11 +30,15 @@
   *@author Lynn Hazan
   */
 
-class NeuroscopeXmlReader {
-public:
-
+class NeuroscopeXmlReader
+{
+  public:
     /**Type of xml file supported by this class.*/
-    enum fileType{PARAMETER=0,SESSION=1};
+    enum fileType
+    {
+        PARAMETER = 0,
+        SESSION = 1
+    };
 
     NeuroscopeXmlReader();
     ~NeuroscopeXmlReader();
@@ -44,7 +48,7 @@ public:
   * @param type type of the xml file to open.
   * @return true if the file was correctly parse, false othewise.
   */
-    bool parseFile(const QString& url,fileType type);
+    bool parseFile(const QString& url, fileType type);
 
     /**Closes the currently open file.*/
     void closeFile();
@@ -113,7 +117,7 @@ public:
     /** Returns the list of channel default offsets.
   * @param channelDefaultOffsets empty map to be filled with the channel default offsets.
   */
-    void getChannelDefaultOffset(QMap<int,int>& channelDefaultOffsets);
+    void getChannelDefaultOffset(QMap<int, int>& channelDefaultOffsets);
 
     /**
   * Returns the anatomical description.
@@ -122,8 +126,8 @@ public:
   * @param displayGroupsChannels reference to the map given the correspondance between the display group ids and the channel ids.
   * @param skipStatus reference to the map given the correspondance between the channels and their skip status.
   */
-    void getAnatomicalDescription(int nbChannels,QMap<int,int>& displayChannelsGroups,QMap<int, QList<int> >& displayGroupsChannels,
-                                  QMap<int,bool>& skipStatus);
+    void getAnatomicalDescription(int nbChannels, QMap<int, int>& displayChannelsGroups, QMap<int, QList<int>>& displayGroupsChannels,
+                                  QMap<int, bool>& skipStatus);
 
     /**
   * Returns the spike description.
@@ -131,7 +135,7 @@ public:
   * @param spikeChannelsGroups reference to the map given the correspondance between the channel ids and the spike group ids.
   * @param spikeGroupsChannels reference to the map given the correspondance between the spike group ids and the channel ids.
   */
-    void getSpikeDescription(int nbChannels,QMap<int,int>& spikeChannelsGroups,QMap<int, QList<int> >& spikeGroupsChannels);
+    void getSpikeDescription(int nbChannels, QMap<int, int>& spikeChannelsGroups, QMap<int, QList<int>>& spikeGroupsChannels);
 
     /**Returns the number of samples in a spike,
   * or zero if the element could not be found in the file.
@@ -175,7 +179,7 @@ public:
   * includes the sampling rates for the extension dat and eeg, they treated separately.
   * @return map between file extension and the sampling rate.
   */
-    QMap<QString,double> getSampleRateByExtension();
+    QMap<QString, double> getSampleRateByExtension();
 
     /**Returns the video image width.
   * @return width.
@@ -216,18 +220,17 @@ public:
     /**Returns the version of current file.
   * @return version.
   */
-    QString getVersion()const{return readVersion;}
+    QString getVersion() const { return readVersion; }
 
     /**Returns the version of current file.
   * @return version.
   */
-    NeuroscopeXmlReader::fileType getType()const{return type;}
+    NeuroscopeXmlReader::fileType getType() const { return type; }
 
-private:
+  private:
     fileType type;
     QString readVersion;
     QDomNode documentNode;
-
 };
 
 #endif

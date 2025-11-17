@@ -19,7 +19,7 @@
 #define CHANNELGROUPVIEW_H
 
 #include <QWidget>
-#include <QObject> 
+#include <QObject>
 #include <QPainter>
 
 #include <QDragEnterEvent>
@@ -33,40 +33,40 @@ class ChannelIconView;
   *@author Lynn Hazan
   */
 
-class ChannelGroupView : public QWidget  {
+class ChannelGroupView : public QWidget
+{
     Q_OBJECT
-public: 
-    explicit ChannelGroupView(bool drag,const QColor& backgroundColor,QWidget* parent=0);
+  public:
+    explicit ChannelGroupView(bool drag, const QColor& backgroundColor, QWidget* parent = 0);
 
-    ~ChannelGroupView(){}
+    ~ChannelGroupView() {}
 
-    void setLabel(QLabel *label);
-    void setIconView(ChannelIconView *view);
+    void setLabel(QLabel* label);
+    void setIconView(ChannelIconView* view);
 
-    QLabel *label();
-Q_SIGNALS:
-    void dropLabel(int sourceId,int targetId,int start, int destination);
+    QLabel* label();
+  Q_SIGNALS:
+    void dropLabel(int sourceId, int targetId, int start, int destination);
     void dragObjectMoved(QPoint position);
-    
-public Q_SLOTS:
-    void reAdjustSize(int parentWidth,int labelSize);
 
-    void setDragAndDrop(bool dragDrop){drag = dragDrop;}
+  public Q_SLOTS:
+    void reAdjustSize(int parentWidth, int labelSize);
 
-protected:
+    void setDragAndDrop(bool dragDrop) { drag = dragDrop; }
+
+  protected:
     virtual void dropEvent(QDropEvent* event);
 
     virtual void dragEnterEvent(QDragEnterEvent* event);
 
-private:
+  private:
     ChannelIconView* iconView;
 
     /**True the drag and drop is allow, false otherwise.*/
     bool drag;
-    QHBoxLayout *mLayout;
-    QLabel *mLabel;
+    QHBoxLayout* mLayout;
+    QLabel* mLabel;
     bool init;
-
 };
 
 #endif

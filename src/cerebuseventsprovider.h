@@ -13,15 +13,16 @@
  *                                                                         *
  ***************************************************************************/
 
- #ifndef _CEREBUSEVENTSPROVIDER_H_
- #define _CEREBUSEVENTSPROVIDER_H_
+#ifndef _CEREBUSEVENTSPROVIDER_H_
+#define _CEREBUSEVENTSPROVIDER_H_
 
 #include "eventsprovider.h"
 #include "cerebustraceprovider.h"
 
- class CerebusEventsProvider : public EventsProvider  {
-     Q_OBJECT
- public:
+class CerebusEventsProvider : public EventsProvider
+{
+    Q_OBJECT
+  public:
     CerebusEventsProvider(CerebusTracesProvider* source, int samplingRate);
     ~CerebusEventsProvider();
 
@@ -31,7 +32,7 @@
     * @param initiator instance requesting the data.
     * @param startTimeInRecordingUnits begining of the time interval from which to retrieve the data in recording units.
     */
-    virtual void requestData(long startTime,long endTime,QObject* initiator,long startTimeInRecordingUnits = 0);
+    virtual void requestData(long startTime, long endTime, QObject* initiator, long startTimeInRecordingUnits = 0);
 
     /**Looks up for the first of the events included in the list @p selectedIds existing after the time @p startTime.
     * All the events included in the time interval given by @p timeFrame are retrieved. The time interval start time is
@@ -41,7 +42,7 @@
     * @param selectedIds list of event ids to look up for.
     * @param initiator instance requesting the data.
     */
-    virtual void requestNextEventData(long startTime,long timeFrame,const QList<int> &selectedIds,QObject* initiator);
+    virtual void requestNextEventData(long startTime, long timeFrame, const QList<int>& selectedIds, QObject* initiator);
 
     /**Looks up for the first of the events included in the list @p selectedIds existing before the time @p endTime.
     * All the events included in the time interval given by @p timeFrame are retrieved. The time interval start time is
@@ -51,16 +52,16 @@
     * @param selectedIds list of event ids to look up for.
     * @param initiator instance requesting the data.
     */
-    virtual void requestPreviousEventData(long endTime,long timeFrame,QList<int> selectedIds,QObject* initiator);
+    virtual void requestPreviousEventData(long endTime, long timeFrame, QList<int> selectedIds, QObject* initiator);
 
     /**Loads the event ids and the corresponding spike time.
     * @return an loadReturnMessage enum giving the load status
     */
     virtual int loadData();
 
- private:
+  private:
     // The actual data source of the event data.
     CerebusTracesProvider* mDataProvider;
- };
+};
 
 #endif

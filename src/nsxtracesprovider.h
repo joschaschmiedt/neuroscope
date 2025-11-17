@@ -30,48 +30,53 @@
   * @author Florian Franzen
   */
 
-class NSXTracesProvider : public TracesProvider  {
+class NSXTracesProvider : public TracesProvider
+{
     Q_OBJECT
-public:
-
+  public:
     /**Constructor.
     * @param fileUrl the url of the file containing the data provided by this class.
     */
-    NSXTracesProvider(const QString &fileUrl);
-	virtual ~NSXTracesProvider();
+    NSXTracesProvider(const QString& fileUrl);
+    virtual ~NSXTracesProvider();
 
     /**Sets the number of channels corresponding to the file identified by fileUrl.
     * @param nb the number of channels.
     */
-    virtual void setNbChannels(int nb){
+    virtual void setNbChannels(int nb)
+    {
         qDebug() << "NSX file used. Ignoring setNbChannels(" << nb << ")";
     }
 
     /**Sets the resolution used to record the data contained in the file identified by fileUrl.
     * @param res resolution.
     */
-    virtual void setResolution(int res){
+    virtual void setResolution(int res)
+    {
         qDebug() << "NSX file used.  Ignoring setResolution(" << res << ")";
     }
 
     /**Sets the sampling rate used to record the data contained in the file identified by fileUrl.
     * @param rate the sampling rate.
     */
-    virtual void setSamplingRate(double rate){
+    virtual void setSamplingRate(double rate)
+    {
         qDebug() << "NSX file used. Ignoring setSamplingRate(" << rate << ")";
     }
 
     /**Sets the voltage range used to record the data contained in the file identified by fileUrl.
     * @param range the voltage range.
     */
-    virtual void setVoltageRange(int range){
+    virtual void setVoltageRange(int range)
+    {
         qDebug() << "NSX file used. Ignoring setVoltageRange(" << range << ")";
     }
 
     /**Sets the amplification used to record the data contained in the file identified by fileUrl.
     * @param value the amplification.
     */
-    virtual void setAmplification(int value){
+    virtual void setAmplification(int value)
+    {
         qDebug() << "NSX file used. Ignoring setAmplification(" << value << ")";
     }
 
@@ -90,14 +95,14 @@ public:
     /** Return the labels of each channel as read from nsx file. */
     virtual QStringList getLabels();
 
-Q_SIGNALS:
+  Q_SIGNALS:
     /**Signals that the data have been retrieved.
     * @param data array of data in uV (number of channels X number of samples).
     * @param initiator instance requesting the data.
     */
-    void dataReady(Array<dataType>& data,QObject* initiator);
+    void dataReady(Array<dataType>& data, QObject* initiator);
 
-private:
+  private:
     static const int NSX_RESOLUTION;
     static const int NSX_OFFSET;
 

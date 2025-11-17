@@ -21,19 +21,19 @@ static const char* s_mimetype = "application/x-channelinformation";
 
 void ChannelMimeData::setInformation(int groupSource, int mouseY)
 {
-  const QByteArray information = QByteArray::number(groupSource) + '/' + QByteArray::number(mouseY);
-  setData(QString::fromLatin1(s_mimetype), information);
+    const QByteArray information = QByteArray::number(groupSource) + '/' + QByteArray::number(mouseY);
+    setData(QString::fromLatin1(s_mimetype), information);
 }
 
-bool ChannelMimeData::hasInformation(const QMimeData *mimeData)
+bool ChannelMimeData::hasInformation(const QMimeData* mimeData)
 {
-  return mimeData->hasFormat(s_mimetype);
+    return mimeData->hasFormat(s_mimetype);
 }
 
-void ChannelMimeData::getInformation(const QMimeData *mimeData, int *groupSource, int *mouseY)
+void ChannelMimeData::getInformation(const QMimeData* mimeData, int* groupSource, int* mouseY)
 {
-  const QByteArray information = mimeData->data(s_mimetype);
-  const int pos = information.indexOf('/');
-  *groupSource = information.left(pos).toInt();
-  *mouseY = information.mid(pos+1).toInt();
+    const QByteArray information = mimeData->data(s_mimetype);
+    const int pos = information.indexOf('/');
+    *groupSource = information.left(pos).toInt();
+    *mouseY = information.mid(pos + 1).toInt();
 }

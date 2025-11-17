@@ -20,11 +20,12 @@
 //QT includes
 #include <QIcon>
 
-PrefGeneral::PrefGeneral(QWidget *parent)
-    : PrefGeneralLayout(parent),validator(this)
+PrefGeneral::PrefGeneral(QWidget* parent)
+    : PrefGeneralLayout(parent), validator(this)
 {
 }
-PrefGeneral::~PrefGeneral(){
+PrefGeneral::~PrefGeneral()
+{
 }
 
 bool PrefGeneral::useWhiteColorDuringPrinting() const

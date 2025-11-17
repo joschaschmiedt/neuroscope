@@ -21,15 +21,13 @@
 // include files for QT
 #include <QWidget>
 #include <QComboBox>
-#include <QCheckBox> 
+#include <QCheckBox>
 #include <qspinbox.h>
 #include <QPushButton>
-#include <QLineEdit> 
+#include <QLineEdit>
 #include <QValidator>
 
 //includes files for KDE
-
-
 
 
 //include files for the application
@@ -40,10 +38,11 @@
   *@author Lynn Hazan
   */
 
-class PrefGeneral : public PrefGeneralLayout  {
+class PrefGeneral : public PrefGeneralLayout
+{
     Q_OBJECT
-public: 
-    explicit PrefGeneral(QWidget *parent=0);
+  public:
+    explicit PrefGeneral(QWidget* parent = 0);
     ~PrefGeneral();
 
 
@@ -54,34 +53,34 @@ public:
     }
 
     /**Sets the display of the palette headers.*/
-    void setPaletteHeaders(bool show){headerCheckBox->setChecked(show);}
+    void setPaletteHeaders(bool show) { headerCheckBox->setChecked(show); }
 
     /**Sets the event position in percentage from the begining of the window where the events are display when browsing.*/
-    void setEventPosition(int position){eventPositionSpinBox->setValue(position);}
+    void setEventPosition(int position) { eventPositionSpinBox->setValue(position); }
 
     /**Sets the cluster position in percentage from the begining of the window where the clusters are display when browsing.*/
-    void setClusterPosition(int position){clusterPositionSpinBox->setValue(position);}
+    void setClusterPosition(int position) { clusterPositionSpinBox->setValue(position); }
 
     /**Returns the background color.*/
-    QColor getBackgroundColor() const{
+    QColor getBackgroundColor() const
+    {
         return backgroundColorButton->color();
     }
 
     /**Returns true if the palette headers are displayed, false othewise.*/
-    bool isPaletteHeadersDisplayed() const{return headerCheckBox->isChecked();}
+    bool isPaletteHeadersDisplayed() const { return headerCheckBox->isChecked(); }
 
     /**Returns the event position in percentage from the begining of the window where the events are display when browsing.*/
-    int getEventPosition()const{return eventPositionSpinBox->value();}
+    int getEventPosition() const { return eventPositionSpinBox->value(); }
 
     /**Returns the cluster position in percentage from the begining of the window where the clusters are display when browsing.*/
-    int getClusterPosition()const{return clusterPositionSpinBox->value();}
+    int getClusterPosition() const { return clusterPositionSpinBox->value(); }
 
     bool useWhiteColorDuringPrinting() const;
 
     void setUseWhiteColorDuringPrinting(bool b);
 
-private:
-
+  private:
     QIntValidator validator;
 };
 

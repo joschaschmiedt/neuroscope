@@ -48,10 +48,11 @@ class ChannelColors;
   * Class containing the TraceView and all the widgets used to select the position in the file.
   * @author Lynn Hazan
   */
-class TraceWidget : public QWidget  {
+class TraceWidget : public QWidget
+{
     Q_OBJECT
 
-public:
+  public:
     /**
   * @param startTime starting time in miliseconds.
   * @param duration time window in miliseconds.
@@ -87,8 +88,8 @@ public:
   */
     TraceWidget(long startTime, long duration, bool greyScale, TracesProvider& tracesProvider, bool multiColumns, bool verticalLines,
                 bool raster, bool waveforms, bool labelsDisplay, QList<int>& channelsToDisplay, float gain, ChannelColors* channelColors,
-                QMap<int, QList<int> >* groupsChannels, QMap<int,int>* channelsGroups, bool autocenterChannels, QList<int>& channelOffsets,
-                QList<int>& gains, const QList<int>& skippedChannels, int rasterHeight, const QImage &backgroundImage, QWidget* parent=0, const char* name=0, const QColor &backgroundColor = Qt::black,
+                QMap<int, QList<int>>* groupsChannels, QMap<int, int>* channelsGroups, bool autocenterChannels, QList<int>& channelOffsets,
+                QList<int>& gains, const QList<int>& skippedChannels, int rasterHeight, const QImage& backgroundImage, QWidget* parent = 0, const char* name = 0, const QColor& backgroundColor = Qt::black,
                 QStatusBar* statusBar = 0L, int minSize = 0, int maxSize = 4000, int windowTopLeft = -500,
                 int windowBottomRight = 1001, int border = 0);
 
@@ -97,18 +98,21 @@ public:
 
     /**Returns the time amount, in milisecond, of the time frame used by the TraceView.
  */
-    long timeFrameWidth() const {
+    long timeFrameWidth() const
+    {
         return timeWindow;
     }
 
     /**Returns the start time of the time frame used by the TraceView.
  */
-    long timeFrameStart() const {
+    long timeFrameStart() const
+    {
         return startTime;
     }
 
     /**Installs the event filter on the view contained in the widget.*/
-    void installEventFilter(QObject* filterObject){
+    void installEventFilter(QObject* filterObject)
+    {
         QObject::installEventFilter(filterObject);
         view.installEventFilter(filterObject);
     }
@@ -116,7 +120,7 @@ public:
     /// Added by M.Zugaro to enable automatic forward paging
     bool isStill();
 
-Q_SIGNALS:
+  Q_SIGNALS:
 
     /** Emitted when paging in started */
     void pagingStarted();
@@ -124,7 +128,7 @@ Q_SIGNALS:
     /** Emitted when paging in stopped */
     void pagingStopped();
 
-public Q_SLOTS:
+  public Q_SLOTS:
 
     /// Added by M.Zugaro to enable automatic forward paging
     void page();
@@ -134,7 +138,7 @@ public Q_SLOTS:
     void stop();
 
     /**Changes the color of the background.*/
-    void changeBackgroundColor(const QColor &color);
+    void changeBackgroundColor(const QColor& color);
 
     /**All the channels are now display either in a gradation of grey or in color.
   * @param grey true if the channels have to be displayed in grey false otherwise.
@@ -150,24 +154,25 @@ public Q_SLOTS:
   * Sets the mode of presentation to single or multiple columns.
   * @param multiple true if the traces are presented on multiple columns, false if they are presented on a single column.
   */
-    void setMultiColumns(bool multiple){view.setMultiColumns(multiple);}
+    void setMultiColumns(bool multiple) { view.setMultiColumns(multiple); }
 
     /**Displays or hides vertical lines to show the clusters.
   * @param lines true if the vertical lines are drawn for each cluster, false otherwise.
   */
-    void setClusterVerticalLines(bool lines){view.setClusterVerticalLines(lines);}
+    void setClusterVerticalLines(bool lines) { view.setClusterVerticalLines(lines); }
 
     /**Displays or hides a raster to show the clusters.
   * @param raster true if a raster is drawn, false otherwise.
   */
-    void setClusterRaster(bool raster){
+    void setClusterRaster(bool raster)
+    {
         view.setClusterRaster(raster);
     }
 
     /**Displays or hides the cluster waveforms on top of the traces.
   * @param waveforms true if the waveforms are drawn, false otherwise.
   */
-    void setClusterWaveforms(bool waveforms){view.setClusterWaveforms(waveforms);}
+    void setClusterWaveforms(bool waveforms) { view.setClusterWaveforms(waveforms); }
 
     /** Informs listener that the channels @p selectedIds have been selected.
   * @param selectedIds the list of channels selected by the user in a view.
@@ -178,13 +183,14 @@ public Q_SLOTS:
   * @param selectedMode new mode of drawing.
   * @param active true if the view is the active one, false otherwise.
   */
-    virtual void setMode(BaseFrame::Mode selectedMode,bool active);
+    virtual void setMode(BaseFrame::Mode selectedMode, bool active);
 
     /**
   * Updates the list of channels shown with @p channelsToShow.
   * @param channelsToShow new list of channels to be shown.
   */
-    void showChannels(const QList<int>& channelsToShow){
+    void showChannels(const QList<int>& channelsToShow)
+    {
         view.showChannels(channelsToShow);
     }
 
@@ -194,8 +200,9 @@ public Q_SLOTS:
   * @param name name use to identified the cluster provider containing the clusters to show.
   * @param clustersToShow new list of clusters to be shown.
   */
-    void showClusters(const QString& name, const QList<int>& clustersToShow){
-        view.showClusters(name,clustersToShow);
+    void showClusters(const QString& name, const QList<int>& clustersToShow)
+    {
+        view.showClusters(name, clustersToShow);
     }
 
     /**
@@ -204,69 +211,70 @@ public Q_SLOTS:
   * @param name name use to identified the event provider containing the events to show.
   * @param eventsToShow new list of events to be shown.
   */
-    void showEvents(const QString &name,QList<int>& eventsToShow){
-        view.showEvents(name,eventsToShow);
+    void showEvents(const QString& name, QList<int>& eventsToShow)
+    {
+        view.showEvents(name, eventsToShow);
     }
 
     /**Changes the color of a channel.
   * @param channelId id of the channel to redraw.
   * @param active true if the view is the active one, false otherwise.
   */
-    void channelColorUpdate(int channelId,bool active){view.channelColorUpdate(channelId,active);}
+    void channelColorUpdate(int channelId, bool active) { view.channelColorUpdate(channelId, active); }
 
     /**Changes the color of a cluster.
   * @param name name use to identified the cluster provider containing the updated cluster.
   * @param clusterId id of the cluster to redraw.
   * @param active true if the view is the active one, false otherwise.
   */
-    void  clusterColorUpdate(const QColor &color, const QString &name,int clusterId,bool active){view.clusterColorUpdate(color, name,clusterId,active);}
+    void clusterColorUpdate(const QColor& color, const QString& name, int clusterId, bool active) { view.clusterColorUpdate(color, name, clusterId, active); }
 
     /**Changes the color of a event.
   * @param name name use to identified the event provider containing the updated event.
   * @param eventId id of the event to redraw.
   * @param active true if the view is the active one, false otherwise.
   */
-    void  eventColorUpdate(const QColor &color, const QString &name,int eventId,bool active){view.eventColorUpdate(color, name,eventId,active);}
+    void eventColorUpdate(const QColor& color, const QString& name, int eventId, bool active) { view.eventColorUpdate(color, name, eventId, active); }
 
     /**Changes the color of a group of channels.
   * @param groupId id of the group for which the color have been changed.
   * @param active true if the view is the active one, false otherwise.
   */
-    void groupColorUpdate(int groupId,bool active){view.groupColorUpdate(groupId,active);}
+    void groupColorUpdate(int groupId, bool active) { view.groupColorUpdate(groupId, active); }
 
     /**Triggers the increase of the amplitude of all the channels.
   */
-    void increaseAllChannelsAmplitude(){view.increaseAllAmplitude();}
+    void increaseAllChannelsAmplitude() { view.increaseAllAmplitude(); }
 
     /**Triggers the decrease of the amplitude of all the channels.
   */
-    void decreaseAllChannelsAmplitude(){view.decreaseAllAmplitude();}
+    void decreaseAllChannelsAmplitude() { view.decreaseAllAmplitude(); }
 
     /**Triggers the increase of the amplitude of the selected channels.
   * @param channelIds ids of the channels for which the amplitude has to be increased.
   */
-    void increaseSelectedChannelsAmplitude(const QList<int>& channelIds){view.increaseSelectedChannelsAmplitude(channelIds);}
+    void increaseSelectedChannelsAmplitude(const QList<int>& channelIds) { view.increaseSelectedChannelsAmplitude(channelIds); }
 
     /**Triggers the decrease of the amplitude of the selected channels.
   * @param channelIds ids of the channels for which the amplitude has to be decreased.
   */
-    void decreaseSelectedChannelsAmplitude(const QList<int>& channelIds){view.decreaseSelectedChannelsAmplitude(channelIds);}
+    void decreaseSelectedChannelsAmplitude(const QList<int>& channelIds) { view.decreaseSelectedChannelsAmplitude(channelIds); }
 
     /**Sets the unit gain.
   * @param gain initial gain use to draw the traces in the TraceView.
   */
-    void setGain(float gain){view.setGains(gain);}
+    void setGain(float gain) { view.setGains(gain); }
 
     /**Update the information presented in the view if need it.*/
-    void updateDrawing(){view.updateDrawing();}
+    void updateDrawing() { view.updateDrawing(); }
 
     /**Update the TraceView.*/
-    void updateContents(){view.update();}
+    void updateContents() { view.update(); }
 
     /**Triggers the update of the display due to a change in the display groups.
   * @param active true if the view is the active one, false otherwise.
   */
-    void groupsModified(bool active){view.groupsModified(active);}
+    void groupsModified(bool active) { view.groupsModified(active); }
 
     /**Selects the channels in the TraceView.
   *@param selectedIds ids of the selected channels.
@@ -276,18 +284,18 @@ public Q_SLOTS:
     /**Resets the offset of the selected channels to the default values.
   * @param selectedChannelDefaultOffsets map given the default offsets for the selected channels.
   */
-    void resetOffsets(const QMap<int,int>& selectedChannelDefaultOffsets){view.resetOffsets(selectedChannelDefaultOffsets);}
+    void resetOffsets(const QMap<int, int>& selectedChannelDefaultOffsets) { view.resetOffsets(selectedChannelDefaultOffsets); }
 
     /**Resets the gain of the selected channels.
   *@param selectedChannels ids of the selected channels.
   */
-    void resetGains(const QList<int>& selectedChannels){view.resetGains(selectedChannels);}
+    void resetGains(const QList<int>& selectedChannels) { view.resetGains(selectedChannels); }
 
     /**Informs the view to update the traces for the current time frame.*/
-    void drawTraces(){view.displayTimeFrame(startTime,timeWindow);}
+    void drawTraces() { view.displayTimeFrame(startTime, timeWindow); }
 
     /**Informs the view to reset its state.*/
-    void reset(){view.reset();}
+    void reset() { view.reset(); }
 
     /**Informs the view to enable or disable automatic channel centering around offsets.
   * @param show true if the autocentering is on, false otherwise.
@@ -304,14 +312,14 @@ public Q_SLOTS:
   * @param time starting time to display the traces.
   * @param duration amount of time for which to display the traces.
   */
-    void slotSetStartAndDuration(long time,long duration);
+    void slotSetStartAndDuration(long time, long duration);
 
     /** Shows or hides the calibration bar. This bar is meaningful only when all the channels
   *  have the same amplification.
   * @param show true if the bar has to be shown false otherwise.
   * @param active true if the view is the active one, false otherwise.
   */
-    void showCalibration(bool show,bool active){view.showCalibration(show,active);}
+    void showCalibration(bool show, bool active) { view.showCalibration(show, active); }
 
     /**
   * Updates the different time selection widgets due to a modification of the sampling rate for the document.
@@ -332,19 +340,21 @@ public Q_SLOTS:
   * @param nbSamplesAfter number of samples after the sample of the peak are contained in the waveform of a spike.
   * @param clustersToSkip list of clusters to not use while browsing.
   */
-    void addClusterProvider(ClustersProvider* clustersProvider,const QString &name,ItemColors* clusterColors,bool active,
-                                   QList<int>& clustersToShow,QMap<int, QList<int> >* displayGroupsClusterFile,
-                                   QMap<int,int>* channelsSpikeGroups,int nbSamplesBefore,int nbSamplesAfter,const QList<int>& clustersToSkip){
-        view.addClusterProvider(clustersProvider,name,clusterColors,active,clustersToShow,displayGroupsClusterFile,
-                                channelsSpikeGroups,nbSamplesBefore,nbSamplesAfter,clustersToSkip);
+    void addClusterProvider(ClustersProvider* clustersProvider, const QString& name, ItemColors* clusterColors, bool active,
+                            QList<int>& clustersToShow, QMap<int, QList<int>>* displayGroupsClusterFile,
+                            QMap<int, int>* channelsSpikeGroups, int nbSamplesBefore, int nbSamplesAfter, const QList<int>& clustersToSkip)
+    {
+        view.addClusterProvider(clustersProvider, name, clusterColors, active, clustersToShow, displayGroupsClusterFile,
+                                channelsSpikeGroups, nbSamplesBefore, nbSamplesAfter, clustersToSkip);
     }
 
     /**Removes a provider of cluster data.
   * @param name name use to identified the cluster provider.
   * @param active true if the view is the active one, false otherwise.
   */
-    void removeClusterProvider(const QString& name,bool active){
-        view.removeClusterProvider(name,active);
+    void removeClusterProvider(const QString& name, bool active)
+    {
+        view.removeClusterProvider(name, active);
     }
 
     /**Adds a new provider of event data.
@@ -355,9 +365,10 @@ public Q_SLOTS:
   * @param eventsToShow list of clusters to be shown.
   * @param eventsToNotBrowse list of events to not use while browsing.
   */
-    void addEventProvider(EventsProvider* eventsProvider,const QString &name,ItemColors* eventColors,bool active,
-                                 QList<int>& eventsToShow,const QList<int>& eventsToNotBrowse){
-        view.addEventProvider(eventsProvider,name,eventColors,active,eventsToShow,eventsToNotBrowse);
+    void addEventProvider(EventsProvider* eventsProvider, const QString& name, ItemColors* eventColors, bool active,
+                          QList<int>& eventsToShow, const QList<int>& eventsToNotBrowse)
+    {
+        view.addEventProvider(eventsProvider, name, eventColors, active, eventsToShow, eventsToNotBrowse);
     }
 
 
@@ -365,8 +376,9 @@ public Q_SLOTS:
   * @param name name use to identified the event provider.
   * @param active true if the view is the active one, false otherwise.
   */
-    void removeEventProvider(const QString& name,bool active){
-        view.removeEventProvider(name,active);
+    void removeEventProvider(const QString& name, bool active)
+    {
+        view.removeEventProvider(name, active);
     }
 
     /**Prints the current information drawn in the traceView.
@@ -375,34 +387,35 @@ public Q_SLOTS:
   * @param filePath path of the opened document.
   * @param whiteBackground true if the printed background has to be white, false otherwise.
   */
-    void print(QPainter& printPainter,int width,int height,const QString &filePath,bool whiteBackground){
+    void print(QPainter& printPainter, int width, int height, const QString& filePath, bool whiteBackground)
+    {
 
-        QRect textRec = QRect(printPainter.viewport().left() + 5 ,printPainter.viewport().height() - 20,printPainter.viewport().width() - 5,20);
-        QFont f("Helvetica",8);
+        QRect textRec = QRect(printPainter.viewport().left() + 5, printPainter.viewport().height() - 20, printPainter.viewport().width() - 5, 20);
+        QFont f("Helvetica", 8);
         printPainter.setFont(f);
         printPainter.setPen(Qt::black);
-        printPainter.drawText(textRec,Qt::AlignLeft | Qt::AlignVCenter,
+        printPainter.drawText(textRec, Qt::AlignLeft | Qt::AlignVCenter,
                               tr("File: %1     Start time: %2 min %3 s %4 ms, Duration: %5 ms").arg(filePath).arg(startMinute->value()).arg(startSecond->value()).arg(startMilisecond->value()).arg(duration->displayText()));
 
         //Modify the viewport so the view will not draw on the legend
-        QRect newViewport = QRect(printPainter.viewport().left(),printPainter.viewport().top(),printPainter.viewport().width(),printPainter.viewport().height());
+        QRect newViewport = QRect(printPainter.viewport().left(), printPainter.viewport().top(), printPainter.viewport().width(), printPainter.viewport().height());
         newViewport.setBottom(printPainter.viewport().bottom() - 20);
         printPainter.setViewport(newViewport);
-        view.print(printPainter,width,height,whiteBackground);
+        view.print(printPainter, width, height, whiteBackground);
         printPainter.resetMatrix();
     }
 
     /**Retrieves the next cluster.*/
-    void showNextCluster(){view.showNextCluster();}
+    void showNextCluster() { view.showNextCluster(); }
 
     /**Retrieves the previous cluster.*/
-    void showPreviousCluster(){view.showPreviousCluster();}
+    void showPreviousCluster() { view.showPreviousCluster(); }
 
     /**Retrieves the next event.*/
-    void showNextEvent(){view.showNextEvent();}
+    void showNextEvent() { view.showNextEvent(); }
 
     /**Retrieves the previous event.*/
-    void showPreviousEvent(){view.showPreviousEvent();}
+    void showPreviousEvent() { view.showPreviousEvent(); }
 
     /**Informs that an event has been modified.
   * @param providerName name use to identified the event provider containing the modified event.
@@ -410,8 +423,9 @@ public Q_SLOTS:
   * @param time initial time of the modified event.
   * @param newTime new time of the modified event.
   */
-    void slotEventModified(const QString &providerName,int selectedEventId,double time,double newTime){
-        emit eventModified(providerName,selectedEventId,time,newTime);
+    void slotEventModified(const QString& providerName, int selectedEventId, double time, double newTime)
+    {
+        emit eventModified(providerName, selectedEventId, time, newTime);
     }
 
     /**Informs that an event has been removed.
@@ -419,8 +433,9 @@ public Q_SLOTS:
   * @param selectedEventId id of the removed event.
   * @param time initial time of the removed event.
   */
-    void slotEventRemoved(const QString& providerName,int selectedEventId,double time){
-        emit eventRemoved(providerName,selectedEventId,time);
+    void slotEventRemoved(const QString& providerName, int selectedEventId, double time)
+    {
+        emit eventRemoved(providerName, selectedEventId, time);
     }
 
     /**Updates the traceView if concerned by the modification of the event.
@@ -429,30 +444,33 @@ public Q_SLOTS:
   * @param newTime new time of the modified event.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateEvents(bool active,const QString& providerName,double time,double newTime){
+    void updateEvents(bool active, const QString& providerName, double time, double newTime)
+    {
         long eventTime = static_cast<long>(floor(0.5 + time));
         long newEventTime = static_cast<long>(floor(0.5 + newTime));
-        if((eventTime >= startTime  && eventTime <= (startTime + timeWindow)) ||
-                (newEventTime >= startTime  && newEventTime <= (startTime + timeWindow))) view.updateEvents(providerName,active);
+        if ((eventTime >= startTime && eventTime <= (startTime + timeWindow)) ||
+            (newEventTime >= startTime && newEventTime <= (startTime + timeWindow)))
+            view.updateEvents(providerName, active);
     }
 
     /**Deletes the selected event.
   */
-    void removeEvent(){view.removeEvent();}
+    void removeEvent() { view.removeEvent(); }
 
     /**Updates the traceView if concerned by the modification of the event.
   * @param providerName name use to identified the event provider containing the removed event.
   * @param time initial time of the removed event.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateEvents(bool active,const QString& providerName,double time);
+    void updateEvents(bool active, const QString& providerName, double time);
 
     /**Informs the traceView of the properties for the next event to be added.
   * @param providerName name use to identified the event provider which will contain the added event.
   * @param eventDescription description of the next event to be created.
   */
-    void eventToAddProperties(const QString& providerName,const QString& eventDescription){
-        view.eventToAddProperties(providerName,eventDescription);
+    void eventToAddProperties(const QString& providerName, const QString& eventDescription)
+    {
+        view.eventToAddProperties(providerName, eventDescription);
     }
 
     /**Informs that an event has been added.
@@ -460,50 +478,53 @@ public Q_SLOTS:
   * @param addedEventDescription description of the added event.
   * @param time time of the added event.
   */
-    void slotEventAdded(const QString &providerName,const QString& addedEventDescription,double time);
+    void slotEventAdded(const QString& providerName, const QString& addedEventDescription, double time);
 
     /**Updates the event data provided by @p providerName due to the addition of an event.
   * @param providerName name use to identified the event provider containing the modified event.
   * @param eventsToShow new list of events to be shown.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateEvents(const QString& providerName,QList<int>& eventsToShow,bool active);
+    void updateEvents(const QString& providerName, QList<int>& eventsToShow, bool active);
 
     /** Updates the description of a spike waveform.
   * @param nbSamplesBefore number of samples contained in the waveform of a spike before the sample of the peak.
   * @param nbSamplesAfter number of samples contained in the waveform of a spike after the sample of the peak.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateWaveformInformation(int nbSamplesBefore, int nbSamplesAfter,bool active){
-        view.updateWaveformInformation(nbSamplesBefore,nbSamplesAfter,active);
+    void updateWaveformInformation(int nbSamplesBefore, int nbSamplesAfter, bool active)
+    {
+        view.updateWaveformInformation(nbSamplesBefore, nbSamplesAfter, active);
     }
 
     /**Updates the cluster information presented on the display.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateClusterData(bool active){view.updateClusterData(active);}
+    void updateClusterData(bool active) { view.updateClusterData(active); }
 
     /**Updates the list of events to not use while browsing.
   * @param providerName name use to identified the event provider containing the modified event.
   * @param eventsToNotBrowse new list of events to not use while browsing.
   */
-    void updateNoneBrowsingEventList(const QString &providerName,const QList<int>& eventsToNotBrowse){
-        view.updateNoneBrowsingEventList(providerName,eventsToNotBrowse);
+    void updateNoneBrowsingEventList(const QString& providerName, const QList<int>& eventsToNotBrowse)
+    {
+        view.updateNoneBrowsingEventList(providerName, eventsToNotBrowse);
     }
 
     /**Updates the list of clusters to not use while browsing.
   * @param providerName name use to identified the event provider containing the modified event.
   * @param clustersToNotBrowse new list of clusters to not use while browsing.
   */
-    void updateNoneBrowsingClusterList(const QString &providerName,const QList<int>& clustersToNotBrowse){
-        view.updateNoneBrowsingClusterList(providerName,clustersToNotBrowse);
+    void updateNoneBrowsingClusterList(const QString& providerName, const QList<int>& clustersToNotBrowse)
+    {
+        view.updateNoneBrowsingClusterList(providerName, clustersToNotBrowse);
     }
 
     /**If the frame is contained in a dockWidget, this slot can be used
   * when the enclosing dockwidget is being closed.
   * Emits the parentDockBeingClosed signal.
   */
-    virtual void dockBeingClosed(){emit parentDockBeingClosed(this);}
+    virtual void dockBeingClosed() { emit parentDockBeingClosed(this); }
 
     /**Updates the display due to modification of clusters provided by the cluster provider identified
   * by @p name.
@@ -512,25 +533,26 @@ public Q_SLOTS:
   * @param clusterColors list of colors for the clusters.
   * @param active true if the view is the active one, false otherwise.
   */
-    void updateClusters(QString name,QList<int>& clustersToShow,ItemColors* clusterColors,bool active){
-        view.updateClusters(name,clustersToShow,clusterColors,active);
+    void updateClusters(QString name, QList<int>& clustersToShow, ItemColors* clusterColors, bool active)
+    {
+        view.updateClusters(name, clustersToShow, clusterColors, active);
     }
 
     /**Updates the list of skipped channels.
   * @param skippedChannels list of skipped channels.
   **/
-    void updateSkipStatus(const QList<int>& skippedChannels){view.skipStatusChanged(skippedChannels);}
+    void updateSkipStatus(const QList<int>& skippedChannels) { view.skipStatusChanged(skippedChannels); }
 
     /**Increases the height of the rasters.*/
-    void increaseRasterHeight(){view.increaseRatio();}
+    void increaseRasterHeight() { view.increaseRatio(); }
 
     /**Decreases the height of the rasters.*/
-    void decreaseRasterHeight() {view.decreaseRatio();}
+    void decreaseRasterHeight() { view.decreaseRatio(); }
 
     /**Returns the height of the rasters.
   *@return raster height.
   */
-    int getRasterHeight() {return view.getRasterHeight();}
+    int getRasterHeight() { return view.getRasterHeight(); }
 
     /**Informs that data of the selected events providers corresponding to current time frame are available.
   * @param eventsData dictionary between the event provider names and the event data and status.
@@ -539,8 +561,9 @@ public Q_SLOTS:
   * @param initiator instance requesting the data.
   * @param samplingRate sampling rate of the current open data file in Hz.
   */
-    void slotEventsAvailable(QHash<QString, EventData*>& eventsData,QMap<QString, QList<int> >& selectedEvents,QHash<QString, ItemColors*>& providerItemColors,QObject* initiator,double samplingRate) {
-        emit eventsAvailable(eventsData,selectedEvents,providerItemColors,initiator,samplingRate);
+    void slotEventsAvailable(QHash<QString, EventData*>& eventsData, QMap<QString, QList<int>>& selectedEvents, QHash<QString, ItemColors*>& providerItemColors, QObject* initiator, double samplingRate)
+    {
+        emit eventsAvailable(eventsData, selectedEvents, providerItemColors, initiator, samplingRate);
     }
 
     /**Gets the event information for all the available eventProviders.
@@ -548,24 +571,25 @@ public Q_SLOTS:
   * @param endTime end of the time interval from which to retrieve the data.
   * @param initiator instance requesting the data.
   */
-    void getCurrentEventInformation(long startTime,long endTime,QObject* initiator){view.getCurrentEventInformation(startTime,endTime,initiator);}
+    void getCurrentEventInformation(long startTime, long endTime, QObject* initiator) { view.getCurrentEventInformation(startTime, endTime, initiator); }
 
     /**Updates the background image.
   * @param traceBackgroundImage image to be used as background.
   * @param active true if the view is the active one, false otherwise.
   */
-    void traceBackgroundImageUpdate(const QImage &traceBackgroundImage,bool active){
-        view.traceBackgroundImageUpdate(traceBackgroundImage,active);
+    void traceBackgroundImageUpdate(const QImage& traceBackgroundImage, bool active)
+    {
+        view.traceBackgroundImageUpdate(traceBackgroundImage, active);
     }
 
-Q_SIGNALS:
+  Q_SIGNALS:
     void channelsSelected(const QList<int>& selectedIds);
 
     /**Informs that the starting time and/or the timeWindow have changed.
   * @param startTime starting time.
   * @param timeWindow time window.
   */
-    void updateStartAndDuration(long startTime,long timeWindow);
+    void updateStartAndDuration(long startTime, long timeWindow);
 
     /**Informs that an event has been modified.
   * @param providerName name use to identified the event provider containing the modified event.
@@ -573,21 +597,21 @@ Q_SIGNALS:
   * @param time initial time of the modified event.
   * @param newTime new time of the modified event.
   */
-    void eventModified(const QString &providerName,int selectedEventId,double time,double newTime);
+    void eventModified(const QString& providerName, int selectedEventId, double time, double newTime);
 
     /**Informs that an event has been removed.
   * @param providerName name use to identified the event provider containing the removed event.
   * @param selectedEventId id of the removed event.
   * @param time initial time of the removed event.
   */
-    void eventRemoved(const QString &providerName,int selectedEventId,double time);
+    void eventRemoved(const QString& providerName, int selectedEventId, double time);
 
     /**Informs that an event has been added.
   * @param providerName name use to identified the event provider containing the added event.
   * @param addedEventDescription description of the added event.
   * @param time time of the added event.
   */
-    void eventAdded(const QString &providerName,const QString &addedEventDescription,double time);
+    void eventAdded(const QString& providerName, const QString& addedEventDescription, double time);
 
     /**Signals that the enclosing dockwidget is being closed
   * @param viewWidget pointer on the the current object.
@@ -601,22 +625,21 @@ Q_SIGNALS:
   * @param initiator instance requesting the data.
   * @param samplingRate sampling rate of the current open data file  in Hz.
   */
-    void eventsAvailable(QHash<QString, EventData*>& eventsData,QMap<QString, QList<int> >& selectedEvents,QHash<QString, ItemColors*>& providerItemColors,QObject* initiator,double samplingRate);
+    void eventsAvailable(QHash<QString, EventData*>& eventsData, QMap<QString, QList<int>>& selectedEvents, QHash<QString, ItemColors*>& providerItemColors, QObject* initiator, double samplingRate);
 
-protected:
-
+  protected:
     /**The view responds to a key press event.
   * @param event key press event.
   */
     void keyPressEvent(QKeyEvent* event);
 
-private:
+  private:
     //Functions
 
     /**Initializes the different time selection widgets.*/
     void initSelectionWidgets();
 
-private Q_SLOTS:
+  private Q_SLOTS:
     /**Informs the view to present the traces for an updated time frame.*/
     void slotStartMinuteTimeUpdated();
 
@@ -632,10 +655,10 @@ private Q_SLOTS:
     /**Update the selection widgets and informs view to present the traces for an updated time frame.*/
     void slotScrollBarUpdated();
 
-private:
+  private:
     /// Added by M.Zugaro to enable automatic forward paging
-    QTimer	*timer;
-    int		pageTime;
+    QTimer* timer;
+    int pageTime;
 
     /**Amount of time used when looking for the traces.
   * This amount is in miliseconds and the default is 1000.
@@ -711,7 +734,6 @@ private:
   * Corrects the new start time which became inferior to the recordingLength due to a change in one of the selection widgets.
   */
     void correctStartTime();
-
 };
 
 

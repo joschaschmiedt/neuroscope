@@ -31,8 +31,6 @@
 #include "eventdata.h"
 
 
-
-
 class ItemColors;
 
 /**
@@ -41,37 +39,37 @@ class ItemColors;
 class GlobalEventsProvider : public DataProvider
 {
     Q_OBJECT
-public:
-    GlobalEventsProvider():DataProvider(QString()){}
-    ~GlobalEventsProvider(){}
+  public:
+    GlobalEventsProvider()
+        : DataProvider(QString()) {}
+    ~GlobalEventsProvider() {}
 
     /**Triggers the retrieve of the events included in the time interval given by @p startTime and @p endTime.
   * @param startTime begining of the time interval from which to retrieve the data in miliseconds.
   * @param endTime end of the time interval from which to retrieve the data.
   * @param initiator instance requesting the data.
   */
-    void requestData(long startTime,long endTime,QObject* initiator);
+    void requestData(long startTime, long endTime, QObject* initiator);
 
-Q_SIGNALS:
-    void getCurrentEventInformation(long startTime,long endTime,QObject* initiator);
+  Q_SIGNALS:
+    void getCurrentEventInformation(long startTime, long endTime, QObject* initiator);
 
     /**Informs that data of the selected events providers corresponding to current time frame are available.
   * @param eventsData dictionary between the event provider names and the event data and status.
   * @param selectedEvents map between the event provider names and the list of currently selected events.
   * @param providerItemColors dictionary between the provider names and the item color lists.
   */
-    void eventsAvailable(QHash<QString, EventData*>& eventsData,QMap<QString, QList<int> >& selectedEvents,QHash<QString, ItemColors*>& providerItemColors);
+    void eventsAvailable(QHash<QString, EventData*>& eventsData, QMap<QString, QList<int>>& selectedEvents, QHash<QString, ItemColors*>& providerItemColors);
 
 
-public Q_SLOTS:
+  public Q_SLOTS:
     /**Informs that data of the selected events providers corresponding to current time frame are available.
   * @param eventsData dictionary between the event provider names and the event data and status.
   * @param selectedEvents map between the event provider names and the list of currently selected events.
   * @param providerItemColors dictionary between the provider names and the item color lists.
   * @param initiator instance requesting the data.
   */
-    void eventInformationAvailable(QHash<QString, EventData*>& eventsData,QMap<QString, QList<int> >& selectedEvents,QHash<QString, ItemColors*>& providerItemColors,QObject* initiator);
-    
+    void eventInformationAvailable(QHash<QString, EventData*>& eventsData, QMap<QString, QList<int>>& selectedEvents, QHash<QString, ItemColors*>& providerItemColors, QObject* initiator);
 };
 
 #endif
