@@ -18,7 +18,6 @@
 #include "itemiconview.h"
 // include files for Qt
 #include <QCursor>
-#include <QTextCodec>
 
 #include <QMouseEvent>
 #include <QDebug>

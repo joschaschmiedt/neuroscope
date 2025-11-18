@@ -744,7 +744,7 @@ void TraceView::paintEvent(QPaintEvent*)
             painter.restore();
 
             //reset transformation due to setWindow and setViewport
-            painter.resetMatrix();
+            painter.resetTransform();
 
             //Draw channel ids and amplitude on the left side.
             if (showLabels)
@@ -1751,7 +1751,7 @@ void TraceView::drawTraces(const QList<int>& channels, bool highlight)
     }
 
     //reset transformation due to setWindow and setViewport
-    painter.resetMatrix();
+    painter.resetTransform();
 
     //Draw channel ids and amplitude on the left side.
     if (showLabels)
@@ -2607,9 +2607,9 @@ void TraceView::mouseMoveEvent(QMouseEvent* event)
     //shown (r.left() != 0), the coordinates have to be adjusted. Indeed, this margin is outside the world but in the viewport and included in the
     //values return par the event.
     if (r.left() != 0)
-        current = viewportToWorld(event->x(), event->y());
+        current = viewportToWorld(event->position().x(), event->position().y());
     else
-        current = viewportToWorld(event->x() - xMargin, event->y());
+        current = viewportToWorld(event->position().x() - xMargin, event->position().y());
 
     int x = (current.x() - static_cast<int>(borderX));
 
@@ -2955,9 +2955,9 @@ void TraceView::mousePressEvent(QMouseEvent* event)
             //shown (r.left() != 0), the coordinates have to be adjusted. Indeed, this margin is outside the world but in the viewport and included in the
             //values return par the event.
             if (r.left() != 0)
-                current = viewportToWorld(event->x(), event->y());
+                current = viewportToWorld(event->position().x(), event->position().y());
             else
-                current = viewportToWorld(event->x() - xMargin, event->y());
+                current = viewportToWorld(event->position().x() - xMargin, event->position().y());
             lastClickOrdinate = current.y();
 
             if (multiColumns)
@@ -3622,9 +3622,9 @@ void TraceView::mouseReleaseEvent(QMouseEvent* event)
         QPoint current;
         QRect r((QRect)window);
         if (r.left() != 0)
-            current = viewportToWorld(event->x(), event->y());
+            current = viewportToWorld(event->position().x(), event->position().y());
         else
-            current = viewportToWorld(event->x() - xMargin, event->y());
+            current = viewportToWorld(event->position().x() - xMargin, event->position().y());
         int x = (current.x() - static_cast<int>(borderX));
 
         //Compute the starting and ending time
@@ -4424,7 +4424,7 @@ void TraceView::print(QPainter& printPainter, int width, int height, bool whiteB
     drawTraces(printPainter);
 
     //reset transformation due to setWindow and setViewport
-    printPainter.resetMatrix();
+    printPainter.resetTransform();
 
     //Draw channel ids and amplitude on the left side.
     if (showLabels)
@@ -4940,7 +4940,7 @@ void TraceView::drawEvent(const QString& providerName, int selectedEventId, data
     }
 
     //reset transformation due to setWindow and setViewport
-    painter.resetMatrix();
+    painter.resetTransform();
 
     //Closes the painter on the double buffer
     painter.end();

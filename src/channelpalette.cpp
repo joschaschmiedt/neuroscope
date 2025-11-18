@@ -37,6 +37,7 @@
 #include <QLabel>
 #include <QResizeEvent>
 #include <QTimer>
+#include <qnamespace.h>
 
 ChannelPalette::ChannelPalette(PaletteType type, const QColor& backgroundColor, bool edition, QWidget* parent, const char* name)
     : QScrollArea(parent), channelColors(0L), backgroundColor(backgroundColor), isInSelectItems(false),
@@ -914,7 +915,7 @@ void ChannelPalette::createGroup(int id)
     QFontMetrics fm(QFont("Helvetica", 8));
     for (int i = 0; i < channelLabels->size(); i++)
     {
-        int currentLength = fm.width(channelLabels->at(i));
+        int currentLength = fm.horizontalAdvance(channelLabels->at(i));
         if (currentLength > maxLabelLength)
             maxLabelLength = currentLength;
     }
@@ -2553,7 +2554,7 @@ void GroupLabel::mousePressEvent(QMouseEvent* e)
 
         emit leftClickOnLabel(parent()->objectName());
     }
-    else if (e->button() == Qt::MidButton)
+    else if (e->button() == Qt::MiddleButton)
     {
         emit middleClickOnLabel(parent()->objectName());
     }
@@ -2571,7 +2572,7 @@ void SpaceWidget::dropEvent(QDropEvent* event)
         int groupSource, start;
         ChannelMimeData::getInformation(event->mimeData(), &groupSource, &start);
         //to inform that the target is the SpaceWidget, put -2 as the target group.
-        emit dropLabel(groupSource, -2, start, QWidget::mapToGlobal(event->pos()).y());
+        emit dropLabel(groupSource, -2, start, QWidget::mapToGlobal(event->position().toPoint()).y());
     }
 }
 

@@ -19,7 +19,7 @@
 #include "channelmimedata.h"
 // include files for Qt
 #include <QCursor>
-#include <QTextCodec>
+// #include <QTextCodec>
 #include <QMimeData>
 
 #include <QDropEvent>

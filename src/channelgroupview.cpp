@@ -31,7 +31,7 @@ ChannelGroupView::ChannelGroupView(bool drag, const QColor& backgroundColor, QWi
 {
 
     mLayout = new QHBoxLayout;
-    mLayout->setMargin(0);
+    mLayout->setContentsMargins(0, 0, 0, 0);
     mLayout->setSpacing(0);
     setLayout(mLayout);
     setAutoFillBackground(true);

@@ -402,7 +402,7 @@ class TraceWidget : public QWidget
         newViewport.setBottom(printPainter.viewport().bottom() - 20);
         printPainter.setViewport(newViewport);
         view.print(printPainter, width, height, whiteBackground);
-        printPainter.resetMatrix();
+        printPainter.resetTransform();
     }
 
     /**Retrieves the next cluster.*/

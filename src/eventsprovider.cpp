@@ -17,7 +17,7 @@
 //QT include files
 #include <QStringList>
 #include <QFileInfo>
-#include <QRegExp>
+#include <QRegularExpression>
 
 #include <QTextStream>
 #include <QList>
@@ -54,7 +54,7 @@ EventsProvider::EventsProvider(const QString& fileUrl, double currentSamplingRat
 
 EventsProvider::~EventsProvider()
 {
-    qDebug() << "in ~EventsProvider " << endl;
+    qDebug() << "in ~EventsProvider " << "\n";
 }
 
 int EventsProvider::loadData()
@@ -64,7 +64,7 @@ int EventsProvider::loadData()
     //Get the number of events
     nbEvents = Utilities::getNbLines(fileName);
 
-    //qDebug()<<"nbEvents "<<nbEvents<<endl;
+    //qDebug()<<"nbEvents "<<nbEvents<<"\n";
 
     if (nbEvents == -1)
     {
@@ -100,8 +100,8 @@ int EventsProvider::loadData()
     {
         line = line.trimmed();
 
-        int index1 = line.indexOf(QRegExp("\\s"));
-        int index2 = line.indexOf(QRegExp("\\S"), index1);
+        int index1 = line.indexOf(QRegularExpression("\\s"));
+        int index2 = line.indexOf(QRegularExpression("\\S"), index1);
 
         timeStamps[lineCounter] = line.left(index1).toDouble();
         EventDescription label = line.right(line.length() - index2);
@@ -116,7 +116,7 @@ int EventsProvider::loadData()
     }
 
     eventFile.close();
-    qDebug() << "Loading evt file into memory: " << Timer() << endl;
+    qDebug() << "Loading evt file into memory: " << Timer() << "\n";
 
 
     //The number of events read has to be coherent with the number of events read.
@@ -1418,7 +1418,7 @@ void EventsProvider::addEventDescription(QString eventDescriptionToAdd)
 
     descriptions.append(EventDescription(eventDescriptionToAdd));
 
-    qSort(descriptions);
+    std::sort(descriptions.begin(), descriptions.end());
     long maxSize = 0;
     long sum = 0;
     long sumOfSquares = 0;
@@ -1476,7 +1476,7 @@ void EventsProvider::removeEventDescription(QString eventDescriptionToRemove)
     QList<EventDescription> newDescriptions = eventIds.keys();
     newDescriptions.removeAll(EventDescription(eventDescriptionToRemove));
 
-    qSort(newDescriptions);
+    std::sort(newDescriptions.begin(), newDescriptions.end());
     long maxSize = 0;
     long sum = 0;
     long sumOfSquares = 0;

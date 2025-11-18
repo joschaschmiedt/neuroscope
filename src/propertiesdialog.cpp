@@ -115,10 +115,10 @@ void PropertiesDialog::slotVerify()
 {
     if (nbChannels != properties->getNbChannels() && !atStartUp)
     {
-        if (QMessageBox::warning(this, tr("Changing the number of channels "
-                                          "will rest all the groups. Do you wish to continue?"),
-                                 tr("Change the number of channels?"),
-                                 tr("Continue")) == QMessageBox::Cancel)
+        if (QMessageBox::warning(this, tr("Change the number of channels?"),
+                                 tr("Changing the number of channels "
+                                    "will rest all the groups. Do you wish to continue?"),
+                                 QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Cancel)
         {
             properties->setNbChannels(nbChannels);
             nbChannelsModified = false;

@@ -20,7 +20,7 @@
 
 //include files for QT
 #include <QList>
-#include <QDomNode>
+#include <QtXml/QDomDocument>
 
 //Application specific includes
 #include "sessionInformation.h"

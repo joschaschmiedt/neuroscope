@@ -20,13 +20,14 @@
 #include <QWidget>
 #include <QPixmap>
 #include <QImage>
-#include <QRegExp>
+#include <QRegularExpression>
 
 #include <QList>
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QApplication>
 #include <QMessageBox>
+#include <qregularexpression.h>
 
 // application specific includes
 #include "neuroscopedoc.h"
@@ -264,7 +265,7 @@ int NeuroscopeDoc::openDocument(const QString& url)
     QString fileName = urlFileInfo.fileName();
 
     // First we check if this is a Blackrock NSX file
-    if (fileName.contains(QRegExp("\\.ns\\d")))
+    if (fileName.contains(QRegularExpression("\\.ns\\d")))
     {
         NSXTracesProvider* nsxTracesProvider = new NSXTracesProvider(url);
 
@@ -352,7 +353,7 @@ int NeuroscopeDoc::openDocument(const QString& url)
 
 
     bool sessionFileExist = false;
-    QStringList fileParts = fileName.split(QLatin1Char('.'), QString::SkipEmptyParts);
+    QStringList fileParts = fileName.split(QLatin1Char('.'), Qt::SkipEmptyParts);
     if (fileParts.count() < 2)
         return INCORRECT_FILE;
     qDebug() << "NeuroscopeDoc::openDocument file correct";
@@ -399,7 +400,7 @@ int NeuroscopeDoc::openDocument(const QString& url)
     }
 
     fileName = QFileInfo(docUrl).fileName();
-    fileParts = fileName.split(".", QString::SkipEmptyParts);
+    fileParts = fileName.split(".", Qt::SkipEmptyParts);
     baseName = fileParts[0];
     for (uint i = 1; i < fileParts.count() - 1; ++i)
         baseName += QLatin1Char('.') + fileParts.at(i);
@@ -1884,7 +1885,7 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader)
                 {
                     //If the file does not exist in the location specified in the session file (absolute path), look up in the directory
                     //where the session file is. This is useful if you moved your file or you backup them (<=> the absolute path is not good anymore)
-                    QFileInfo fileInfo = QFileInfo(fileUrl).absolutePath();
+                    QFileInfo fileInfo = QFileInfo(fileUrl);
                     if (!fileInfo.exists())
                     {
                         QList<int> ids = selectedClusters[fileUrl];
@@ -1907,7 +1908,7 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader)
                 {
                     //If the file does not exist in the location specified in the session file (absolute path), look up in the directory
                     //where the session file is. This is useful if you moved your file or ypu backup them (<=> the absolute path is not good anymore)
-                    QFileInfo fileInfo = QFileInfo(fileUrl).absolutePath();
+                    QFileInfo fileInfo = QFileInfo(fileUrl);
                     if (!fileInfo.exists())
                     {
                         QList<int> ids = selectedEvents[fileUrl];
@@ -1940,7 +1941,7 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader)
                 {
                     //If the file does not exist in the location specified in the session file (absolute path), look up in the directory
                     //where the session file is. This is useful if you moved your file or you backup them (<=> the absolute path is not good anymore)
-                    QFileInfo fileInfo = QFileInfo(fileUrl).absolutePath();
+                    QFileInfo fileInfo = QFileInfo(fileUrl);
                     if (!fileInfo.exists())
                     {
                         QString fileName = QFileInfo(fileUrl).fileName();
@@ -2018,7 +2019,7 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader)
             for (iterator = clusterList.begin(); iterator != clusterList.end(); ++iterator)
                 if (!clustersIds.contains(*iterator) && !clustersIdsToSkip.contains(*iterator))
                     clustersIdsToSkip.append(*iterator);
-            qSort(clustersIdsToSkip);
+            std::sort(clustersIdsToSkip.begin(), clustersIdsToSkip.end());
             view->setClusterProvider(static_cast<ClustersProvider*>(providers[name]), name, providerItemColors[name], true, clustersIds,
                                      &displayGroupsClusterFile, &channelsSpikeGroups, peakSampleIndex - 1, nbSamples - peakSampleIndex, clustersIdsToSkip);
         }
@@ -2055,7 +2056,7 @@ void NeuroscopeDoc::loadSession(NeuroscopeXmlReader reader)
             for (iterator = eventMap.begin(); iterator != eventMap.end(); ++iterator)
                 if (!eventsIds.contains(iterator.key()) && !eventsIdsToSkip.contains(iterator.key()))
                     eventsIdsToSkip.append(iterator.key());
-            qSort(eventsIdsToSkip);
+            std::sort(eventsIdsToSkip.begin(), eventsIdsToSkip.end());
 
             view->setEventProvider(static_cast<EventsProvider*>(providers[name]), name, providerItemColors[name], true, eventsIds, eventsIdsToSkip);
         }
@@ -2523,7 +2524,7 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadCluClusterFile(con
     QString name = clustersProvider->getName();
 
     //The name should only contains digits
-    if (name.contains(QRegExp("\\D")) != 0)
+    if (name.contains(QRegularExpression("\\D")) != 0)
     {
         delete clustersProvider;
         return INCORRECT_FILE;
@@ -2638,7 +2639,7 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadClusterFileForSess
     QString name = clustersProvider->getName();
 
     //The name should only contains digits
-    if (name.contains(QRegExp("\\D")) != 0)
+    if (name.contains(QRegularExpression("\\D")) != 0)
     {
         delete clustersProvider;
         QApplication::restoreOverrideCursor();
@@ -2804,7 +2805,7 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFile(const QS
     QString name = eventsProvider->getName();
 
     //The name should contains 3 characters with at least one none digit character.
-    if (name.length() != 3 || name.contains(QRegExp("\\d{3}")))
+    if (name.length() != 3 || name.contains(QRegularExpression("\\d{3}")))
     {
         delete eventsProvider;
         return INCORRECT_FILE;
@@ -2906,7 +2907,7 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadEventFileForSessio
     QString name = eventsProvider->getName();
 
     //The name should be of 3 characters length with at least one none digit character.
-    if (name.length() != 3 || name.contains(QRegExp("\\d{3}")))
+    if (name.length() != 3 || name.contains(QRegularExpression("\\d{3}")))
     {
         delete eventsProvider;
         QApplication::restoreOverrideCursor();
@@ -3368,7 +3369,7 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::createEventFile(const 
     const QString name = eventsProvider->getName();
 
     //The name should be of 3 characters length with at least one none digit character.
-    if (name.length() != 3 || name.contains(QRegExp("\\d{3}")))
+    if (name.length() != 3 || name.contains(QRegularExpression("\\d{3}")))
     {
         delete eventsProvider;
         return INCORRECT_FILE;
@@ -3414,7 +3415,7 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadPositionFile(const
 {
     //get the sampling rate for the given position file extension, if there is none already set, use the default
     QString positionFileName = url;
-    QStringList fileParts = positionFileName.split(".", QString::SkipEmptyParts);
+    QStringList fileParts = positionFileName.split(".", Qt::SkipEmptyParts);
     if (fileParts.count() < 2)
         return INCORRECT_FILE;
     positionFileExtension = fileParts[fileParts.count() - 1];
@@ -3468,7 +3469,7 @@ NeuroscopeDoc::OpenSaveCreateReturnMessage NeuroscopeDoc::loadPositionFile(const
     //get the sampling rate for the given position file extension, if there is none already set, use the default
     QString positionUrl = fileUrl;
     QString positionFileName = positionUrl;
-    QStringList fileParts = positionFileName.split(QLatin1String("."), QString::SkipEmptyParts);
+    QStringList fileParts = positionFileName.split(QLatin1String("."), Qt::SkipEmptyParts);
     if (fileParts.count() < 2)
         return INCORRECT_FILE;
     positionFileExtension = fileParts[fileParts.count() - 1];

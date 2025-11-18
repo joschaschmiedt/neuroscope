@@ -62,7 +62,7 @@ bool SessionXmlWriter::writeTofile(const QString& url)
     QString xmlDocument = doc.toString();
 
     QTextStream stream(&sessionFile);
-    stream.setCodec("UTF-8");
+    stream.setEncoding(QStringConverter::Utf8);
     stream << xmlDocument;
     sessionFile.close();
 

@@ -35,6 +35,7 @@
 #include "itemiconview.h"
 
 #include <QScrollArea>
+#include <qnamespace.h>
 // forward declaration
 class ItemColors;
 
@@ -255,7 +256,7 @@ class GroupNameLabel : public QLabel
         {
             emit leftClickOnLabel(parent()->objectName(), false, true);
         }
-        if (e->button() == Qt::MidButton)
+        if (e->button() == Qt::MiddleButton)
         {
             emit middleClickOnLabel(parent()->objectName());
         }

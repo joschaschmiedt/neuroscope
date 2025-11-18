@@ -404,7 +404,7 @@ void PositionView::print(QPainter& printPainter, int width, int height, bool whi
     //Restore the previous state
     viewport = QRect(viewportOld.left(), viewportOld.top(), viewportOld.width(), viewportOld.height());
 
-    printPainter.resetMatrix();
+    printPainter.resetTransform();
 }
 
 void PositionView::changeBackgroundColor(const QColor& color)

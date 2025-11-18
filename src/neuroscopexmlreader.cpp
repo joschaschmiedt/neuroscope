@@ -23,7 +23,7 @@
 //include files for QT
 #include <QFileInfo>
 #include <QString>
-#include <QDomDocument>
+#include <QtXml/QDomDocument>
 #include <QDebug>
 
 using namespace neuroscope;
@@ -47,7 +47,7 @@ bool NeuroscopeXmlReader::parseFile(const QString& url, fileType type)
     int errorCol;
     if (!docElement.setContent(&input, &errorMsg, &errorRow, &errorCol))
     {
-        qWarning() << "Unable to load document.Parse error in " << url << ", line " << errorRow << ", col " << errorCol << ": " << errorMsg << endl;
+        qWarning() << "Unable to load document.Parse error in " << url << ", line " << errorRow << ", col " << errorCol << ": " << errorMsg << "\n";
         return false;
     }
 

@@ -25,7 +25,8 @@
 //include files for QT
 #include <QList>
 #include <QMap>
-#include <qdom.h>
+#include <QtXml/QDomDocument>
+#include <QtXml/QDomElement>
 
 // forward declaration
 class ChannelColors;

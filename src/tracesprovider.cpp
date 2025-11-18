@@ -24,7 +24,7 @@
 #include "tracesprovider.h"
 
 #include <QFile>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QDebug>
 #include <QFileInfo>
 
@@ -33,6 +33,8 @@
 
 //include files for c/c++ libraries
 #include <math.h>
+
+using QRegExp = QRegularExpression;
 
 TracesProvider::TracesProvider(const QString& fileUrl, int nbChannels, int resolution, int voltageRange, int amplification, double samplingRate, int offset)
     : DataProvider(fileUrl),

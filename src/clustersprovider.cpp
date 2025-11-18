@@ -200,7 +200,7 @@ int ClustersProvider::loadData()
         return INCORRECT_CONTENT;
     }
 
-    qDebug() << "Loading clu file into memory: " << Timer() << endl;
+    qDebug() << "Loading clu file into memory: " << Timer() << "\n";
 
     //Initialize the variables
     previousStartTime = 0;
@@ -438,7 +438,7 @@ void ClustersProvider::retrieveData(long startTime, long endTime, QObject* initi
     }
 
 
-    qDebug() << " in retrieveData, count " << count << " startInRecordingUnits " << startInRecordingUnits << " endInRecordingUnits " << endInRecordingUnits << " endTime " << endTime << endl;
+    qDebug() << " in retrieveData, count " << count << " startInRecordingUnits " << startInRecordingUnits << " endInRecordingUnits " << endInRecordingUnits << " endTime " << endTime << "\n";
 
 
     //Store the data in a array of the good size
@@ -554,7 +554,7 @@ void ClustersProvider::requestNextClusterData(long startTime, long timeFrame, co
         //look up for the startIndex index by index
         time = clusters(2, newStartIndex);
 
-        qDebug() << "newStartIndex " << newStartIndex << " time " << time << " nbSpikes " << nbSpikes << endl;
+        qDebug() << "newStartIndex " << newStartIndex << " time " << time << " nbSpikes " << nbSpikes << "\n";
 
         if (time < startInRecordingUnits && (newStartIndex < nbSpikes))
         {
@@ -737,7 +737,7 @@ void ClustersProvider::requestNextClusterData(long startTime, long timeFrame, co
     }
 
 
-    qDebug() << " count " << count << endl;
+    qDebug() << " count " << count << "\n";
 
 
     //Store the data in a array of the good size
