@@ -70,7 +70,7 @@ set(CMAKE_AUTOMOC ON)
 add_definitions(-DQT_USE_QSTRINGBUILDER)
 
 # Find correct Qt library
-find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport WebEngineWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport WebEngineWidgets Xml)
 
 ################################################################################
 # Neurosuite library config

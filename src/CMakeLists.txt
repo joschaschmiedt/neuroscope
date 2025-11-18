@@ -90,7 +90,7 @@ endif()
 # Linker config
 ################################################################################
 target_link_libraries(neuroscope neurosuite)
-target_link_libraries(neuroscope Qt6::Widgets Qt6::PrintSupport Qt6::WebEngineWidgets)
+target_link_libraries(neuroscope Qt6::Widgets Qt6::PrintSupport Qt6::WebEngineWidgets Qt6::Xml)
 
 if(WITH_CEREBUS)
     target_link_libraries(neuroscope cbsdk)
